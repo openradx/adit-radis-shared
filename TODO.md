@@ -7,6 +7,7 @@
 
 ## ADIT / RADIS
 
+- Add admin_section to main menu items
 - Remove adit_radis_shared and instead install as package
 - Remove sandbox
 - Is Markdown package still needed?
