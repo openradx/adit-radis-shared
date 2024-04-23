@@ -1,0 +1,35 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: setup
+    init: |
+      poetry install
+      npm install
+      poetry run invoke init-workspace
+
+ports:
+  - port: 8000
+    onOpen: notify
+
+vscode:
+  extensions:
+    - "batisteo.vscode-django"
+    - "charliermarsh.ruff"
+    - "davidanson.vscode-markdownlint"
+    - "eamodio.gitlens"
+    - "esbenp.prettier-vscode"
+    - "formulahendry.auto-close-tag"
+    - "formulahendry.auto-rename-tag"
+    - "foxundermoon.shell-format"
+    - "jock.svg"
+    - "mhutchie.git-graph"
+    - "mikestead.dotenv"
+    - "monosans.djlint"
+    - "ms-azuretools.vscode-docker"
+    - "ms-pyright.pyright"
+    - "ms-python.python"
+    - "streetsidesoftware.code-spell-checker"
+    - "tamasfe.even-better-toml"
+    - "wayou.vscode-todo-highlight"
+    - "xabikos.javascriptsnippets"

@@ -130,7 +130,7 @@ def copy_statics(ctx: Context):
 @task
 def init_workspace(ctx: Context):
     """Initialize workspace for Github Codespaces or Gitpod"""
-    env_dev_file = f"{project_dir}/.env.dev"
+    env_dev_file = f"{project_dir}/.env"
     if os.path.isfile(env_dev_file):
         print("Workspace already initialized (.env.dev file exists).")
         return
@@ -154,7 +154,7 @@ def init_workspace(ctx: Context):
         modify_env_file(codespaces_url)
     elif environ.get("GITPOD_WORKSPACE_ID"):
         # Inside Gitpod
-        result = ctx.run("gp url 8000", silent=True)
+        result = ctx.run("gp url 8000", pty=True, hide=True)
         assert result and result.ok
         gitpod_url = result.stdout.strip().removeprefix("https://")
         modify_env_file(gitpod_url)
@@ -193,7 +193,8 @@ def try_github_actions(ctx: Context):
         print("Installing act...")
         ctx.run(
             "curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash",
-            silent=True,
+            pty=True,
+            hide=True,
         )
     ctx.run(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest", pty=True)
 
@@ -201,7 +202,7 @@ def try_github_actions(ctx: Context):
 @task
 def bump_version(ctx: Context, rule: Literal["patch", "minor", "major"]):
     """Bump version, create a tag, commit and push to GitHub"""
-    result = ctx.run("git status --porcelain", silent=True)
+    result = ctx.run("git status --porcelain", pty=True, hide=True)
     assert result
     if result.stdout.strip():
         print("There are uncommitted changes. Aborting.")
