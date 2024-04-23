@@ -18,14 +18,12 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin-the-great/", admin.site.urls),
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
     path("accounts/", include("adit_radis_shared.accounts.urls")),
     path("token-authentication/", include("adit_radis_shared.token_authentication.urls")),
-    path("sandbox/", include("example_project.sandbox.urls")),
+    path("", include("example_project.example_app.urls")),
 ]
 
 if settings.DEBUG:

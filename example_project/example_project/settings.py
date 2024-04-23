@@ -77,7 +77,7 @@ INSTALLED_APPS = [
     "django_tables2",
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
-    "example_project.sandbox.apps.SandboxConfig",
+    "example_project.example_app.apps.ExampleAppConfig",
     "debug_toolbar",
     "debug_permissions",
     "django_browser_reload",
@@ -105,7 +105,7 @@ ROOT_URLCONF = "example_project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

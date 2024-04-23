@@ -2,11 +2,9 @@ from django.apps import AppConfig
 
 from adit_radis_shared.common.site import register_main_menu_item
 
-SECTION_NAME = "Sandbox"
 
-
-class SandboxConfig(AppConfig):
-    name = "example_project.sandbox"
+class ExampleAppConfig(AppConfig):
+    name = "example_project.example_app"
 
     def ready(self):
         register_app()
@@ -14,6 +12,6 @@ class SandboxConfig(AppConfig):
 
 def register_app():
     register_main_menu_item(
-        url_name="sandbox_list",
-        label=SECTION_NAME,
+        url_name="example_list",
+        label="Examples",
     )

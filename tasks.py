@@ -27,6 +27,12 @@ def make_migrations(ctx: Context):
 
 
 @task
+def migrate(ctx: Context):
+    """Apply Django migrations"""
+    ctx.run(f"{manage_cmd} migrate", pty=True)
+
+
+@task
 def format(ctx: Context):
     """Format the source code with ruff and djlint"""
     # Format Python code

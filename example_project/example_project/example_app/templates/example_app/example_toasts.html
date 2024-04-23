@@ -1,0 +1,12 @@
+{% extends "example_app/example_app_layout.html" %}
+{% load static from static %}
+{% block title %}
+    Toast Examples
+{% endblock title %}
+{% block heading %}
+    <h4 class="mb-3">Toast Examples</h4>
+{% endblock heading %}
+{% block content %}
+    <button onclick='showToast("warning", "Example", "You clicked a button!");'
+            class="btn btn-primary">Show toast</button>
+{% endblock content %}

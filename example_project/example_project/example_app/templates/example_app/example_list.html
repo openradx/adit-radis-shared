@@ -1,20 +1,20 @@
-{% extends "sandbox/sandbox_layout.html" %}
+{% extends "example_app/example_app_layout.html" %}
 {% block title %}
-    Sandboxes
+    Examples
 {% endblock title %}
 {% block heading %}
-    <h4 class="mb-3">Sandboxes</h4>
+    <h4 class="mb-3">Examples</h4>
 {% endblock heading %}
 {% block content %}
     <ul class="list-group">
         <li class="list-group-item">
-            <a href="{% url 'sandbox_messages' %}">Messages</a>
+            <a href="{% url 'example_messages' %}">Messages</a>
         </li>
         <li class="list-group-item">
-            <a href="{% url 'sandbox_toasts' %}">Toasts</a>
+            <a href="{% url 'example_toasts' %}">Toasts</a>
         </li>
         <li class="list-group-item">
-            <a href="{% url 'sandbox_async_class_view' %}">Async class based view</a>
+            <a href="{% url 'example_async_class_view' %}">Async class based view</a>
         </li>
     </ul>
 {% endblock content %}
