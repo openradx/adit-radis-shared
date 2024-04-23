@@ -15,13 +15,23 @@ from pathlib import Path
 import environ
 import toml
 
-env = environ.Env()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    DJANGO_ALLOWED_HOSTS=(list, ["localhost"]),
+    DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
+    SITE_DOMAIN=(str, "localhost"),
+    DJANGO_INTERNAL_IPS=(list, ["127.0.0.1"]),
+    FORCE_DEBUG_TOOLBAR=(bool, False),
+    USER_TIME_ZONE=(str, "Europe/Berlin"),
+    SERVER_EMAIL=(str, "adit.support@example.org"),
+    SUPPORT_EMAIL=(str, "adit.support@example.org"),
+    TOKEN_AUTHENTICATION_SALT=(str, "Rn4YNfgAar5dYbPu"),
+)
+
 # Take environment variables from .env file
-environ.Env.read_env(BASE_DIR / ".." / ".env")
+env.read_env(BASE_DIR / ".." / ".env")
 
 # Read pyproject.toml to fetch current version. We do this conditionally as the
 # ADIT client library uses ADIT for integration tests installed as a package
@@ -41,16 +51,16 @@ SECRET_KEY = "django-insecure-4q3@c!62pzy74p2dck1^=d3dyl_gc#zk1bewa@8ch3(czs3bir
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])  # type: ignore
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
 
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # type: ignore
+CSRF_TRUSTED_ORIGINS = env("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Used by the django.contrib.sites framework
 SITE_ID = 1
 
-SITE_DOMAIN = env.str("SITE_DOMAIN", default="localhost")  # type: ignore
+SITE_DOMAIN = env("SITE_DOMAIN")
 SITE_NAME = "Example Project"
 SITE_META_KEYWORDS = "ADIT,RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
@@ -70,6 +80,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django.contrib.sites",
+    "django_extensions",
     "loginas",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -182,16 +193,16 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-INTERNAL_IPS = env.list("DJANGO_INTERNAL_IPS", default=["127.0.0.1"])  # type: ignore
+INTERNAL_IPS = env("DJANGO_INTERNAL_IPS")
 
-if env.bool("FORCE_DEBUG_TOOLBAR", default=False):  # type: ignore
+if env("FORCE_DEBUG_TOOLBAR"):
     # https://github.com/jazzband/django-debug-toolbar/issues/1035
     from django.conf import settings
 
     DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: settings.DEBUG}
 
 # A timezone that is used for users of the web interface.
-USER_TIME_ZONE = env.str("USER_TIME_ZONE", default="Europe/Berlin")  # type: ignore
+USER_TIME_ZONE = env("USER_TIME_ZONE")
 
 # For crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -202,12 +213,16 @@ DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
 # An Email address used by the ADIT server to notify about finished jobs and
 # management notifications.
-SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL", default="support@adit.test")  # type: ignore
+SERVER_EMAIL = env("DJANGO_SERVER_EMAIL")
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # A support Email address that is presented to the users where
 # they can get support.
-SUPPORT_EMAIL = env.str("SUPPORT_EMAIL", default=SERVER_EMAIL)  # type: ignore
+SUPPORT_EMAIL = env("SUPPORT_EMAIL")
+
+# The salt that is used for hashing new tokens in the token authentication app.
+# Cave, changing the salt after some tokens were already generated makes them all invalid!
+TOKEN_AUTHENTICATION_SALT = env("TOKEN_AUTHENTICATION_SALT")
 
 # We need to define a dummy host and port for the Flower server as we setup a reverse proxy
 # to access Flower in ADIT and RADIS behind the Django authentication. But we don't use

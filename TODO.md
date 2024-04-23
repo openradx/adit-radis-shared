@@ -13,5 +13,6 @@
 - Is Markdown package still needed?
 - Get rid of subrepo stuff
 - Reorder stuff in settings files
+- Use django-environ as in the docs (see shared)
 - Make package.json more minimal (as in shared)
 - Get rid of static vendor stuff (its in common app now)
