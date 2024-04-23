@@ -97,18 +97,6 @@ def ci(ctx: Context):
 
 
 @task
-def reset_dev(ctx: Context):
-    """Reset dev container environment"""
-    # Reset Orthancs
-    # Wipe the database
-    flush_cmd = f"{build_compose_cmd('dev')} exec web python manage.py flush --noinput"
-    run_cmd(ctx, flush_cmd)
-    # Re-populate the database with example data
-    populate_db_cmd = f"{build_compose_cmd('dev')} exec web python manage.py populate_db"
-    run_cmd(ctx, populate_db_cmd)
-
-
-@task
 def copy_statics(ctx: Context):
     """Copy JS and CSS dependencies from node_modules to static vendor folder"""
     print("Copying statics...")
@@ -219,3 +207,14 @@ def bump_version(ctx: Context, rule: Literal["patch", "minor", "major"]):
     ctx.run("git commit -m 'Bump version'", pty=True)
     ctx.run("git tag -a $(poetry version -s) -m 'Release $(poetry version -s)'", pty=True)
     ctx.run("git push --follow-tags", pty=True)
+
+
+@task
+def publish(ctx: Context):
+    """Publish adit-radis-shared to PyPI
+
+    - Make sure PyPI API token is set: poetry config pypi-token.pypi your-api-token
+    - Set version in pyproject.toml
+    - Execute with `invoke publish`
+    """
+    ctx.run("poetry publish --build", pty=True)

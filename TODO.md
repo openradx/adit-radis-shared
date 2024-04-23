@@ -4,6 +4,8 @@
 
 - Get rid of pytz and reevaluate TimezoneMiddleware (is it really necessary?)
 - Write an example to show pagination functionality
+- Move populate_db into common app and rename to populate_users_and_groups
+  - Reuse this command in the ADIT and RADIS
 
 ## ADIT / RADIS
 
