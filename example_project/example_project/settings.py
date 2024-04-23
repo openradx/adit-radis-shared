@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "django_htmx",
     "django_tables2",
+    "rest_framework",
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
@@ -168,6 +169,16 @@ AUTH_USER_MODEL = "accounts.User"
 
 # A custom authentication backend that supports a single currently active group.
 AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
+
+# All REST API requests must come from authenticated clients
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "adit_radis_shared.token_authentication.auth.RestTokenAuthentication",
+    ],
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
