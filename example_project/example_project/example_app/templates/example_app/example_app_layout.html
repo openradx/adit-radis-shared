@@ -1,0 +1,6 @@
+{% extends "common/common_layout.html" %}
+{% load static from static %}
+{% block script %}
+    {{ block.super }}
+    <script src="{% static 'example_app/example_app.js' %}"></script>
+{% endblock script %}

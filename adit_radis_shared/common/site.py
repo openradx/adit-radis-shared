@@ -10,13 +10,16 @@ THEME_PREFERENCE_KEY = "theme"
 class MainMenuItem(NamedTuple):
     url_name: str
     label: str
+    order: int = 1
+    staff_only: bool = False
 
 
 main_menu_items: list[MainMenuItem] = []
 
 
-def register_main_menu_item(url_name: str, label: str) -> None:
-    main_menu_items.append(MainMenuItem(url_name, label))
+def register_main_menu_item(menu_item: MainMenuItem) -> None:
+    main_menu_items.append(menu_item)
+    main_menu_items.sort(key=lambda x: x.order)
 
 
 def base_context_processor(request: HttpRequest) -> dict[str, Any]:

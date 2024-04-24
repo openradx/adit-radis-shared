@@ -9,9 +9,4 @@
             </a>
         </li>
     {% endfor %}
-    {% if user.is_staff %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'admin_section' %}">Admin Section</a>
-        </li>
-    {% endif %}
 </ul>
