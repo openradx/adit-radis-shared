@@ -13,6 +13,15 @@ class ExampleAppConfig(AppConfig):
 def register_app():
     register_main_menu_item(
         MainMenuItem(
+            url_name="",
+            label="Staff Only",
+            staff_only=True,
+            order=99,
+        )
+    )
+
+    register_main_menu_item(
+        MainMenuItem(
             url_name="example_list",
             label="Examples",
         )
