@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from adit_radis_shared.common.site import register_main_menu_item
+from adit_radis_shared.common.site import MainMenuItem, register_main_menu_item
 
 
 class ExampleAppConfig(AppConfig):
@@ -12,6 +12,8 @@ class ExampleAppConfig(AppConfig):
 
 def register_app():
     register_main_menu_item(
-        url_name="example_list",
-        label="Examples",
+        MainMenuItem(
+            url_name="example_list",
+            label="Examples",
+        )
     )
