@@ -39,8 +39,13 @@
     <div class="mt-4">{% include "accounts/_active_group_selector.html" %}</div>
     <div class="mt-4">
         <h5>Actions</h5>
-        <a class="btn btn-secondary" href="{% url 'auth_password_change' %}">Change Password</a>
-        <a class="btn btn-secondary ms-2" href="{% url 'token_dashboard' %}">Manage API Tokens</a>
-        <a class="btn btn-secondary ms-2" href="{% url 'auth_logout' %}">Logout</a>
+        <div class="d-flex gap-2">
+            <a class="btn btn-secondary" href="{% url 'auth_password_change' %}">Change Password</a>
+            <a class="btn btn-secondary" href="{% url 'token_dashboard' %}">Manage API Tokens</a>
+            <form action="{% url 'auth_logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Logout</button>
+            </form>
+        </div>
     </div>
 {% endblock content %}
