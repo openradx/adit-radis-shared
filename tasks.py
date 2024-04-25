@@ -33,6 +33,25 @@ def migrate(ctx: Context):
 
 
 @task
+def reset_db(ctx: Context):
+    """Reset the database
+
+    Can only be done when dev server is not running and needs django_extensions installed.
+    """
+    ctx.run(f"{manage_cmd} reset_db --no-input", pty=True)
+    ctx.run(f"{manage_cmd} migrate", pty=True)
+
+
+@task
+def populate_db(ctx: Context):
+    """Populate database with users and groups"""
+    cmd = f"{manage_cmd} populate_users_and_groups"
+    cmd += " --users 100"
+    cmd += " --groups 3"
+    ctx.run(cmd, pty=True)
+
+
+@task
 def format(ctx: Context):
     """Format the source code with ruff and djlint"""
     # Format Python code
