@@ -13,8 +13,8 @@ class ExampleAppConfig(AppConfig):
 def register_app():
     register_main_menu_item(
         MainMenuItem(
-            url_name="",
-            label="Staff Only",
+            url_name="admin_section",
+            label="Admin Section",
             staff_only=True,
             order=99,
         )

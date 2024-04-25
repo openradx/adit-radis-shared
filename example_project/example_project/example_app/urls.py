@@ -1,11 +1,19 @@
 from django.urls import path
 
-from .views import AsyncExampleClassView, ExampleListView, example_messages, example_toasts, home
+from .views import (
+    AsyncExampleClassView,
+    ExampleListView,
+    admin_section,
+    example_messages,
+    example_toasts,
+    home,
+)
 
 urlpatterns = [
     path("", home, name="home"),
+    path("admin-section/", admin_section, name="admin_section"),
     path(
-        "examples",
+        "examples/",
         ExampleListView.as_view(),
         name="example_list",
     ),

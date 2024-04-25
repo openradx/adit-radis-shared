@@ -1,0 +1,14 @@
+{% extends "example_app/example_app_layout.html" %}
+{% block title %}
+    Admin Section
+{% endblock title %}
+{% block heading %}
+    <h4 class="mb-3">Admin Section</h4>
+{% endblock heading %}
+{% block content %}
+    <ul class="list-group">
+        <li class="list-group-item">
+            <a href="{% url 'admin:index' %}">Django Admin</a>
+        </li>
+    </ul>
+{% endblock content %}

@@ -1,13 +1,27 @@
+from typing import cast
+
 from asgiref.sync import sync_to_async
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
 
+from adit_radis_shared.accounts.models import User
+
 
 def home(request: HttpRequest) -> HttpResponse:
     return render(request, "example_app/home.html", {})
+
+
+@login_required
+def admin_section(request: HttpRequest) -> HttpResponse:
+    user = cast(User, request.user)
+    if not user.is_staff:
+        raise PermissionDenied
+    return render(request, "example_app/admin_section.html", {})
 
 
 class ExampleListView(TemplateView):
