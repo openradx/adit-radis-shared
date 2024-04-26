@@ -20,7 +20,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path("admin-the-great/", admin.site.urls),
+    path("django-admin/", include("loginas.urls")),
+    path("django-admin/", admin.site.urls),
     path("accounts/", include("adit_radis_shared.accounts.urls")),
     path("token-authentication/", include("adit_radis_shared.token_authentication.urls")),
     path("", include("example_project.example_app.urls")),
