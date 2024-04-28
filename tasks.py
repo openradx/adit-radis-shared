@@ -13,6 +13,12 @@ project_dir = Path(__file__).resolve().parent
 
 manage_cmd = (project_dir / "example_project" / "manage.py").as_posix()
 
+@task
+def startdev(ctx: Context):
+    migrate(ctx)
+    populate_db(ctx)
+    runserver(ctx)
+
 
 @task
 def runserver(ctx: Context):
