@@ -52,8 +52,8 @@ def reset_db(ctx: Context):
 def populate_db(ctx: Context):
     """Populate database with users and groups"""
     cmd = f"{manage_cmd} populate_users_and_groups"
-    cmd += " --users 100"
-    cmd += " --groups 3"
+    cmd += " --users 30"
+    cmd += " --groups 5"
     ctx.run(cmd, pty=True)
 
 

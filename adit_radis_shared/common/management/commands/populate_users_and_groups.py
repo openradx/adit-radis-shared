@@ -13,6 +13,13 @@ from adit_radis_shared.token_authentication.utils.crypto import hash_token
 
 fake = Faker()
 
+PREDFINED_GROUPS = [
+    "Thoraxklinik",
+    "Allgemeinradiologie",
+    "Neuroradiologie",
+    "Studienzentrum",
+]
+
 
 def create_admin() -> User:
     if "ADMIN_USERNAME" not in environ or "ADMIN_PASSWORD" not in environ:
@@ -46,7 +53,7 @@ def create_users(users_count: int) -> list[User]:
         if i == 0:
             user = create_admin()
         else:
-            user = UserFactory.create()
+            user = UserFactory.create(username=fake.unique.user_name())
         users.append(user)
 
     return users
@@ -55,11 +62,23 @@ def create_users(users_count: int) -> list[User]:
 def create_groups(users: list[User], groups_count: int) -> list[Group]:
     groups: list[Group] = []
 
-    for _ in range(groups_count):
-        group = GroupFactory.create()
+    for i in range(groups_count):
+        if i < len(PREDFINED_GROUPS):
+            group_name = PREDFINED_GROUPS[i]
+            group = GroupFactory.create(name=group_name)
+        else:
+            group = GroupFactory.create()
         groups.append(group)
 
-    for user in users:
+    # Add admin to all groups and make the first one active
+    admin = users[0]
+    for group in groups:
+        admin.groups.add(group)
+        if not admin.active_group:
+            admin.change_active_group(group)
+
+    # Add all users to a random group and make it active
+    for user in users[1:]:
         group: Group = fake.random_element(elements=groups)
         user.groups.add(group)
         if not user.active_group:
