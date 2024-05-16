@@ -13,6 +13,7 @@ project_dir = Path(__file__).resolve().parent
 
 manage_cmd = (project_dir / "example_project" / "manage.py").as_posix()
 
+
 @task
 def startdev(ctx: Context):
     migrate(ctx)
@@ -232,14 +233,3 @@ def bump_version(ctx: Context, rule: Literal["patch", "minor", "major"]):
     ctx.run("git commit -m 'Bump version'", pty=True)
     ctx.run("git tag -a $(poetry version -s) -m 'Release $(poetry version -s)'", pty=True)
     ctx.run("git push --follow-tags", pty=True)
-
-
-@task
-def publish(ctx: Context):
-    """Publish adit-radis-shared to PyPI
-
-    - Make sure PyPI API token is set: poetry config pypi-token.pypi your-api-token
-    - Set version in pyproject.toml
-    - Execute with `invoke publish`
-    """
-    ctx.run("poetry publish --build", pty=True)
