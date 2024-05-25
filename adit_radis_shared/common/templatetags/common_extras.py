@@ -3,6 +3,7 @@ from datetime import date, datetime, time
 from typing import Any
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest
 from django.template import Library
@@ -24,13 +25,14 @@ def base_url(context: dict[str, Any]) -> str:
     # is required in the context_processors settings.
     request: HttpRequest | None = context.get("request")
 
-    domain = get_current_site(request).domain
-    if request:
-        scheme = request.scheme
+    if request is not None:
+        domain = get_current_site(request).domain
+        protocol = "https" if request.is_secure() else "http"
     else:
-        scheme = "http" if settings.DEBUG else "https"
+        domain = Site.objects.get_current()
+        protocol = "https" if not settings.DEBUG else "http"
 
-    return f"{scheme}://{domain}"
+    return f"{protocol}://{domain}"
 
 
 @register.inclusion_tag("common/_bootstrap_icon.html")

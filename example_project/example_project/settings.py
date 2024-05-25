@@ -60,8 +60,8 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Used by the django.contrib.sites framework
 SITE_ID = 1
 
-SITE_DOMAIN = env.str("SITE_DOMAIN", default="localhost")  # type: ignore
-SITE_NAME = env.str("SITE_NAME", default="ADIT RADIS Shared")  # type: ignore
+SITE_DOMAIN = env("SITE_DOMAIN")
+SITE_NAME = "Example Project"
 SITE_META_KEYWORDS = "ADIT,RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
