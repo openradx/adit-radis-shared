@@ -1,10 +1,10 @@
 {% load blocktrans from i18n %}
 {% blocktrans %}
-    The user ({{ user }}) has asked to register an account at {{ site.name }}.
+    The user ({{ user }}) has asked to register an account at {{ site_name_ }}.
     To approve the account, please click the following link.
 {% endblocktrans %}
 
-http://{{site.domain}}{% url 'registration_admin_approve' profile_id %}
+{{ site_base_url }}{% url 'registration_admin_approve' profile_id %}
 
 
 User Details:

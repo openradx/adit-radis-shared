@@ -1,4 +1,4 @@
-{% load trans from i18n %}{% trans "Account activation on" %} {{ site.name }}
+{% load trans from i18n %}{% trans "Account activation on" %} {{ site_name_ }}
 {% comment %}
 **registration/admin_approve_complete_email_subject.txt**
 

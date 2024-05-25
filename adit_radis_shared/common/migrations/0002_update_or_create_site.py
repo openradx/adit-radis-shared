@@ -19,9 +19,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('common', '0001_initial'),
-        ("sites", "0002_alter_domain_unique"),
+        # ("sites", "0002_alter_domain_unique"),
     ]
 
     operations = [
-        migrations.RunPython(update_or_create_site),
+        # migrations.RunPython(update_or_create_site),
     ]

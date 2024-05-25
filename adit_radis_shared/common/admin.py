@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import SiteProfile
+from .models import ProjectSettings
 
-admin.site.register(SiteProfile, admin.ModelAdmin)
+admin.site.register(ProjectSettings, admin.ModelAdmin)

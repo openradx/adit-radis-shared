@@ -6,7 +6,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 
-from adit_radis_shared.common.models import SiteProfile
+from adit_radis_shared.common.models import ProjectSettings
 from adit_radis_shared.common.types import HtmxHttpRequest
 
 
@@ -29,17 +29,17 @@ class MaintenanceMiddleware:
         if login_request or logout_request:
             return self.get_response(request)
 
-        site_profile = SiteProfile.objects.get_current()
-        assert site_profile
-        if site_profile and site_profile.maintenance and not request.user.is_staff:
+        project_settings = ProjectSettings.get()
+        assert project_settings
+        if project_settings and project_settings.maintenance and not request.user.is_staff:
             response = TemplateResponse(request, "common/maintenance.html")
             return response.render()
 
         response = self.get_response(request)
         if (
             is_html_response(response)
-            and site_profile
-            and site_profile.maintenance
+            and project_settings
+            and project_settings.maintenance
             and request.user.is_staff
         ):
             response.content = re.sub(

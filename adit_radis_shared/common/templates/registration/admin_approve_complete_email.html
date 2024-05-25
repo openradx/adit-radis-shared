@@ -2,16 +2,16 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Account approved |" %} {{ site.name }}</title>
-        <meta name="keywords" content="{{ site.profile.meta_keywords }}" />
-        <meta name="description" content="Account approved on {{ site.name }}." />
+        <title>{% trans "Account approved |" %} {{ site_name_ }}</title>
+        <meta name="keywords" content="{{ site_meta_keywords }}" />
+        <meta name="description" content="Account approved on {{ site_name_ }}." />
     </head>
     <body>
         <p>
             {% blocktrans %}
-            Your account on {{ site.name }} is now approved. You can 
+            Your account on {{ site_name_ }} is now approved. You can 
             {% endblocktrans %}
-            <a href="https://{{ site.domain }}{% url 'auth_login' %}">{% trans "log in." %}</a>
+            <a href="{{ site_base_url }}{% url 'auth_login' %}">{% trans "log in." %}</a>
         </p>
     </body>
 </html>

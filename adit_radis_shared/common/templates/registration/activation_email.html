@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Registration |" %} {{ site.name }}</title>
-        <meta name="keywords" content="{{ site.profile.meta_keywords }}" />
+        <title>{% trans "Registration |" %} {{ site_name_ }}</title>
+        <meta name="keywords" content="{{ site_meta_keywords }}" />
         <meta name="description"
-              content="Activate your account on {{ site.name }}." />
+              content="Activate your account on {{ site_name_ }}." />
     </head>
     <body>
         <p>
@@ -13,25 +13,25 @@
             Dear colleagues,
             <br />
             <br />
-            {{ site.name }} is the result of well over a hundred hours of development work, most of which took place
+            {{ site_name_ }} is the result of well over a hundred hours of development work, most of which took place
             <mark>in my spare time. I developed it with the intention to simplify our work and improve our research
-            activities. Vice versa I ask you to <mark>consider me on publications for which {{ site.name }} was used</mark>.
+            activities. Vice versa I ask you to <mark>consider me on publications for which {{ site_name_ }} was used</mark>.
             {% endblocktrans %}
         </p>
         <p>
             {% blocktrans %}
-            To activate your account on {{ site.name }}, please click the following link within the next
+            To activate your account on {{ site_name_ }}, please click the following link within the next
             {{ expiration_days }} days:
             {% endblocktrans %}
         </p>
         <p>
-            <a href="https://{{ site.domain }}{% url 'registration_activate' activation_key %}">
-                {{ site.domain }}{% url 'registration_activate' activation_key %}
+            <a href="{{ site_base_url }}{% url 'registration_activate' activation_key %}">
+                {{ site_base_url }}{% url 'registration_activate' activation_key %}
             </a>
         </p>
         <p>
             {% blocktrans %}
-            Please view the landing page of <a href="https://{{ site.domain }}">{{ site.name }}</a> and
+            Please view the landing page of <a href="{{ site_base_url }}">{{ site_name_ }}</a> and
             <a href="mailto:kai.schlamp@med.uni-heidelberg.de">write me</a> or call me
             (Phone 396-8503) what permissions you need.
             {% endblocktrans %}

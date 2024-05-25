@@ -15,7 +15,7 @@ from django.views.generic.base import TemplateView
 from revproxy.views import ProxyView
 
 from adit_radis_shared.common.forms import BroadcastForm
-from adit_radis_shared.common.models import SiteProfile
+from adit_radis_shared.common.models import ProjectSettings
 
 from .types import AuthenticatedHttpRequest, HtmxHttpRequest
 
@@ -32,8 +32,8 @@ class BaseHomeView(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        site_profile = SiteProfile.objects.get_current()
-        context["announcement"] = site_profile.announcement if site_profile else ""
+        project_settings = ProjectSettings.get()
+        context["announcement"] = project_settings.announcement if project_settings else ""
         return context
 
 
@@ -90,8 +90,7 @@ class BaseBroadcastView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
         return super().form_valid(form)
 
-    def send_mails(self, subject: str, message: str) -> None:
-        ...
+    def send_mails(self, subject: str, message: str) -> None: ...
 
 
 class AdminProxyView(LoginRequiredMixin, UserPassesTestMixin, ProxyView):
