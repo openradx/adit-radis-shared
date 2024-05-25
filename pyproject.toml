@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "adit-radis-shared"
-version = "0.3.0"
+version = "0.3.1"
 description = "Shared Django apps between ADIT and RADIS"
 authors = ["Kai Schlamp <kai.schlamp@gmail.com>"]
 license = "GPL-3.0-or-later"
