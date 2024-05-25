@@ -2,8 +2,6 @@ import logging
 from datetime import date, datetime, time
 from typing import Any
 
-from django.conf import settings
-from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest
 from django.template import Library
@@ -21,17 +19,10 @@ def access_item(d: dict, key: str) -> Any:
 
 @register.simple_tag(takes_context=True)
 def base_url(context: dict[str, Any]) -> str:
-    # To have request in context, django.template.context_processors.request
-    # is required in the context_processors settings.
-    request: HttpRequest | None = context.get("request")
-
-    if request is not None:
-        domain = get_current_site(request).domain
-        protocol = "https" if request.is_secure() else "http"
-    else:
-        domain = Site.objects.get_current()
-        protocol = "https" if not settings.DEBUG else "http"
-
+    # Requires django.template.context_processors.request
+    request: HttpRequest = context["request"]
+    domain = get_current_site(request).domain
+    protocol = "https" if request.is_secure() else "http"
     return f"{protocol}://{domain}"
 
 
