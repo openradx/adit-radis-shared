@@ -6,20 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0003_rename_siteprofile_projectsettings'),
+        ('common', '0002_update_or_create_site'),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='projectsettings',
+            model_name='siteprofile',
             name='meta_description',
         ),
         migrations.RemoveField(
-            model_name='projectsettings',
+            model_name='siteprofile',
             name='meta_keywords',
         ),
         migrations.RemoveField(
-            model_name='projectsettings',
+            model_name='siteprofile',
             name='project_url',
+        ),
+        migrations.RemoveField(
+            model_name='siteprofile',
+            name='site',
         ),
     ]

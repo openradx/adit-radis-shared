@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0002_update_or_create_site'),
+        ('common', '0003_remove_unneeded_siteprofile_fields'),
         # ('sites', '0002_alter_domain_unique'),
     ]
 
