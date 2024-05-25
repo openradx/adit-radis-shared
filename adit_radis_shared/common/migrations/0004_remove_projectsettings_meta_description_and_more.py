@@ -22,8 +22,4 @@ class Migration(migrations.Migration):
             model_name='projectsettings',
             name='project_url',
         ),
-        migrations.RemoveField(
-            model_name='projectsettings',
-            name='site',
-        ),
     ]
