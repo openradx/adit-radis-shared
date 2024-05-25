@@ -21,7 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DJANGO_ALLOWED_HOSTS=(list, ["localhost"]),
     DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
+    SITE_BASE_URL=(str, "http://localhost:8000"),
     SITE_DOMAIN=(str, "localhost"),
+    SITE_NAME=(str, "Example Project"),
     DJANGO_INTERNAL_IPS=(list, ["127.0.0.1"]),
     FORCE_DEBUG_TOOLBAR=(bool, False),
     USER_TIME_ZONE=(str, "Europe/Berlin"),
@@ -57,11 +59,9 @@ CSRF_TRUSTED_ORIGINS = env("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Used by the django.contrib.sites framework
-SITE_ID = 1
-
+SITE_BASE_URL = env("SITE_BASE_URL")
 SITE_DOMAIN = env("SITE_DOMAIN")
-SITE_NAME = "Example Project"
+SITE_NAME = env("SITE_NAME")
 SITE_META_KEYWORDS = "ADIT,RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
@@ -79,7 +79,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-    "django.contrib.sites",
     "django_extensions",
     "loginas",
     "crispy_forms",
@@ -103,7 +102,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.contrib.sites.middleware.CurrentSiteMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
@@ -169,6 +167,11 @@ AUTH_USER_MODEL = "accounts.User"
 
 # A custom authentication backend that supports a single currently active group.
 AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
+
+# Settings for django-registration-redux
+REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
+ACCOUNT_ACTIVATION_DAYS = 14
+REGISTRATION_OPEN = True
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {

@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('sites', '0002_alter_domain_unique'),
+        # ('sites', '0002_alter_domain_unique'),
     ]
 
     operations = [
@@ -22,7 +22,9 @@ class Migration(migrations.Migration):
                 ('project_url', models.URLField(blank=True)),
                 ('announcement', models.TextField(blank=True)),
                 ('maintenance', models.BooleanField(default=False)),
-                ('site', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='sites.site')),
+                # Replaced by a dummy field as we removed the sites framework and migrations otherwise would fail
+                ('site', models.TextField(blank=True)),
+                # ('site', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='sites.site')),
             ],
         ),
     ]

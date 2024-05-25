@@ -34,12 +34,20 @@ def base_context_processor(request: HttpRequest) -> dict[str, Any]:
         theme_color = preferences.get("theme_color", theme_color)
 
     return {
-        "version": settings.PROJECT_VERSION,
-        "support_email": settings.SUPPORT_EMAIL,
         "main_menu_items": main_menu_items,
+        "project_version": settings.PROJECT_VERSION,
+        "site_base_url": settings.SITE_BASE_URL,
+        # We can't use "site_name" as it clashes in the login template with a context variable
+        "site_name_": settings.SITE_NAME,
+        "site_meta_keywords": settings.SITE_META_KEYWORDS,
+        "site_meta_description": settings.SITE_META_DESCRIPTION,
+        "site_project_url": settings.SITE_PROJECT_URL,
+        "support_email": settings.SUPPORT_EMAIL,
         "theme": theme,
         "theme_color": theme_color,
-        # This data will be available on the client, see common_layout.html
+        ###
+        # Data under "public" key will be available on the client! (see common_layout.html)
+        ###
         "public": {
             "debug": settings.DEBUG,
             "csrf_token": get_token(request),
