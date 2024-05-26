@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Configure environment
-        run: cp example.env .env
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -29,6 +27,8 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Install dependencies
         run: poetry install --with dev
+      - name: Configure environment
+        run: poetry run invoke init-workspace
       - name: Setup Playwright
         run: poetry run playwright install --with-deps
       - name: Run linting
