@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
 
+from adit_radis_shared.common.exceptions import ServiceUnavailable
 from adit_radis_shared.common.models import ProjectSettings
 from adit_radis_shared.common.types import HtmxHttpRequest
 
@@ -32,7 +33,10 @@ class MaintenanceMiddleware:
         project_settings = ProjectSettings.get()
         assert project_settings
         if project_settings and project_settings.maintenance and not request.user.is_staff:
-            response = TemplateResponse(request, "common/maintenance.html")
+            if request.path.startswith("/api/"):
+                raise ServiceUnavailable
+
+            response = TemplateResponse(request, "common/maintenance.html", status=503)
             return response.render()
 
         response = self.get_response(request)
