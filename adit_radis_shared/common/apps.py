@@ -17,6 +17,5 @@ def init_db(**kwargs):
 def create_app_settings():
     from .models import ProjectSettings
 
-    settings = ProjectSettings.get()
-    if not settings:
+    if not ProjectSettings.objects.exists():
         ProjectSettings.objects.create()
