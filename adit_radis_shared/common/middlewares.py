@@ -31,7 +31,6 @@ class MaintenanceMiddleware:
             return self.get_response(request)
 
         project_settings = ProjectSettings.get()
-        assert project_settings
         if project_settings and project_settings.maintenance and not request.user.is_staff:
             if request.path.startswith("/api/"):
                 raise ServiceUnavailable

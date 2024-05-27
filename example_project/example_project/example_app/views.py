@@ -10,10 +10,11 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from adit_radis_shared.accounts.models import User
+from adit_radis_shared.common.views import BaseHomeView
 
 
-def home(request: HttpRequest) -> HttpResponse:
-    return render(request, "example_app/home.html", {})
+class HomeView(BaseHomeView):
+    template_name = "example_app/home.html"
 
 
 @login_required

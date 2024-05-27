@@ -3,14 +3,14 @@ from django.urls import path
 from .views import (
     AsyncExampleClassView,
     ExampleListView,
+    HomeView,
     admin_section,
     example_messages,
     example_toasts,
-    home,
 )
 
 urlpatterns = [
-    path("", home, name="home"),
+    path("", HomeView.as_view(), name="home"),
     path("admin-section/", admin_section, name="admin_section"),
     path(
         "examples/",

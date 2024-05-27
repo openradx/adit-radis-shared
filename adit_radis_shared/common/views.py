@@ -33,7 +33,7 @@ class BaseHomeView(TemplateView):
     def get_context_data(self, **kwargs) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         project_settings = ProjectSettings.get()
-        context["announcement"] = project_settings.announcement if project_settings else ""
+        context["announcement"] = project_settings.announcement
         return context
 
 

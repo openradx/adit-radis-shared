@@ -13,8 +13,12 @@ class ProjectSettings(models.Model):
         return f"{self.__class__.__name__} [ID {self.id}]"
 
     @classmethod
-    def get(cls):
-        return cls.objects.first()
+    def get(cls) -> "ProjectSettings":
+        project_settings = cls.objects.first()
+        # We made sure during startup that there is always a ProjectSettings
+        # (see common/apps.py)
+        assert project_settings
+        return project_settings
 
 
 class AppSettings(models.Model):
@@ -25,5 +29,9 @@ class AppSettings(models.Model):
         abstract = True
 
     @classmethod
-    def get(cls):
-        return cls.objects.first()
+    def get(cls) -> "AppSettings":
+        app_settings = cls.objects.first()
+        # We made sure during startup that there is always a AppSettings
+        # (see apps.py of the specific app)
+        assert app_settings
+        return app_settings
