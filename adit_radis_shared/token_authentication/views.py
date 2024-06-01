@@ -80,6 +80,6 @@ class DeleteTokenView(
         return self.model.objects.filter(owner=self.request.user)
 
 
-class TestView(APIView):
+class CheckAuthView(APIView):
     def get(self, request: Request):
-        return Response({"message": "OK"})
+        return Response(status=200)

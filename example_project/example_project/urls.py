@@ -24,6 +24,7 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("accounts/", include("adit_radis_shared.accounts.urls")),
     path("token-authentication/", include("adit_radis_shared.token_authentication.urls")),
+    path("api/token-authentication/", include("adit_radis_shared.token_authentication.api_urls")),
     path("", include("example_project.example_app.urls")),
 ]
 

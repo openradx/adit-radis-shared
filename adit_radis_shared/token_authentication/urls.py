@@ -2,7 +2,7 @@ from django.urls import path
 
 from adit_radis_shared.common.views import HtmxTemplateView
 
-from .views import DeleteTokenView, TestView, TokenDashboardView
+from .views import DeleteTokenView, TokenDashboardView
 
 urlpatterns = [
     path(
@@ -18,9 +18,8 @@ urlpatterns = [
         name="token_authentication_help",
     ),
     path(
-        "<int:pk>/delete-token",
+        "<int:pk>/delete-token/",
         DeleteTokenView.as_view(),
         name="delete_token",
     ),
-    path("test", TestView.as_view(), name="test_view"),
 ]

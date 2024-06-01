@@ -23,7 +23,7 @@ def test_create_and_delete_authentication_token(
     token = page.locator("#unhashed-token-string").inner_text()
 
     response = requests.get(
-        live_server.url + "/token-authentication/test",
+        live_server.url + "/api/token-authentication/check-auth",
         headers={"Authorization": f"Token {token}"},
     )
     assert response.status_code == 200
@@ -33,7 +33,7 @@ def test_create_and_delete_authentication_token(
     expect(page.locator("table").get_by_text("Just a test token")).not_to_be_visible()
 
     response = requests.get(
-        live_server.url + "/token-authentication/test",
+        live_server.url + "/api/token-authentication/check-auth",
         headers={"Authorization": f"Token {token}"},
     )
     assert response.status_code == 401
@@ -45,7 +45,7 @@ def test_invalid_authentication_token(
     live_server,
 ):
     response = requests.get(
-        live_server.url + "/token-authentication/test",
+        live_server.url + "/api/token-authentication/check-auth",
         headers={"Authorization": "Token invalid_token"},
     )
     assert response.status_code == 401
