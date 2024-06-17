@@ -8,15 +8,6 @@
         <span class="me-2">ADIT RADIS Shared</span>
     </h1>
     <p class="lead">Example project of shared apps between ADIT and RADIS</p>
-    <p>
-        Active Group:
-        {% if not user.active_group %}
-            —
-        {% else %}
-            {{ user.active_group.name }}
-        {% endif %}
-        <small class="ms-1">[<a href="{% url 'profile' %}">Change in user profile</a>]</small>
-    </p>
 {% endblock heading %}
 {% block content %}
     {{ announcement|safe }}
@@ -25,6 +16,16 @@
             <a class="btn btn-info" href="{% url 'auth_login' %}" role="button">Log in</a>
             <span class="ms-2">No account yet?</span>
             <a href="{% url 'registration_register' %}">Register</a>
+        </p>
+    {% else %}
+        <p>
+            Active Group:
+            {% if not user.active_group %}
+                —
+            {% else %}
+                {{ user.active_group.name }}
+            {% endif %}
+            <small class="ms-1">[<a href="{% url 'profile' %}">Change in user profile</a>]</small>
         </p>
     {% endif %}
 {% endblock content %}
