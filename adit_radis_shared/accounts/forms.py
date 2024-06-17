@@ -26,12 +26,14 @@ class RegistrationForm(UserCreationForm):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        # In Django's AbstractUser (which django-registration-redux uses internally) the fields
-        # email, first name and last name are not required. We fix this in our registration
-        # form.
+        # In Django's AbstractUser (which django-registration-redux uses internally) and also
+        # in our model some fields are not required, but we want them to be required when
+        # the user registers himself.
         self.fields["email"].required = True
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
+        self.fields["phone_number"].required = True
+        self.fields["department"].required = True
 
         self.helper = FormHelper(self)
         self.helper.add_input(Submit("register", "Register"))
