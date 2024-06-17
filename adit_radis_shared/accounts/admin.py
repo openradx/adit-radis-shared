@@ -1,12 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group
 
 from .forms import GroupAdminForm
 from .models import User
 
 
+class MyUserChangeForm(UserChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["active_group"].queryset = Group.objects.filter(user__pk=self.instance.pk)
+
+
 class MyUserAdmin(UserAdmin):
+    form = MyUserChangeForm
     ordering = ("date_joined",)
     list_display = (
         "username",

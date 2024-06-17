@@ -8,7 +8,11 @@ class User(AbstractUser):
     department = models.CharField(max_length=128)
     preferences = models.JSONField(default=dict)
     active_group = models.ForeignKey(
-        Group, on_delete=models.SET_NULL, null=True, related_name="active_users"
+        Group,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="active_users",
     )
 
     def save(self, *args, **kwargs):
