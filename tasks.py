@@ -28,7 +28,7 @@ def runserver(ctx: Context):
 
 
 @task
-def make_migrations(ctx: Context):
+def makemigrations(ctx: Context):
     """Make Django migrations"""
     ctx.run(f"{manage_cmd} makemigrations", pty=True)
 
