@@ -20,3 +20,4 @@
 - Use django-environ as in the docs (see shared)
 - Make package.json more minimal (as in shared)
 - Get rid of static vendor stuff (its in common app now)
+- No need to do collectstatics in development container

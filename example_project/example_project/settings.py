@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django_extensions",
+    "procrastinate.contrib.django",
     "loginas",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -135,13 +136,7 @@ ASGI_APPLICATION = "example_project.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": env.db()}
 
 
 # Password validation
@@ -237,9 +232,3 @@ SUPPORT_EMAIL = env("SUPPORT_EMAIL")
 # The salt that is used for hashing new tokens in the token authentication app.
 # Cave, changing the salt after some tokens were already generated makes them all invalid!
 TOKEN_AUTHENTICATION_SALT = env("TOKEN_AUTHENTICATION_SALT")
-
-# We need to define a dummy host and port for the Flower server as we setup a reverse proxy
-# to access Flower in ADIT and RADIS behind the Django authentication. But we don't use
-# Flower in our example project (as we don't have the Celery stuff in it).
-FLOWER_HOST = "localhost"
-FLOWER_PORT = 5555

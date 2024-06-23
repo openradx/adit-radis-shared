@@ -15,6 +15,29 @@ manage_cmd = (project_dir / "example_project" / "manage.py").as_posix()
 
 
 @task
+def compose_up(
+    ctx: Context,
+    no_build: bool = False,
+):
+    """Start example project containers"""
+    build_opt = "--no-build" if no_build else "--build"
+    cmd = f"docker compose up {build_opt} --detach"
+    ctx.run(cmd, pty=True)
+
+
+@task
+def compose_down(
+    ctx: Context,
+    cleanup: bool = False,
+):
+    """Stop example project containers"""
+    cmd = "docker compose down"
+    if cleanup:
+        cmd += " --remove-orphans --volumes"
+    ctx.run(cmd, pty=True)
+
+
+@task
 def startdev(ctx: Context):
     migrate(ctx)
     populate_db(ctx)

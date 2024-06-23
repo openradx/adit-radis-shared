@@ -1,0 +1,47 @@
+x-app: &default-app
+  image: adit-radis-shared
+  volumes:
+    - .:/app
+  depends_on:
+    - postgres
+  env_file:
+    - .env
+  environment:
+    USE_DOCKER: 1
+    DATABASE_URL: "psql://postgres:postgres@postgres.local:5432/postgres"
+  pull_policy: never
+  
+services:
+  web:
+    <<: *default-app
+    hostname: web.local
+    build:
+      target: development
+    ports:
+      - 8000:8000
+    command: >
+      bash -c "
+        cd example_project;
+        wait-for-it -s postgres.local:5432 -t 60 && 
+        ./manage.py migrate &&
+        ./manage.py populate_users_and_groups --users 20 --groups 3 &&
+        ./manage.py runserver 0.0.0.0:8000
+      "
+
+  worker:
+    <<: *default-app
+    hostname: worker.local
+    command: >
+      bash -c "
+        cd example_project;
+        wait-for-it -s postgres.local:5432 -t 60 &&
+        ./manage.py worker -l debug --autoreload
+      "
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres.local
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres

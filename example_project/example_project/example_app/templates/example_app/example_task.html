@@ -1,0 +1,13 @@
+{% extends "example_app/example_app_layout.html" %}
+{% block title %}
+    Task Example
+{% endblock title %}
+{% block heading %}
+    <h4 class="mb-3">Task Example</h4>
+{% endblock heading %}
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Run task</button>
+    </form>
+{% endblock content %}
