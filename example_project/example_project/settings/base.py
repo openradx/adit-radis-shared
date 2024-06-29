@@ -18,12 +18,10 @@ import toml
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)  # type: ignore
-if READ_DOT_ENV_FILE:
-    # OS environment variables take precedence over variables from .env
-    env.read_env(str(BASE_DIR / ".env"))
+# Used by the ServerCommand to check for file changes during development for autoreload.
+SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "example_project"]  # noqa: F405
 
 # Read pyproject.toml to fetch current version. We do this conditionally as the
 # ADIT client library uses ADIT for integration tests installed as a package

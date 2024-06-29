@@ -5,6 +5,7 @@ x-app: &default-app
   env_file:
     - ../.env.dev
   environment:
+    ENABLE_REMOTE_DEBUGGING: 0
     DJANGO_SETTINGS_MODULE: "example_project.settings.development"
   pull_policy: never
 
