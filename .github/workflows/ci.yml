@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.12"]
-        poetry-version: ["1.7.1"]
+        poetry-version: ["1.8.3"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -29,8 +29,19 @@ jobs:
         run: poetry install --with dev
       - name: Configure environment
         run: poetry run invoke init-workspace
-      - name: Setup Playwright
-        run: poetry run playwright install --with-deps
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and cache Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: development
+          load: true
+          tags: example_project_dev:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Start Docker containers
+        run: poetry run invoke compose-up --no-build
       - name: Run linting
         # https://github.com/actions/runner/issues/241#issuecomment-745902718
         shell: 'script -q -e -c "bash {0}"'
@@ -38,3 +49,6 @@ jobs:
       - name: Run tests
         shell: 'script -q -e -c "bash {0}"'
         run: poetry run invoke test --cov
+      - name: Stop Docker containers
+        if: ${{ always() }}
+        run: poetry run invoke compose-down

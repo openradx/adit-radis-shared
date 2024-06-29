@@ -1,7 +1,9 @@
 import time
-from typing import Callable
+from typing import Callable, Generator
 
 import pytest
+from django.db import connection
+from django_test_migrations.migrator import Migrator
 from playwright.sync_api import Locator, Page, Response
 
 from adit_radis_shared.accounts.factories import UserFactory
@@ -61,3 +63,48 @@ def create_and_login_user(page: Page, login_user):
         return user
 
     return _create_and_login_user
+
+
+@pytest.fixture
+def migrator(migrator: Migrator) -> Generator[Migrator, None, None]:
+    yield migrator
+
+    # We have to manually cleanup the Procrastinate tables, functions and types
+    # as otherwise the reset of django_test_migrations will fail
+    # See https://github.com/procrastinate-org/procrastinate/issues/1090
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        DO $$ 
+        DECLARE
+            prefix text := 'procrastinate';
+        BEGIN
+            -- Drop tables
+            EXECUTE (
+                SELECT string_agg('DROP TABLE IF EXISTS ' || quote_ident(tablename)
+                || ' CASCADE;', ' ')
+                FROM pg_tables
+                WHERE tablename LIKE prefix || '%'
+            );
+
+            -- Drop functions
+            EXECUTE (
+                SELECT string_agg(
+                    'DROP FUNCTION IF EXISTS ' || quote_ident(n.nspname) || '.'
+                    || quote_ident(p.proname) || '('
+                    || pg_catalog.pg_get_function_identity_arguments(p.oid) || ') CASCADE;',
+                    ' '
+                )
+                FROM pg_proc p
+                LEFT JOIN pg_namespace n ON n.oid = p.pronamespace
+                WHERE p.proname LIKE prefix || '%'
+            );
+
+            -- Drop types
+            EXECUTE (
+                SELECT string_agg('DROP TYPE IF EXISTS ' || quote_ident(typname)
+                || ' CASCADE;', ' ')
+                FROM pg_type
+                WHERE typname LIKE prefix || '%'
+            );
+        END $$;
+        """)

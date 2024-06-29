@@ -6,6 +6,7 @@ from .views import (
     HomeView,
     admin_section,
     example_messages,
+    example_task_view,
     example_toasts,
 )
 
@@ -31,5 +32,10 @@ urlpatterns = [
         "async-class-view/",
         AsyncExampleClassView.as_view(),
         name="example_async_class_view",
+    ),
+    path(
+        "example-task/",
+        example_task_view,
+        name="example_task",
     ),
 ]

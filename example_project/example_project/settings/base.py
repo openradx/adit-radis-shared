@@ -15,25 +15,15 @@ from pathlib import Path
 import environ
 import toml
 
+env = environ.Env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env(
-    DJANGO_ALLOWED_HOSTS=(list, ["localhost"]),
-    DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
-    SITE_BASE_URL=(str, "http://localhost:8000"),
-    SITE_DOMAIN=(str, "localhost"),
-    SITE_NAME=(str, "Example Project"),
-    DJANGO_INTERNAL_IPS=(list, ["127.0.0.1"]),
-    FORCE_DEBUG_TOOLBAR=(bool, False),
-    USER_TIME_ZONE=(str, "Europe/Berlin"),
-    SERVER_EMAIL=(str, "adit.support@example.org"),
-    SUPPORT_EMAIL=(str, "adit.support@example.org"),
-    TOKEN_AUTHENTICATION_SALT=(str, "Rn4YNfgAar5dYbPu"),
-)
-
-# Take environment variables from .env file
-env.read_env(BASE_DIR / ".." / ".env")
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)  # type: ignore
+if READ_DOT_ENV_FILE:
+    # OS environment variables take precedence over variables from .env
+    env.read_env(str(BASE_DIR / ".env"))
 
 # Read pyproject.toml to fetch current version. We do this conditionally as the
 # ADIT client library uses ADIT for integration tests installed as a package
@@ -44,24 +34,17 @@ if (BASE_DIR / ".." / "pyproject.toml").exists():
 else:
     PROJECT_VERSION = "???"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-4q3@c!62pzy74p2dck1^=d3dyl_gc#zk1bewa@8ch3(czs3bir"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # type: ignore
 
-CSRF_TRUSTED_ORIGINS = env("DJANGO_CSRF_TRUSTED_ORIGINS")
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-SITE_BASE_URL = env("SITE_BASE_URL")
-SITE_DOMAIN = env("SITE_DOMAIN")
-SITE_NAME = env("SITE_NAME")
+SITE_BASE_URL = env.str("SITE_BASE_URL", default="http://localhost:8000")  # type: ignore
+SITE_DOMAIN = env.str("SITE_DOMAIN", default="localhost")  # type: ignore
+SITE_NAME = env.str("SITE_NAME", default="Example Project")  # type: ignore
 SITE_META_KEYWORDS = "ADIT,RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
@@ -80,6 +63,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django_extensions",
+    "procrastinate.contrib.django",
     "loginas",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -89,9 +73,6 @@ INSTALLED_APPS = [
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
-    "debug_toolbar",
-    "debug_permissions",
-    "django_browser_reload",
 ]
 
 MIDDLEWARE = [
@@ -103,8 +84,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
     "adit_radis_shared.accounts.middlewares.ActiveGroupMiddleware",
     "adit_radis_shared.common.middlewares.MaintenanceMiddleware",
     "adit_radis_shared.common.middlewares.TimezoneMiddleware",
@@ -135,13 +114,7 @@ ASGI_APPLICATION = "example_project.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": env.db()}
 
 
 # Password validation
@@ -203,20 +176,14 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = "static/"
 
+STATIC_ROOT = env.str("DJANGO_STATIC_ROOT", default=(BASE_DIR / "staticfiles"))  # type: ignore
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-INTERNAL_IPS = env("DJANGO_INTERNAL_IPS")
-
-if env("FORCE_DEBUG_TOOLBAR"):
-    # https://github.com/jazzband/django-debug-toolbar/issues/1035
-    from django.conf import settings
-
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: settings.DEBUG}
-
 # A timezone that is used for users of the web interface.
-USER_TIME_ZONE = env("USER_TIME_ZONE")
+USER_TIME_ZONE = env.str("USER_TIME_ZONE", default="Europe/Berlin")  # type: ignore
 
 # For crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -227,19 +194,13 @@ DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
 # An Email address used by the ADIT server to notify about finished jobs and
 # management notifications.
-SERVER_EMAIL = env("DJANGO_SERVER_EMAIL")
+SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL", default="support@openradx.test")  # type: ignore
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # A support Email address that is presented to the users where
 # they can get support.
-SUPPORT_EMAIL = env("SUPPORT_EMAIL")
+SUPPORT_EMAIL = env.str("SUPPORT_EMAIL", default=SERVER_EMAIL)  # type: ignore
 
 # The salt that is used for hashing new tokens in the token authentication app.
 # Cave, changing the salt after some tokens were already generated makes them all invalid!
-TOKEN_AUTHENTICATION_SALT = env("TOKEN_AUTHENTICATION_SALT")
-
-# We need to define a dummy host and port for the Flower server as we setup a reverse proxy
-# to access Flower in ADIT and RADIS behind the Django authentication. But we don't use
-# Flower in our example project (as we don't have the Celery stuff in it).
-FLOWER_HOST = "localhost"
-FLOWER_PORT = 5555
+TOKEN_AUTHENTICATION_SALT = env.str("TOKEN_AUTHENTICATION_SALT", default="Rn4YNfgAar5dYbPu")  # type: ignore

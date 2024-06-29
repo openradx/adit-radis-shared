@@ -1,0 +1,40 @@
+x-app: &default-app
+  image: example_project_dev
+  depends_on:
+    - postgres
+  environment:
+    USE_DOCKER: 1
+    ENABLE_REMOTE_DEBUGGING: 0
+    DATABASE_URL: "psql://postgres:postgres@postgres.local:5432/postgres"
+    DJANGO_STATIC_ROOT: "/var/www/web/static/"
+
+services:
+  # We have to to define the init servce in base (even if we don't use it
+  # in development) to set the correct environment variables.
+  init:
+    <<: *default-app
+    hostname: init.local
+    volumes:
+      - web_data:/var/www/web
+
+  web:
+    <<: *default-app
+    hostname: web.local
+    build:
+      context: ..
+    volumes:
+      - web_data:/var/www/web
+
+  worker:
+    <<: *default-app
+    hostname: worker.local
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres.local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  web_data:
+  postgres_data:

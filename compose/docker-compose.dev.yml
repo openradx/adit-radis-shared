@@ -1,0 +1,43 @@
+x-app: &default-app
+  image: example_project_dev
+  volumes:
+    - ..:/app
+  env_file:
+    - ../.env.dev
+  environment:
+    DJANGO_SETTINGS_MODULE: "example_project.settings.development"
+  pull_policy: never
+
+services:
+  init:
+    profiles:
+      - never
+
+  web:
+    <<: *default-app
+    build:
+      target: development
+    ports:
+      - "${WEB_HOST_PORT:-8000}:8000"
+      - "${WEB_DEBUG_PORT:-5678}:5678"
+    command: >
+      bash -c "
+        cd example_project;
+        wait-for-it -s postgres.local:5432 -t 60 && 
+        ./manage.py migrate &&
+        ./manage.py populate_users_and_groups --users 20 --groups 3 &&
+        ./manage.py runserver 0.0.0.0:8000
+      "
+
+  worker:
+    <<: *default-app
+    command: >
+      bash -c "
+        cd example_project;
+        wait-for-it -s postgres.local:5432 -t 60 &&
+        ./manage.py worker -l debug --autoreload
+      "
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: postgres
