@@ -70,7 +70,7 @@ typeCheckingMode = "basic"
 reportUnnecessaryTypeIgnoreComment = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "example_project.settings"
+DJANGO_SETTINGS_MODULE = "example_project.settings.development"
 pythonpath = ["example_project"]
 testpaths = ["adit_radis_shared"]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
