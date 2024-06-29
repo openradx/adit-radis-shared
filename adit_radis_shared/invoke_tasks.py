@@ -1,9 +1,11 @@
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
 from typing import Literal
 
+import requests
 from dotenv import set_key
 from invoke.context import Context
 
@@ -76,6 +78,21 @@ class InvokeTasks:
                 return valid[choice]
             else:
                 sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+
+    def _get_latest_version_tag(self, owner, repo) -> str | None:
+        url = f"https://api.github.com/repos/{owner}/{repo}/tags"
+        response = requests.get(url)
+        response.raise_for_status()
+        tags = response.json()
+
+        semantic_version_pattern = re.compile(r"^v?(\d+\.\d+\.\d+)$")
+        semantic_tags = [tag["name"] for tag in tags if semantic_version_pattern.match(tag["name"])]
+
+        if semantic_tags:
+            latest_tag = semantic_tags[0]
+            return latest_tag
+        else:
+            return None
 
     def compose_up(
         self,
@@ -311,6 +328,14 @@ class InvokeTasks:
         ctx.run("git commit -m 'Bump version'", pty=True)
         ctx.run('git tag -a v$(poetry version -s) -m "Release v$(poetry version -s)"', pty=True)
         ctx.run("git push --follow-tags", pty=True)
+
+    def upgrade_adit_radis_shared(self, ctx: Context, version: str | None = None):
+        """Upgrade adit-radis-shared package"""
+        if version is None:
+            version = self._get_latest_version_tag("openradx", "adit-radis-shared")
+        ctx.run(
+            f"poetry add git+https://github.com/openradx/adit-radis-shared.git@{version}", pty=True
+        )
 
     def upgrade_postgresql(self, ctx: Context, env: Environments, version: str = "latest"):
         print(f"Upgrading PostgreSQL database in {env} environment to {version}.")
