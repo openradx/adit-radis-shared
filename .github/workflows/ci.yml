@@ -37,7 +37,7 @@ jobs:
           context: .
           target: development
           load: true
-          tags: adit_dev:latest
+          tags: example_project_dev:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Start Docker containers
