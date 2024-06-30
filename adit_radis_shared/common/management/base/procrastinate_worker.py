@@ -53,7 +53,7 @@ class ProcrastinateServerCommand(ServerCommand):
         if options["loglevel"] == "debug":
             cmd += " -v 1"
 
-        cmd += f" worker {options["delete_jobs"]}"
+        cmd += f" worker --delete-jobs={options["delete_jobs"]}"
 
         if queues := options["queues"]:
             cmd += f" --queues {queues}"
