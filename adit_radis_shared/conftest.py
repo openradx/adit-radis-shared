@@ -66,7 +66,7 @@ def create_and_login_user(page: Page, login_user):
 
 
 @pytest.fixture
-def migrator(migrator: Migrator) -> Generator[Migrator, None, None]:
+def migrator_ext(migrator: Migrator) -> Generator[Migrator, None, None]:
     yield migrator
 
     # We have to manually cleanup the Procrastinate tables, functions and types
