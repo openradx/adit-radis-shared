@@ -1,5 +1,5 @@
 import time
-from typing import Callable, Generator
+from typing import Callable
 
 import pytest
 from django.db import connection
@@ -66,11 +66,9 @@ def create_and_login_user(page: Page, login_user):
 
 
 @pytest.fixture
-def migrator_ext(migrator: Migrator) -> Generator[Migrator, None, None]:
-    yield migrator
-
-    # We have to manually cleanup the Procrastinate tables, functions and types
-    # as otherwise the reset of django_test_migrations will fail
+def migrator_ext(migrator: Migrator) -> Migrator:
+    # We have to manually drop the Procrastinate tables, functions and types
+    # as otherwise django_test_migrations will fail.
     # See https://github.com/procrastinate-org/procrastinate/issues/1090
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -108,3 +106,5 @@ def migrator_ext(migrator: Migrator) -> Generator[Migrator, None, None]:
             );
         END $$;
         """)
+
+    return migrator
