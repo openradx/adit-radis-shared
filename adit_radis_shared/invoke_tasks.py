@@ -119,16 +119,6 @@ class InvokeTasks:
             cmd += " --remove-orphans --volumes"
         ctx.run(cmd, pty=True)
 
-    def stack_deploy2(self, ctx: Context, env: Environments = "prod", build: bool = False):
-        if build:
-            cmd = f"{self._build_compose_cmd(env)} build"
-            ctx.run(cmd, pty=True)
-
-        cmd = (
-            f"docker stack deploy -c {self._get_compose_env_file(env)} {self._get_stack_name(env)}"
-        )
-        ctx.run(cmd, pty=True)
-
     def stack_deploy(self, ctx: Context, env: Environments = "prod", build: bool = False):
         """Deploy the stack to Docker Swarm (prod by default!). Optional build it before."""
         if build:
