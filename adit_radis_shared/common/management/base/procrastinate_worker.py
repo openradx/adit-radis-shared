@@ -22,6 +22,7 @@ class ProcrastinateServerCommand(ServerCommand):
         parser.add_argument(
             "-q",
             "--queues",
+            default="",
             help="Comma-separated names of the queues to listen to (empty string for all queues)",
         )
         parser.add_argument(
@@ -38,6 +39,12 @@ class ProcrastinateServerCommand(ServerCommand):
             default=1,
             help="Number of child processes processing the queue (defaults to number of CPUs).",
         )
+        parser.add_argument(
+            "--delete-jobs",
+            choices=["always", "success", "never"],
+            default="always",
+            help="When to delete jobs from the queue.",
+        )
 
     def run_server(self, **options):
         cmd = "./manage.py procrastinate"
@@ -46,7 +53,10 @@ class ProcrastinateServerCommand(ServerCommand):
         if options["loglevel"] == "debug":
             cmd += " -v 1"
 
-        cmd += " worker --delete-jobs=always"
+        cmd += f" worker {options["delete_jobs"]}"
+
+        if queues := options["queues"]:
+            cmd += f" --queues {queues}"
 
         concurrency = options["concurrency"]
         if concurrency > 1:
