@@ -1,6 +1,7 @@
 from typing import Any, Protocol
 
 from django.core.exceptions import SuspiciousOperation
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.views.generic import TemplateView
@@ -16,14 +17,11 @@ from .utils.auth_utils import is_logged_in_user
 class ViewProtocol(Protocol):
     request: HttpRequest
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        ...
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse: ...
 
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        ...
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse: ...
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        ...
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]: ...
 
 
 class LockedMixinProtocol(ViewProtocol, Protocol):
@@ -63,14 +61,11 @@ class RelatedFilterMixinProtocol(ViewProtocol, Protocol):
     filterset: FilterSet
     object_list: QuerySet
 
-    def get_strict(self) -> bool:
-        ...
+    def get_strict(self) -> bool: ...
 
-    def get_filterset_class(self) -> type[FilterSet]:
-        ...
+    def get_filterset_class(self) -> type[FilterSet]: ...
 
-    def get_filterset(self, filterset_class: type[FilterSet]) -> FilterSet:
-        ...
+    def get_filterset(self, filterset_class: type[FilterSet]) -> FilterSet: ...
 
 
 class RelatedFilterMixin(FilterMixin):
@@ -150,18 +145,14 @@ class PageSizeSelectMixin:
 
 
 class RelatedPaginationMixinProtocol(ViewProtocol, Protocol):
-    request: AuthenticatedHttpRequest
     object_list: QuerySet
     paginate_by: int
 
-    def get_object(self) -> Any:
-        ...
+    def get_object(self) -> Any: ...
 
-    def get_context_data(self, **kwargs) -> dict[str, Any]:
-        ...
+    def get_context_data(self, **kwargs) -> dict[str, Any]: ...
 
-    def get_related_queryset(self) -> QuerySet:
-        ...
+    def get_related_queryset(self) -> QuerySet: ...
 
 
 class RelatedPaginationMixin:
@@ -170,6 +161,9 @@ class RelatedPaginationMixin:
     the `get_related_queryset()` method that must be implemented by the subclass.
     If used in combination with `RelatedFilterMixin`, the `RelatedPaginationMixin` must be
     inherited first."""
+
+    request: HttpRequest
+
     def get_related_queryset(self: RelatedPaginationMixinProtocol) -> QuerySet:
         raise NotImplementedError("You must implement this method")
 
