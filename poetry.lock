@@ -1436,13 +1436,13 @@ files = [
 
 [[package]]
 name = "procrastinate"
-version = "2.6.0"
+version = "2.8.0"
 description = "Postgres-based distributed task processing library"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "procrastinate-2.6.0-py3-none-any.whl", hash = "sha256:074e47b2b402dfa2261a8dc0560cd790bc50ce895edf56740b66d1f892a4f226"},
-    {file = "procrastinate-2.6.0.tar.gz", hash = "sha256:461674d280bc17d4c8a04812f0b70723c8169240f98853b3199fb6856ca5c024"},
+    {file = "procrastinate-2.8.0-py3-none-any.whl", hash = "sha256:8dd785ea8afc04d72a1e45f13a480e46745a559ae62b3ef46cf8165b88a69a64"},
+    {file = "procrastinate-2.8.0.tar.gz", hash = "sha256:c5c9c1ed3d95148139dd41e0a046e7bd3f1e712cc5111b023b699d82f209d981"},
 ]
 
 [package.dependencies]
@@ -2943,4 +2943,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8ce71edb4c16d8d3588bd27c60b5642b976855ce23d6b53f931bfa865b661e3f"
+content-hash = "3c68247e4d99bbc71ffa813101ba7fcdb79363ab71e54145a2d054e14a71b832"

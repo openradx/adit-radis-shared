@@ -1,13 +1,26 @@
 import time
 from typing import Callable
 
+import nest_asyncio
 import pytest
 from django.db import connection
 from django_test_migrations.migrator import Migrator
 from playwright.sync_api import Locator, Page, Response
+from procrastinate import testing
+from procrastinate.contrib.django import procrastinate_app
 
 from adit_radis_shared.accounts.factories import UserFactory
 from adit_radis_shared.common.utils.testing import ChannelsLiveServer
+
+
+def pytest_configure():
+    # pytest-asyncio doesn't play well with pytest-playwright as
+    # pytest-playwright creates an event loop for the whole test suite and
+    # pytest-asyncio can't create an additional one then.
+    # nest_asyncio works around this this by allowing to create nested loops.
+    # https://github.com/pytest-dev/pytest-asyncio/issues/543
+    # https://github.com/microsoft/playwright-pytest/issues/167
+    nest_asyncio.apply()
 
 
 @pytest.fixture
@@ -63,6 +76,14 @@ def create_and_login_user(page: Page, login_user):
         return user
 
     return _create_and_login_user
+
+
+@pytest.fixture
+def in_memory_app(monkeypatch):
+    in_memory = testing.InMemoryConnector()
+    with procrastinate_app.current_app.replace_connector(in_memory) as app:
+        monkeypatch.setattr(procrastinate_app, "current_app", app)
+        yield app
 
 
 @pytest.fixture

@@ -11,8 +11,8 @@ def example_task(context: procrastinate.JobContext):
     print(f"Hello from job {job_id}")
 
 
-# scheduled every 5 minutes
-@app.periodic(cron="*/1 * * * *")
+# Every night at 3am
+@app.periodic(cron="0 3 * * *")
 @app.task
 def periodic_example_task(timestamp: int):
     print(f"A periodic hello at {timestamp}!")

@@ -22,7 +22,7 @@ django-registration-redux = "^2.10"
 django-revproxy = "^0.12.0"
 django-tables2 = "^2.3.3"
 djangorestframework = "^3.13.1"
-procrastinate = { extras = ["django"], version = "^2.6.0" }
+procrastinate = { extras = ["django"], version = "^2.8.0" }
 psycopg = { extras = ["binary"], version = "^3.1.12" }
 python = "^3.11"
 pytz = "^2024.1"
@@ -72,7 +72,7 @@ reportUnnecessaryTypeIgnoreComment = true
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "example_project.settings.development"
 pythonpath = ["example_project"]
-testpaths = ["adit_radis_shared"]
+testpaths = ["adit_radis_shared", "example_project"]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 log_cli = 0
 log_cli_level = "INFO"
