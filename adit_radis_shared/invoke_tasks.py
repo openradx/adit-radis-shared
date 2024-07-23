@@ -62,12 +62,12 @@ def get_stack_name(env: Environments):
         raise ValueError(f"Unknown environment: {env}")
 
 
-def build_compose_cmd(env: Environments, profile: str | None = None):
+def build_compose_cmd(env: Environments, profiles: list[str] = []):
     cmd = "docker compose"
     cmd += f" -f {get_compose_base_file()}"
     cmd += f" -f {get_compose_env_file(env)}"
     cmd += f" -p {get_stack_name(env)}"
-    if profile:
+    for profile in profiles:
         cmd += f" --profile {profile}"
     return cmd
 
@@ -129,20 +129,17 @@ def get_latest_version_tag(owner, repo) -> str | None:
 ###
 
 
-@task
-def compose_up(ctx: Context, env: Environments = "dev", no_build=False, profile: str | None = None):
+@task(iterable=["profile"])
+def compose_up(ctx: Context, env: Environments = "dev", no_build=False, profile: list[str] = []):
     """Start containers in specified environment"""
     build_opt = "--no-build" if no_build else "--build"
     cmd = f"{build_compose_cmd(env, profile)} up {build_opt} --detach"
     ctx.run(cmd, pty=True)
 
 
-@task
+@task(iterable=["profile"])
 def compose_down(
-    ctx: Context,
-    env: Environments = "dev",
-    profile: str | None = None,
-    cleanup: bool = False,
+    ctx: Context, env: Environments = "dev", cleanup: bool = False, profile: list[str] = []
 ):
     """Stop containers in specified environment"""
     cmd = f"{build_compose_cmd(env, profile)} --profile {profile} down"
