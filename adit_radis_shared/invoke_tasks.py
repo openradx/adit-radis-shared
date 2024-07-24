@@ -142,7 +142,7 @@ def compose_down(
     ctx: Context, env: Environments = "dev", cleanup: bool = False, profile: list[str] = []
 ):
     """Stop containers in specified environment"""
-    cmd = f"{build_compose_cmd(env, profile)} --profile {profile} down"
+    cmd = f"{build_compose_cmd(env, profile)} down"
     if cleanup:
         cmd += " --remove-orphans --volumes"
     ctx.run(cmd, pty=True)
