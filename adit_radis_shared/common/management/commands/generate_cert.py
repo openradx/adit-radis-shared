@@ -1,5 +1,5 @@
 import ipaddress
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 env = environ.Env()
 
@@ -45,7 +46,7 @@ def generate_selfsigned_cert(
 
     # path_len=0 means this cert can only sign itself, not other certs.
     basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
-    now = datetime.utcnow()
+    now = timezone.now()
     cert = (
         x509.CertificateBuilder()
         .subject_name(name)
@@ -82,21 +83,23 @@ class Command(BaseCommand):
 
         do_generate = True
 
-        cert_path = env("SSL_CERT_FILE")
-        if Path(cert_path).is_file():
+        cert_path = Path(env("SSL_CERT_FILE"))
+        if cert_path.is_file():
             do_generate = False
-            print(f"Cert file {cert_path} already exists. Skipping.")
+            print(f"Cert file {cert_path.as_posix()} already exists. Skipping.")
 
-        key_path = env("SSL_KEY_FILE")
-        if Path(key_path).is_file():
+        key_path = Path(env("SSL_KEY_FILE"))
+        if key_path.is_file():
             do_generate = False
-            print(f"Key file {key_path} already exists. Skipping.")
+            print(f"Key file {key_path.as_posix()} already exists. Skipping.")
 
         if do_generate:
+            cert_path.parent.mkdir(parents=True, exist_ok=True)
             with open(cert_path, "wb") as cert_file:
                 cert_file.write(cert_pem)
-                print(f"Generated cert file at {cert_path}.")
+                print(f"Generated cert file at {cert_path.as_posix()}.")
 
+            key_path.parent.mkdir(parents=True, exist_ok=True)
             with open(key_path, "wb") as key_file:
                 key_file.write(key_pem)
-                print(f"Generated key file at {key_path}.")
+                print(f"Generated key file at {key_path.as_posix()}.")
