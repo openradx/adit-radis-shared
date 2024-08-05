@@ -36,7 +36,7 @@ services:
       bash -c "
         cd example_project;
         wait-for-it -s postgres.local:5432 -t 60 &&
-        ./manage.py worker -l debug --autoreload
+        ./manage.py bg_worker -l debug --autoreload
       "
 
   postgres:
