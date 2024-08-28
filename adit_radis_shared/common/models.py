@@ -2,7 +2,6 @@ from django.db import models
 
 
 class ProjectSettings(models.Model):
-    id: int
     announcement = models.TextField(blank=True)
     maintenance = models.BooleanField(default=False)
 
@@ -10,7 +9,7 @@ class ProjectSettings(models.Model):
         verbose_name_plural = "Project settings"
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__} [ID {self.id}]"
+        return f"{self.__class__.__name__} [{self.pk}]"
 
     @classmethod
     def get(cls) -> "ProjectSettings":
@@ -22,7 +21,6 @@ class ProjectSettings(models.Model):
 
 
 class AppSettings(models.Model):
-    id: int
     locked = models.BooleanField(default=False)
 
     class Meta:

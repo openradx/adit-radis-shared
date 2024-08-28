@@ -3,7 +3,6 @@ from django.db import models
 
 
 class User(AbstractUser):
-    id: int
     phone_number = models.CharField(max_length=64, blank=True)
     department = models.CharField(max_length=128, blank=True)
     preferences = models.JSONField(default=dict)
