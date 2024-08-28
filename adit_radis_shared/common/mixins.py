@@ -3,7 +3,7 @@ from typing import Any, Protocol
 from django.core.exceptions import SuspiciousOperation
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponseBase
 from django.views.generic import TemplateView
 from django_filters.filterset import FilterSet
 from django_filters.views import FilterMixin
@@ -17,9 +17,9 @@ from .utils.auth_utils import is_logged_in_user
 class ViewProtocol(Protocol):
     request: HttpRequest
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse: ...
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase: ...
 
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse: ...
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase: ...
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]: ...
 
@@ -32,7 +32,7 @@ class LockedMixinProtocol(ViewProtocol, Protocol):
 class LockedMixin:
     def dispatch(
         self: LockedMixinProtocol, request: HttpRequest, *args: Any, **kwargs: Any
-    ) -> HttpResponse:
+    ) -> HttpResponseBase:
         settings = self.settings_model.get()
         assert settings
 
@@ -51,7 +51,7 @@ class LockedMixin:
 class HtmxOnlyMixin:
     def dispatch(
         self: ViewProtocol, request: HtmxHttpRequest, *args: Any, **kwargs: Any
-    ) -> HttpResponse:
+    ) -> HttpResponseBase:
         if not request.htmx:
             raise SuspiciousOperation()
         return super().dispatch(request, *args, **kwargs)
@@ -119,7 +119,7 @@ class PageSizeSelectMixin:
 
     def get(
         self: PageSizeSelectMixinProtocol, request: HttpRequest, *args: Any, **kwargs: Any
-    ) -> HttpResponse:
+    ) -> HttpResponseBase:
         # Make the initial paginate_by attribute the default page size if set
         if not hasattr(self, "paginate_by") or self.paginate_by is None:
             self.paginate_by = 50

@@ -64,7 +64,7 @@ class GroupAdminForm(forms.ModelForm):
         super(GroupAdminForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
             initial_users = self.instance.user_set.values_list("pk", flat=True)
-            self.initial["users"] = initial_users
+            self.initial["users"] = initial_users  # type: ignore
 
     def save(self, *args, **kwargs):
         kwargs["commit"] = True

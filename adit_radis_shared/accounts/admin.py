@@ -10,7 +10,7 @@ from .models import User
 class MyUserChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["active_group"].queryset = Group.objects.filter(user__pk=self.instance.pk)
+        self.fields["active_group"].queryset = Group.objects.filter(user__pk=self.instance.pk)  # type: ignore
 
 
 class MyUserAdmin(UserAdmin):
