@@ -2,7 +2,6 @@
 
 ## Shared
 
-- Get rid of pytz and reevaluate TimezoneMiddleware (is it really necessary?)
 - Write an example to show pagination functionality
 
 ## ADIT / RADIS

@@ -2,9 +2,9 @@ import binascii
 from datetime import datetime
 from os import urandom
 
-import pytz
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.db import models
+from django.utils import timezone
 
 from adit_radis_shared.accounts.models import User
 
@@ -56,5 +56,4 @@ class Token(models.Model):
         return self.token_hashed
 
     def is_expired(self):
-        utc = pytz.UTC
-        return self.expires and self.expires < utc.localize(datetime.now())
+        return self.expires and self.expires < timezone.now()

@@ -1,7 +1,6 @@
 import re
 
-import pytz
-from django.conf import settings
+import zoneinfo
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -64,10 +63,8 @@ class TimezoneMiddleware:
 
     def __call__(self, request):
         tzname = request.session.get("django_timezone")
-        if not tzname:
-            tzname = settings.USER_TIME_ZONE
         if tzname:
-            timezone.activate(pytz.timezone(tzname))
+            timezone.activate(zoneinfo.ZoneInfo(tzname))
         else:
             timezone.deactivate()
         return self.get_response(request)
