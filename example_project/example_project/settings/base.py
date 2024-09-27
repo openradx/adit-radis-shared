@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 
 import environ
-import toml
 
 env = environ.Env()
 
@@ -23,14 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Used by the ServerCommand to check for file changes during development for autoreload.
 SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "example_project"]  # noqa: F405
 
-# Read pyproject.toml to fetch current version. We do this conditionally as the
-# ADIT client library uses ADIT for integration tests installed as a package
-# (where no pyproject.toml is available).
-if (BASE_DIR / ".." / "pyproject.toml").exists():
-    pyproject = toml.load(BASE_DIR / ".." / "pyproject.toml")
-    PROJECT_VERSION = pyproject["tool"]["poetry"]["version"]
-else:
-    PROJECT_VERSION = "???"
+# Fetch version from the environment which is passed through from the latest git version tag
+PROJECT_VERSION = env.str("PROJECT_VERSION", default="vX.Y.Z")  # type: ignore
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-4q3@c!62pzy74p2dck1^=d3dyl_gc#zk1bewa@8ch3(czs3bir"

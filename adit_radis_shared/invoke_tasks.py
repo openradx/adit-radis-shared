@@ -108,7 +108,7 @@ def confirm(question: str) -> bool:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
-def get_latest_version_tag(owner, repo) -> str | None:
+def get_latest_remote_version_tag(owner, repo) -> str | None:
     url = f"https://api.github.com/repos/{owner}/{repo}/tags"
     response = requests.get(url)
     response.raise_for_status()
@@ -124,6 +124,20 @@ def get_latest_version_tag(owner, repo) -> str | None:
         return None
 
 
+def get_latest_local_version_tag(ctx: Context) -> str:
+    # Get all tags sorted by creation date (newest first)
+    result = ctx.run("git tag -l --sort=-creatordate", hide=True)
+    assert result and result.ok
+    all_tags = result.stdout.splitlines()
+
+    version_pattern = re.compile(r"^v\d+\.\d+\.\d+$")
+    for tag in all_tags:
+        if version_pattern.match(tag):
+            return tag
+
+    return "v0.0.0"
+
+
 ###
 # Tasks
 ###
@@ -132,8 +146,15 @@ def get_latest_version_tag(owner, repo) -> str | None:
 @task(iterable=["profile"])
 def compose_up(ctx: Context, env: Environments = "dev", no_build=False, profile: list[str] = []):
     """Start containers in specified environment"""
+    version = get_latest_local_version_tag(ctx)
+    if env == "dev":
+        version += "-dev"
+
     build_opt = "--no-build" if no_build else "--build"
-    ctx.run(f"{build_compose_cmd(env, profile)} up {build_opt} --detach", pty=True)
+    ctx.run(
+        f"PROJECT_VERSION={version} {build_compose_cmd(env, profile)} up {build_opt} --detach",
+        pty=True,
+    )
 
 
 @task(iterable=["profile"])
@@ -154,7 +175,11 @@ def stack_deploy(ctx: Context, env: Environments = "prod", build: bool = False):
         cmd = f"{build_compose_cmd(env)} build"
         ctx.run(cmd, pty=True)
 
-    cmd = "docker stack deploy --detach "
+    version = get_latest_local_version_tag(ctx)
+    if env == "dev":
+        version += "-dev"
+
+    cmd = f"PROJECT_VERSION={version} docker stack deploy --detach "
     cmd += f" -c {get_compose_base_file()}"
     cmd += f" -c {get_compose_env_file(env)}"
     cmd += f" {get_stack_name(env)}"
@@ -356,26 +381,10 @@ def restore_db(ctx: Context, env: Environments = "prod"):
 
 
 @task
-def bump_version(ctx: Context, rule: Literal["patch", "minor", "major"]):
-    """Bump version, create a tag, commit and push to GitHub"""
-    result = ctx.run("git status --porcelain", hide=True, pty=True)
-    assert result and result.ok
-    if result.stdout.strip():
-        print("There are uncommitted changes. Aborting.")
-        sys.exit(1)
-
-    ctx.run(f"poetry version {rule}", pty=True)
-    ctx.run("git add pyproject.toml", pty=True)
-    ctx.run("git commit -m 'Bump version'", pty=True)
-    ctx.run('git tag -a v$(poetry version -s) -m "Tag v$(poetry version -s)"', pty=True)
-    ctx.run("git push --follow-tags", pty=True)
-
-
-@task
 def upgrade_adit_radis_shared(ctx: Context, version: str | None = None):
     """Upgrade adit-radis-shared package"""
     if version is None:
-        version = get_latest_version_tag("openradx", "adit-radis-shared")
+        version = get_latest_remote_version_tag("openradx", "adit-radis-shared")
     ctx.run(f"poetry add git+https://github.com/openradx/adit-radis-shared.git@{version}", pty=True)
 
 
