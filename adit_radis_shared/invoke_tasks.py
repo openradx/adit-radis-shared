@@ -133,8 +133,7 @@ def get_latest_version_tag(owner, repo) -> str | None:
 def compose_up(ctx: Context, env: Environments = "dev", no_build=False, profile: list[str] = []):
     """Start containers in specified environment"""
     build_opt = "--no-build" if no_build else "--build"
-    cmd = f"{build_compose_cmd(env, profile)} up {build_opt} --detach"
-    ctx.run(cmd, pty=True)
+    ctx.run(f"{build_compose_cmd(env, profile)} up {build_opt} --detach", pty=True)
 
 
 @task(iterable=["profile"])
@@ -165,40 +164,39 @@ def stack_deploy(ctx: Context, env: Environments = "prod", build: bool = False):
 @task
 def stack_rm(ctx: Context, env: Environments = "prod"):
     """Remove the Docker Swarm stack"""
-    cmd = f"docker stack rm {get_stack_name(env)}"
-    ctx.run(cmd, pty=True)
+    ctx.run(f"docker stack rm {get_stack_name(env)}", pty=True)
 
 
 @task
 def web_shell(ctx: Context, env: Environments = "dev"):
     """Open Python shell in web container of specified environment"""
-    cmd = f"{build_compose_cmd(env)} exec web python manage.py shell_plus"
-    ctx.run(cmd, pty=True)
+    ctx.run(f"{build_compose_cmd(env)} exec web python manage.py shell_plus", pty=True)
 
 
 @task
 def format(ctx: Context):
     """Format the source code with ruff and djlint"""
-    # Format Python code
-    format_code_cmd = "poetry run ruff format ."
-    ctx.run(format_code_cmd, pty=True)
-    # Sort Python imports
-    sort_imports_cmd = "poetry run ruff check . --fix --select I"
-    ctx.run(sort_imports_cmd, pty=True)
-    # Format Django templates
-    format_templates_cmd = "poetry run djlint . --reformat"
-    ctx.run(format_templates_cmd, pty=True)
+    print("Formatting Python code with ruff...")
+    ctx.run("poetry run ruff format .", pty=True)
+
+    print("Sorting Python imports with ruff...")
+    ctx.run("poetry run ruff check . --fix --select I", pty=True)
+
+    print("Formatting Django templates with djlint...")
+    ctx.run("poetry run djlint . --reformat", pty=True)
 
 
 @task
 def lint(ctx: Context):
     """Lint the source code (ruff, djlint, pyright)"""
-    cmd_ruff = "poetry run ruff check ."
-    ctx.run(cmd_ruff, pty=True)
-    cmd_djlint = "poetry run djlint . --lint"
-    ctx.run(cmd_djlint, pty=True)
-    cmd_pyright = "poetry run pyright"
-    ctx.run(cmd_pyright, pty=True)
+    print("Linting Python code with ruff...")
+    ctx.run("poetry run ruff check .", pty=True)
+
+    print("Linting Python code with pyright...")
+    ctx.run("poetry run pyright", pty=True)
+
+    print("Linting Django templates with djlint...")
+    ctx.run("poetry run djlint . --lint", pty=True)
 
 
 @task
@@ -236,6 +234,7 @@ def test(
         cmd += "-x "
     if path:
         cmd += path
+
     ctx.run(cmd, pty=True)
 
 
@@ -243,14 +242,13 @@ def test(
 def reset_dev(ctx: Context):
     """Reset the dev environment"""
     # Wipe the database
-    flush_cmd = f"{build_compose_cmd('dev')} exec web python manage.py flush --noinput"
-    ctx.run(flush_cmd, pty=True)
+    ctx.run(f"{build_compose_cmd('dev')} exec web python manage.py flush --noinput", pty=True)
     # Re-populate the database with users and groups
-    populate_cmd = (
-        f"{build_compose_cmd('dev')} exec web python manage.py " "populate_users_and_groups"
+    ctx.run(
+        f"{build_compose_cmd('dev')} exec web python manage.py populate_users_and_groups "
+        "--users 20 --groups 3",
+        pty=True,
     )
-    populate_cmd += " --users 20 --groups 3"
-    ctx.run(populate_cmd, pty=True)
 
 
 @task
@@ -294,14 +292,12 @@ def init_workspace(ctx: Context):
 def show_outdated(ctx: Context):
     """Show outdated dependencies"""
     print("### Outdated Python dependencies ###")
-    poetry_cmd = "poetry show --outdated --top-level"
-    result = ctx.run(poetry_cmd, pty=True)
+    result = ctx.run("poetry show --outdated --top-level", pty=True)
     assert result and result.ok
     print(result.stderr.strip())
 
     print("### Outdated NPM dependencies ###")
-    npm_cmd = "npm outdated"
-    ctx.run(npm_cmd, pty=True)
+    ctx.run("npm outdated", pty=True)
 
 
 @task
@@ -332,11 +328,13 @@ def backup_db(ctx: Context, env: Environments = "prod"):
         else f"{get_project_name()}.settings.development"
     )
     web_container_id = find_running_container_id(ctx, env, "web")
-    cmd = (
-        f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-        f"{web_container_id} ./manage.py dbbackup --clean -v 2"
+    ctx.run(
+        (
+            f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+            f"{web_container_id} ./manage.py dbbackup --clean -v 2"
+        ),
+        pty=True,
     )
-    ctx.run(cmd, pty=True)
 
 
 @task
@@ -348,11 +346,13 @@ def restore_db(ctx: Context, env: Environments = "prod"):
         else f"{get_project_name()}.settings.development"
     )
     web_container_id = find_running_container_id(ctx, env, "web")
-    cmd = (
-        f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-        f"{web_container_id} ./manage.py dbrestore"
+    ctx.run(
+        (
+            f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+            f"{web_container_id} ./manage.py dbrestore"
+        ),
+        pty=True,
     )
-    ctx.run(cmd, pty=True)
 
 
 @task
