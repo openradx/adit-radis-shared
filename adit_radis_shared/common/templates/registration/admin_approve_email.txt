@@ -1,11 +1,16 @@
 {% load blocktrans from i18n %}
-{% blocktrans %}
-    The user ({{ user }}) has asked to register an account at {{ site_name_ }}.
-    To approve the account, please click the following link.
+{% load get_site_data from common_extras %}
+{% get_site_data as site_data %}
+
+{% blocktrans site_name=site_data.site_name %}
+    The user ({{ user }}) has asked to register an account at {{ site_name }}.
 {% endblocktrans %}
 
-{{ site_base_url }}{% url 'registration_admin_approve' profile_id %}
+{% blocktrans %}
+    To approve the account, please click the following link:
+{% endblocktrans %}
 
+{{ site_data.base_url }}{% url 'registration_admin_approve' profile_id %}
 
 User Details:
 

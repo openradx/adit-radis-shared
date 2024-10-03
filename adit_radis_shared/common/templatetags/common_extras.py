@@ -2,12 +2,26 @@ import logging
 from datetime import date, datetime, time
 from typing import Any
 
+from django.conf import settings
 from django.template import Library
 from django.template.defaultfilters import join
 
 logger = logging.getLogger(__name__)
 
 register = Library()
+
+
+@register.simple_tag
+def get_site_data() -> dict[str, str]:
+    # Context processors are not available in templates that get rendered
+    # without a request (e.g. Email templates). As a workaround, we use
+    # custom template tags to pass the site data to the templates.
+    return {
+        "base_url": settings.SITE_BASE_URL,
+        "site_name": settings.SITE_NAME,
+        "meta_keywords": settings.SITE_META_KEYWORDS,
+        "meta_description": settings.SITE_META_DESCRIPTION,
+    }
 
 
 @register.filter

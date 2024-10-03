@@ -1,27 +1,23 @@
 {% load blocktrans from i18n %}
-{% blocktrans %}
-Dear colleagues,
+{% load get_site_data from common_extras %}
+{% get_site_data as site_data %}
 
-{{ site_name_ }} is the result of well over a hundred hours of development work, most of which took place
-<mark>in my spare time. I developed it with the intention to simplify our work and improve our research
-activities. Vice versa I ask you to consider me on publications for which {{ site_name_ }} was used.
+{% blocktrans site_name=site_data.site_name %}
+You (or someone pretending to be you) have asked to register an account at
+{{ site_name }}.  If this wasn't you, please ignore this email
+and your address will be removed from our records.
 {% endblocktrans %}
 
 {% blocktrans %}
-To activate your account on {{ site_name_ }}, please click the following link within the next
+To activate this account, please click the following link within the next
 {{ expiration_days }} days:
 {% endblocktrans %}
 
-{{ site_base_url }}{% url 'registration_activate' activation_key %}
+{{ site_data.base_url }}{% url 'registration_activate' activation_key %}
 
-{% blocktrans %}
-Please view the landing page of {{ site_name_ }} ({{ site_base_url }}) and write me
-(Email: kai.schlamp@med.uni-heidelberg.de) write me or call me (Phone: 396-8503) what permissions you need.
-{% endblocktrans %}
-
-{% blocktrans %}
+{% blocktrans with site_name=site_data.site_name %}
 Sincerely,
-Kai Schlamp
+{{ site_name }} Support Team
 {% endblocktrans %}
 {% comment %}
 **registration/activation_email.txt**

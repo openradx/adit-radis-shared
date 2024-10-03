@@ -1,23 +1,29 @@
 {% load trans blocktrans from i18n %}
+{% load get_site_data from common_extras %}
+{% get_site_data as site_data %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Registration |" %} {{ site_name_ }}</title>
+        <title>{% trans "Registration |" %} {{ site_data.site_name }}</title>
         <meta name="keywords" content="{{ site_meta_keywords }}" />
         <meta name="description"
-              content="Approve account registration on {{ site_name_ }}." />
+              content="Approve account registration on {{ site_data.site_name }}." />
     </head>
     <body>
         <p>
-            {% blocktrans %}
-            The user ({{ user }}) has asked to register an account at {{ site_name_ }}.
+            {% blocktrans site_name=site_data.site_name %}
+            The user ({{ user }}) has asked to register an account at {{ site_name }}.
             {% endblocktrans %}
         </p>
         <p>
             {% blocktrans %}
-            To approve this, please
+            To approve the account, please click the following link:
             {% endblocktrans %}
-            <a href="{{ site_base_url }}{% url 'registration_admin_approve' profile_id %}">{% trans "click here" %}</a>.
+        </p>
+        <p>
+            <a href="{{ site_data.base_url }}{% url 'registration_admin_approve' profile_id %}">
+                {{ site_data.base_url }}{% url 'registration_admin_approve' profile_id %}
+            </a>
         </p>
         <p>
             <h4>{% trans "User Details:" %}</h4>
