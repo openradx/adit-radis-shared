@@ -10,6 +10,8 @@ from .models import User
 
 
 class RegistrationForm(UserCreationForm):
+    usable_password = None
+
     class Meta:
         model = User
         fields = (
