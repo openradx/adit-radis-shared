@@ -1,32 +1,39 @@
 import logging
 from datetime import date, datetime, time
-from typing import Any
+from typing import Any, Literal
 
-from django.conf import settings
+from django.contrib.sites.models import Site
+from django.http import HttpRequest
 from django.template import Library
 from django.template.defaultfilters import join
+
+from adit_radis_shared.common.models import SiteProfile
 
 logger = logging.getLogger(__name__)
 
 register = Library()
 
 
-@register.simple_tag
-def get_site_data() -> dict[str, str]:
-    # Context processors are not available in templates that get rendered
-    # without a request (e.g. Email templates). As a workaround, we use
-    # custom template tags to pass the site data to the templates.
-    return {
-        "base_url": settings.SITE_BASE_URL,
-        "site_name": settings.SITE_NAME,
-        "meta_keywords": settings.SITE_META_KEYWORDS,
-        "meta_description": settings.SITE_META_DESCRIPTION,
-    }
-
-
 @register.filter
 def access_item(d: dict, key: str) -> Any:
     return d.get(key, "")
+
+
+@register.simple_tag(takes_context=True)
+def base_url(context: dict[str, Any]) -> str:
+    """Get the base URL of the current site."""
+    site = Site.objects.get_current()
+
+    # Requires django.template.context_processors.request
+    protocol: Literal["http", "https"]
+    request: HttpRequest | None = context.get("request")
+    if request:
+        protocol = "https" if request.is_secure() else "http"
+    else:
+        site_profile = SiteProfile.objects.get(site_id=site.pk)
+        protocol = "https" if site_profile.uses_https else "http"
+
+    return f"{protocol}://{site.domain}"
 
 
 @register.inclusion_tag("common/_bootstrap_icon.html")

@@ -1,22 +1,18 @@
 {% load trans blocktrans from i18n %}
-{% load get_site_data from common_extras %}
-{% get_site_data as site_data %}
+{% load base_url from common_extras %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Registration |" %} {{ site_data.site_name }}</title>
-        <meta name="keywords" content="{{ site_data.meta_keywords }}" />
+        <title>{% trans "Registration |" %} {{ site.name }}</title>
+        <meta name="keywords" content="{{ site.profile.meta_keywords }}" />
         <meta name="description"
-              content="Activate your account on {{ site_data.site_name }}." />
+              content="Activate your account on {{ site.name }}." />
     </head>
     <body>
-        {{ site_data.base_url }}
-        {{ site_data.site_name }}
-        {{ site_data.meta_keywords }}
         <p>
-            {% blocktrans with site_name=site_data.site_name %}
+            {% blocktrans with site_name=site.name %}
             You (or someone pretending to be you) have asked to register an account at
-            {{ site_name }}.  If this wasn't you, please ignore this email
+            {{ site_name }}. If this wasn't you, please ignore this email
             and your address will be removed from our records.
             {% endblocktrans %}
         </p>
@@ -27,12 +23,12 @@
             {% endblocktrans %}
         </p>
         <p>
-            <a href="{{ site_data.base_url }}{% url 'registration_activate' activation_key %}">
-                {{ site_data.base_url }}{% url 'registration_activate' activation_key %}
+            <a href="{% base_url %}{% url 'registration_activate' activation_key %}">
+                {% base_url %}{% url 'registration_activate' activation_key %}
             </a>
         </p>
         <p>
-            {% blocktrans with site_name=site_data.site_name %}
+            {% blocktrans with site_name=site.name %}
             Sincerely,
             {{ site_name }} Support Team
             {% endblocktrans %}

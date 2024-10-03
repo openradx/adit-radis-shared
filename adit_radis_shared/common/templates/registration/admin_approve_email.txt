@@ -1,8 +1,7 @@
 {% load blocktrans from i18n %}
-{% load get_site_data from common_extras %}
-{% get_site_data as site_data %}
+{% load base_url from common_extras %}
 
-{% blocktrans site_name=site_data.site_name %}
+{% blocktrans with site_name=site.name %}
     The user ({{ user }}) has asked to register an account at {{ site_name }}.
 {% endblocktrans %}
 
@@ -10,7 +9,7 @@
     To approve the account, please click the following link:
 {% endblocktrans %}
 
-{{ site_data.base_url }}{% url 'registration_admin_approve' profile_id %}
+{% base_url %}{% url 'registration_admin_approve' profile_id %}
 
 User Details:
 

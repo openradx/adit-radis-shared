@@ -114,7 +114,7 @@ def get_latest_remote_version_tag(owner, repo) -> str | None:
     response.raise_for_status()
     tags = response.json()
 
-    semantic_version_pattern = re.compile(r"^v?(\d+\.\d+\.\d+)$")
+    semantic_version_pattern = re.compile(r"^(\d+\.\d+\.\d+)$")
     semantic_tags = [tag["name"] for tag in tags if semantic_version_pattern.match(tag["name"])]
 
     if semantic_tags:
@@ -130,12 +130,12 @@ def get_latest_local_version_tag(ctx: Context) -> str:
     assert result and result.ok
     all_tags = result.stdout.splitlines()
 
-    version_pattern = re.compile(r"^v\d+\.\d+\.\d+$")
+    version_pattern = re.compile(r"^\d+\.\d+\.\d+$")
     for tag in all_tags:
         if version_pattern.match(tag):
             return tag
 
-    return "v0.0.0"
+    return "0.0.0"
 
 
 ###
@@ -286,28 +286,30 @@ def init_workspace(ctx: Context):
 
     shutil.copy(f"{get_project_dir()}/example.env", env_dev_file)
 
-    def modify_env_file(domain: str | None = None):
+    def modify_env_file(domain: str | None = None, uses_https: bool = False):
         if domain:
             url = f"https://{domain}"
             hosts = f".localhost,127.0.0.1,[::1],{domain}"
             set_key(env_dev_file, "DJANGO_CSRF_TRUSTED_ORIGINS", url, quote_mode="never")
             set_key(env_dev_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
             set_key(env_dev_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
-            set_key(env_dev_file, "SITE_BASE_URL", url, quote_mode="never")
             set_key(env_dev_file, "SITE_DOMAIN", domain, quote_mode="never")
+
+        if uses_https:
+            set_key(env_dev_file, "SITE_USES_HTTPS", "true", quote_mode="never")
 
         set_key(env_dev_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
 
     if os.environ.get("CODESPACE_NAME"):
         # Inside GitHub Codespaces
         domain = f"{os.environ['CODESPACE_NAME']}-8000.preview.app.github.dev"
-        modify_env_file(domain)
+        modify_env_file(domain, uses_https=True)
     elif os.environ.get("GITPOD_WORKSPACE_ID"):
         # Inside Gitpod
         result = ctx.run("gp url 8000", hide=True, pty=True)
         assert result and result.ok
         domain = result.stdout.strip().removeprefix("https://")
-        modify_env_file(domain)
+        modify_env_file(domain, uses_https=True)
     else:
         # Inside some local environment
         modify_env_file()

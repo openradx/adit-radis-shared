@@ -1,8 +1,6 @@
 {% load trans from i18n %}
-{% load get_site_data from common_extras %}
-{% get_site_data as site_data %}
 
-{% trans "Account activation on" %} {{ site_data.site_name }}
+{% trans "Account activation on" %} {{ site.name }}
 {% comment %}
 **registration/admin_approve_complete_email_subject.txt**
 

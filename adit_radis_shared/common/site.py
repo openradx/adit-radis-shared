@@ -36,17 +36,12 @@ def base_context_processor(request: HttpRequest) -> dict[str, Any]:
     return {
         "main_menu_items": main_menu_items,
         "project_version": settings.PROJECT_VERSION,
-        "site_base_url": settings.SITE_BASE_URL,
-        # We can't use "site_name" as it clashes in the login template with a context variable
-        "site_name_": settings.SITE_NAME,
-        "site_meta_keywords": settings.SITE_META_KEYWORDS,
-        "site_meta_description": settings.SITE_META_DESCRIPTION,
-        "site_project_url": settings.SITE_PROJECT_URL,
         "support_email": settings.SUPPORT_EMAIL,
         "theme": theme,
         "theme_color": theme_color,
         ###
-        # Data under "public" key will be available on the client! (see common_layout.html)
+        # Data under "public" key will also be available on the client!
+        # See also common/templates/common/common_layout.html
         ###
         "public": {
             "debug": settings.DEBUG,

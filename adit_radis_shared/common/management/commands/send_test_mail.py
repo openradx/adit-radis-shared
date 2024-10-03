@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 
@@ -11,10 +12,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         to_address = options["to_address"]
+        site = Site.objects.get_current()
 
         send_mail(
-            f"[{settings.SITE_NAME}] Test Mail",
-            f"This is a test mail sent by {settings.SITE_NAME}.",
+            f"[{site.name}] Test Mail",
+            f"This is a test mail sent by {site.name}.",
             settings.SERVER_EMAIL,
             [to_address],
             fail_silently=False,

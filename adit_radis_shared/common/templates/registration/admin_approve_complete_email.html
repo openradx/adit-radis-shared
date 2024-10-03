@@ -1,20 +1,18 @@
 {% load trans blocktrans from i18n %}
-{% load get_site_data from common_extras %}
-{% get_site_data as site_data %}
+{% load base_url from common_extras %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Account approved |" %} {{ site_data.site_name }}</title>
-        <meta name="keywords" content="{{ site_data.meta_keywords }}" />
-        <meta name="description"
-              content="Account approved on {{ site_data.site_name }}." />
+        <title>{% trans "Account approved |" %} {{ site.name }}</title>
+        <meta name="keywords" content="{{ site.profile.meta_keywords }}" />
+        <meta name="description" content="Account approved on {{ site.name }}." />
     </head>
     <body>
         <p>
-            {% blocktrans with site_name=site_data.site_name %}
+            {% blocktrans with site_name=site.name %}
             Your account on {{ site_name }} is now approved. You can 
             {% endblocktrans %}
-            <a href="{{ site_data.base_url }}{% url 'auth_login' %}">{% trans "log in." %}</a>
+            <a href="{% base_url %}{% url 'auth_login' %}">{% trans "log in." %}</a>
         </p>
     </body>
 </html>

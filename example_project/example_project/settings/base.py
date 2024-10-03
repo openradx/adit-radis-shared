@@ -33,10 +33,14 @@ DEBUG = True
 
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # type: ignore
 
-SITE_BASE_URL = env.str("SITE_BASE_URL", default="http://localhost:8000")  # type: ignore
+SITE_ID = 1
+
+# The following settings are stored in the Site model on startup initially (see common/apps.py).
+# Once set they are stored in the database and can be changed via the admin interface.
 SITE_DOMAIN = env.str("SITE_DOMAIN", default="localhost")  # type: ignore
 SITE_NAME = env.str("SITE_NAME", default="Example Project")  # type: ignore
-SITE_META_KEYWORDS = "ADIT,RADIS"
+SITE_USES_HTTPS = env.bool("SITE_USES_HTTPS", default=False)  # type: ignore
+SITE_META_KEYWORDS = "ADIT, RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
 
@@ -53,6 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.contrib.sites",
     "django_extensions",
     "procrastinate.contrib.django",
     "loginas",
@@ -74,6 +79,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.contrib.sites.middleware.CurrentSiteMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "adit_radis_shared.accounts.middlewares.ActiveGroupMiddleware",
     "adit_radis_shared.common.middlewares.MaintenanceMiddleware",
@@ -105,7 +111,9 @@ ASGI_APPLICATION = "example_project.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-DATABASES = {"default": env.db()}
+DATABASES = {
+    "default": env.db(default="sqlite:///example_project-sqlite.db")  # type: ignore
+}
 
 
 # Password validation
@@ -136,6 +144,14 @@ AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModel
 REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
 ACCOUNT_ACTIVATION_DAYS = 14
 REGISTRATION_OPEN = True
+
+# Also used by django-registration-redux to send account approval emails
+ADMINS = [
+    (
+        env.str("ADMIN_FULL_NAME", default="ADIT-RADIS-Shared Admin"),  # type: ignore
+        env.str("ADMIN_EMAIL", default="admin@radis-radis-shared.test"),  # type: ignore
+    )
+]
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {
