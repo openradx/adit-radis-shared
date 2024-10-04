@@ -33,6 +33,7 @@ DEBUG = True
 
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # type: ignore
 
+# Needed by sites framework
 SITE_ID = 1
 
 # The following settings are stored in the Site model on startup initially (see common/apps.py).
