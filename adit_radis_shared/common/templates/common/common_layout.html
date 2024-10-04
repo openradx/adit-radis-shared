@@ -15,7 +15,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="author" content="OpenRadX" />
         <meta name="keywords" content="{{ request.site.profile.meta_keywords }}" />
-        <meta name="description" content="{{ request.site.profile.meta_description }}" />
+        <meta name="description"
+              content="{{ request.site.profile.meta_description }}" />
         {% block meta %}
         {% endblock meta %}
         {# Make our public data available on the client, see common.site.base_context_processor #}
