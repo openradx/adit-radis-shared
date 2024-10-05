@@ -29,7 +29,7 @@ def copy_statics(ctx: Context):
     print("Copying statics...")
 
     target_folder = (
-        invoke_tasks.get_compose_dir() / "adit_radis_shared" / "common" / "static" / "vendor"
+        invoke_tasks.get_project_dir() / "adit_radis_shared" / "common" / "static" / "vendor"
     )
 
     def copy_file(file: str, filename: str | None = None):
