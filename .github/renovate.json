@@ -1,5 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", "group:allNonMajor"],
-  "lockFileMaintenance": { "enabled": true }
+  "lockFileMaintenance": { "enabled": true },
+  "postUpgradeTasks": {
+    "commands": [
+      "npm install",
+      "poetry install",
+      "poetry run invoke copy-statics"
+    ],
+    "fileFilters": ["package.json", "package-lock.json"]
+  }
 }
