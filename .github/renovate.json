@@ -7,6 +7,12 @@
       "managers": ["docker-compose"],
       "matchPackageNames": ["postgres"],
       "enabled": false
+    },
+    {
+      "matchManagers": ["poetry"],
+      "matchPackageNames": ["python"],
+      "matchUpdateTypes": ["minor", "major"],
+      "enabled": false
     }
   ]
 }
