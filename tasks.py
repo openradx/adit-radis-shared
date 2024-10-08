@@ -46,5 +46,5 @@ def copy_statics(ctx: Context):
     copy_file("node_modules/alpinejs/dist/cdn.js", "alpine.js")
     copy_file("node_modules/@alpinejs/morph/dist/cdn.js", "alpine-morph.js")
     copy_file("node_modules/htmx.org/dist/htmx.js")
-    copy_file("node_modules/htmx.org/dist/ext/ws.js", "htmx-ws.js")
-    copy_file("node_modules/htmx.org/dist/ext/alpine-morph.js", "htmx-alpine-morph.js")
+    copy_file("node_modules/htmx-ext-ws/ws.js", "htmx-ws.js")
+    copy_file("node_modules/htmx-ext-alpine-morph/alpine-morph.js", "htmx-alpine-morph.js")
