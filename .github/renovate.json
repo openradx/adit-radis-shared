@@ -7,6 +7,11 @@
       "managers": ["docker-compose"],
       "matchPackageNames": ["postgres"],
       "allowedVersions": "<=16"
+    },
+    {
+      "managers": ["dockerfile"],
+      "matchPackageNames": ["python"],
+      "allowedVersions": "<=3.12"
     }
   ]
 }
