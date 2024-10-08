@@ -472,18 +472,18 @@ toml = ["tomli"]
 
 [[package]]
 name = "crispy-bootstrap5"
-version = "2024.2"
+version = "2024.10"
 description = "Bootstrap5 template pack for django-crispy-forms"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "crispy-bootstrap5-2024.2.tar.gz", hash = "sha256:7d1fa40c6faf472e30e85c72551a3d2c9eedbf0abfff920683315e4e6f670f2b"},
-    {file = "crispy_bootstrap5-2024.2-py3-none-any.whl", hash = "sha256:3867e320920a6ef156e94f9e0f06a80344c453e1b3bd96cd9dc0522ae9e9afb8"},
+    {file = "crispy_bootstrap5-2024.10-py3-none-any.whl", hash = "sha256:59e91dac5e45a8c954af3fbcaa6804cd5aef4402f027af2f99a352b096c4016f"},
+    {file = "crispy_bootstrap5-2024.10.tar.gz", hash = "sha256:55b442fe675dd95ad280123c7fe464f454186e90b8e5642e751f436c87627c44"},
 ]
 
 [package.dependencies]
 django = ">=4.2"
-django-crispy-forms = ">=2"
+django-crispy-forms = ">=2.3"
 
 [package.extras]
 test = ["pytest", "pytest-django"]
@@ -988,13 +988,13 @@ doc = ["Sphinx", "sphinx-rtd-theme", "sphinxcontrib-spelling"]
 
 [[package]]
 name = "faker"
-version = "30.1.0"
+version = "30.3.0"
 description = "Faker is a Python package that generates fake data for you."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Faker-30.1.0-py3-none-any.whl", hash = "sha256:dbf81295c948270a9e96cd48a9a3ebec73acac9a153d0c854fbbd0294557609f"},
-    {file = "faker-30.1.0.tar.gz", hash = "sha256:e0593931bd7be9a9ea984b5d8c302ef1cec19392585d1e90d444199271d0a94d"},
+    {file = "Faker-30.3.0-py3-none-any.whl", hash = "sha256:e8a15fd1b0f72992b008f5ea94c70d3baa0cb51b0d5a0e899c17b1d1b23d2771"},
+    {file = "faker-30.3.0.tar.gz", hash = "sha256:8760fbb34564fbb2f394345eef24aec5b8f6506b6cfcefe8195ed66dd1032bdb"},
 ]
 
 [package.dependencies]
@@ -1504,13 +1504,13 @@ files = [
 
 [[package]]
 name = "procrastinate"
-version = "2.14.0"
+version = "2.14.1"
 description = "Postgres-based distributed task processing library"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "procrastinate-2.14.0-py3-none-any.whl", hash = "sha256:f52959ce18f83dfed0f52a88f7400af2bdece02df6503920a5b82d515d1f5e0c"},
-    {file = "procrastinate-2.14.0.tar.gz", hash = "sha256:85f4e0a693747af896a0c84bdad2ae50a53f6d892e3c336567bd640ed7ae20ab"},
+    {file = "procrastinate-2.14.1-py3-none-any.whl", hash = "sha256:581aacffa50a0ed84d980c127647f28d5f6559503f05bcffbcecaf8d1930f9fc"},
+    {file = "procrastinate-2.14.1.tar.gz", hash = "sha256:446111c90a31fa8c395edce0dc0e15e5f58df9b6a388583005042558ef4302d3"},
 ]
 
 [package.dependencies]
