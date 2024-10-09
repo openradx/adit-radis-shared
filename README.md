@@ -36,4 +36,4 @@ Token authentication support to access the API of ADIT and RADIS by using a REST
 
 ## License
 
-- GPL 3.0 or later
+- AGPL 3.0 or later
