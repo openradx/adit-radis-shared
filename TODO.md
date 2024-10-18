@@ -12,4 +12,3 @@
 - Reorder stuff in settings files
 - Use django-environ as in the docs (see shared)
 - Make package.json more minimal (as in shared)
-- No need to do collectstatics in development container

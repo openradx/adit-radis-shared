@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.sites",
     "django_extensions",
+    "django_node_assets",
     "procrastinate.contrib.django",
     "loginas",
     "crispy_forms",
@@ -185,6 +186,16 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 STATIC_URL = "static/"
 
 STATIC_ROOT = env.str("DJANGO_STATIC_ROOT", default=(BASE_DIR / "staticfiles"))  # type: ignore
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "django_node_assets.finders.NodeModulesFinder",
+]
+
+# django-node-assets
+NODE_PACKAGE_JSON = str(Path(BASE_DIR / ".." / "package.json").absolute())
+NODE_MODULES_ROOT = str(Path(BASE_DIR / ".." / "node_modules").absolute())
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

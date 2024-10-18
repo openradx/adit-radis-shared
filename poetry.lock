@@ -785,6 +785,20 @@ files = [
 ]
 
 [[package]]
+name = "django-node-assets"
+version = "0.9.14"
+description = "The Django application that allows to install and serve assets via Node.js package manager infrastructure."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django_node_assets-0.9.14-py3-none-any.whl", hash = "sha256:80cbe3d10521808309712b2aa5ef6d69799bbcafef844cf7f223d3c93f405768"},
+    {file = "django_node_assets-0.9.14.tar.gz", hash = "sha256:d5b5c472136084d533268f52ab77897327863a102e25c81f484aae85eb806987"},
+]
+
+[package.extras]
+dev = ["black", "build", "flake8", "isort", "twine"]
+
+[[package]]
 name = "django-registration-redux"
 version = "2.13"
 description = "An extensible user-registration application for Django"
@@ -3040,4 +3054,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<4.0"
-content-hash = "44139f21bfe9bc390b86f2a8a13c205751b2a84d2e26dd0125632a76d7efce4d"
+content-hash = "24578c7227c9b9efc4b101a978b7ece547d921f37e26ce67d08c2faa414945d5"

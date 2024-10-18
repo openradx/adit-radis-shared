@@ -32,7 +32,7 @@
         {# CSS stuff #}
         <link rel="stylesheet"
               type="text/css"
-              href="{% static 'vendor/bootstrap.css' %}" />
+              href="{% static 'bootswatch/dist/flatly/bootstrap.css' %}" />
         <link rel="stylesheet"
               type="text/css"
               href="{% static 'common/common.css' %}" />
@@ -66,15 +66,15 @@
                  hx-target="this"></div>
         </div>
         {# Vendor Javascript dependencies (except Alpine.js, see below) #}
-        <script src="{% static 'vendor/bootstrap.bundle.js' %}"></script>
-        <script src="{% static 'vendor/htmx.js' %}"></script>
-        <script src="{% static 'vendor/htmx-ws.js' %}"></script>
-        <script src="{% static 'vendor/htmx-alpine-morph.js' %}"></script>
-        <script src="{% static 'vendor/alpine-morph.js' %}"></script>
+        <script src="{% static 'bootstrap/dist/js/bootstrap.bundle.js' %}"></script>
+        <script src="{% static 'htmx.org/dist/htmx.js' %}"></script>
+        <script src="{% static 'htmx.org/dist/ext/ws.js' %}"></script>
+        <script src="{% static 'htmx.org/dist/ext/alpine-morph.js' %}"></script>
+        <script src="{% static '@alpinejs/morph/dist/cdn.js' %}"></script>
         <script src="{% static 'common/common.js' %}"></script>
         {% block script %}
         {% endblock script %}
         {# Load Alpine.js last to make sure our components are available #}
-        <script src="{% static 'vendor/alpine.js' %}"></script>
+        <script src="{% static 'alpinejs/dist/cdn.js' %}"></script>
     </body>
 </html>
