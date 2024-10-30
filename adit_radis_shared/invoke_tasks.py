@@ -399,8 +399,8 @@ def upgrade_postgresql(ctx: Context, env: Environments, version: str = "latest")
         print("Watch the output if everything went fine or if any further steps are necessary.")
         volume = f"{get_stack_name(env)}_postgres_data"
         ctx.run(
-            f"docker run -e POSTGRES_PASSWORD=postgres -v {volume}:/var/lib/postgresql/data "
-            f"pgautoupgrade/pgautoupgrade:{version}",
+            f"docker run -e POSTGRES_PASSWORD=postgres -e PGAUTO_ONESHOT=yes "
+            f"-v {volume}:/var/lib/postgresql/data pgautoupgrade/pgautoupgrade:{version}",
             pty=True,
         )
     else:
