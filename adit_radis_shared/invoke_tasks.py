@@ -393,7 +393,7 @@ def upgrade_adit_radis_shared(ctx: Context, version: str | None = None):
 @task
 def upgrade_postgresql(ctx: Context, env: Environments, version: str = "latest"):
     print(f"Upgrading PostgreSQL database in {env} environment to {version}.")
-    print("Cave, make sure the whole stack is not stopped. Otherwise this will corrupt data!")
+    print("Cave, make sure the whole stack is stopped. Otherwise this will corrupt data!")
     if confirm("Are you sure you want to proceed?"):
         print("Starting docker container that upgrades the database files.")
         print("Watch the output if everything went fine or if any further steps are necessary.")
