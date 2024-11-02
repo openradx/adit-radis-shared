@@ -4,7 +4,6 @@ x-app: &default-app
     - ${BACKUP_DIR:?BACKUP_DIR must be set}:/backups
   depends_on:
     - postgres
-  user: ${SERVICE_UID:?SERVICE_UID must be set}:${SERVICE_GID:-${SERVICE_UID}}
   environment:
     ADMIN_AUTH_TOKEN: ${ADMIN_AUTH_TOKEN}
     ADMIN_EMAIL: ${ADMIN_EMAIL}
