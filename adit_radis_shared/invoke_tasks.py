@@ -398,7 +398,7 @@ def init_workspace(ctx: Context):
     if env_file.is_file():
         raise Exit("Workspace already initialized (.env file exists).")
 
-    shutil.copy(Utility.get_project_dir() / ".env.example", env_file)
+    shutil.copy(Utility.get_project_dir() / "example.env", env_file)
 
     def modify_env_file(domain: str | None = None, uses_https: bool = False):
         if domain:
@@ -428,11 +428,7 @@ def init_workspace(ctx: Context):
         # Inside some local environment
         modify_env_file()
 
-    print(
-        "Successfully initialized .env file. You can run 'invoke randomize-env-secrets' "
-        "to generate and set random secrets in the newly created .env file. You can also "
-        "run 'invoke compose-up' to start the development environment."
-    )
+    print("Successfully initialized .env file.")
 
 
 @task
