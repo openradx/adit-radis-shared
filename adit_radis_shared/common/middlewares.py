@@ -1,6 +1,7 @@
 import re
 import zoneinfo
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -62,7 +63,7 @@ class TimezoneMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        tzname = request.session.get("django_timezone")
+        tzname = settings.USER_TIME_ZONE
         if tzname:
             timezone.activate(zoneinfo.ZoneInfo(tzname))
         else:
