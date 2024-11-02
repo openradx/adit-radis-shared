@@ -18,11 +18,13 @@ from adit_radis_shared.invoke_tasks import (  # noqa: F401
     init_workspace,
     lint,
     randomize_env_secrets,
+    reset_dev,
     show_outdated,
     stack_deploy,
     stack_rm,
     test,
     try_github_actions,
+    web_shell,
 )
 
 invoke_tasks.PROJECT_NAME = "example_project"
