@@ -19,5 +19,4 @@ class Command(BaseCommand):
             f"This is a test mail sent by {site.name}.",
             settings.SERVER_EMAIL,
             [to_address],
-            fail_silently=False,
         )

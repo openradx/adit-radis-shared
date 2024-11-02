@@ -1,11 +1,13 @@
 x-app: &default-app
   image: example_project_prod
-  env_file:
-    - ../.env.prod
   environment:
+    DJANGO_EMAIL_URL: ${DJANGO_EMAIL_URL:?DJANGO_EMAIL_URL must be set}
     DJANGO_SETTINGS_MODULE: "example_project.settings.production"
-    SSL_CERT_FILE: "/var/www/web/ssl/cert.pem"
-    SSL_KEY_FILE: "/var/www/web/ssl/key.pem"
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    SSL_CERT_FILE: ${SSL_CERT_FILE:?SSL_CERT_FILE must be set}
+    SSL_HOSTNAME: ${SSL_HOSTNAME:?SSL_HOSTNAME must be set}
+    SSL_IP_ADDRESSES: ${SSL_IP_ADDRESSES:?SSL_IP_ADDRESSES must be set}
+    SSL_KEY_FILE: ${SSL_KEY_FILE:?SSL_KEY_FILE must be set}
 
 x-deploy: &deploy
   replicas: 1
@@ -26,7 +28,6 @@ services:
         ./manage.py migrate &&
         ./manage.py collectstatic --no-input &&
         ./manage.py create_admin &&
-        ./manage.py generate_cert &&
         ./manage.py ok_server --host 0.0.0.0 --port 8000
       "
     deploy:
@@ -60,7 +61,7 @@ services:
       "
 
   postgres:
-    env_file:
-      - ../.env.prod
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     deploy:
       <<: *deploy

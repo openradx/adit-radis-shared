@@ -1,12 +1,15 @@
 x-app: &default-app
   image: example_project_dev
   volumes:
-    - ..:/app
-  env_file:
-    - ../.env.dev
+    - .:/app
+    - vscode-server:/root/.vscode-server/extensions
+    - vscode-server-insiders:/root/.vscode-server-insiders/extensions
   environment:
-    ENABLE_REMOTE_DEBUGGING: 0
+    DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
     DJANGO_SETTINGS_MODULE: "example_project.settings.development"
+    FORCE_DEBUG_TOOLBAR: ${FORCE_DEBUG_TOOLBAR:-true}
+    REMOTE_DEBUGGING_ENABLED: ${REMOTE_DEBUGGING_ENABLED:-false}
+    REMOTE_DEBUGGING_PORT: ${REMOTE_DEBUGGING_PORT:-5678}
   pull_policy: never
 
 services:
@@ -42,3 +45,7 @@ services:
   postgres:
     environment:
       POSTGRES_PASSWORD: postgres
+
+volumes:
+  vscode-server:
+  vscode-server-insiders:

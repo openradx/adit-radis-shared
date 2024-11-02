@@ -21,30 +21,31 @@ PREDFINED_GROUPS = [
 ]
 
 
-def create_admin() -> User:
+def create_admin() -> User | None:
     if "ADMIN_USERNAME" not in environ or "ADMIN_PASSWORD" not in environ:
-        print("Cave! No admin credentials found in environment. Using default ones.")
-
-    admin = AdminUserFactory.create(
-        username=environ.get("ADMIN_USERNAME", "admin"),
-        first_name=environ.get("ADMIN_FIRST_NAME", "Wilhelm"),
-        last_name=environ.get("ADMIN_LAST_NAME", "Röntgen"),
-        email=environ.get("ADMIN_EMAIL", "wilhelm.roentgen@example.org"),
-        password=environ.get("ADMIN_PASSWORD", "mysecret"),
-    )
-
-    if "ADMIN_AUTH_TOKEN" not in environ:
-        print("No admin auth token in environment. Skipping auth token creation.")
+        print("Cave! No admin credentials found in environment. Skipping admin creation.")
+        return None
     else:
-        auth_token = environ["ADMIN_AUTH_TOKEN"]
-        TokenFactory.create(
-            token_hashed=hash_token(auth_token),
-            fraction=auth_token[:FRACTION_LENGTH],
-            owner=admin,
-            expires=None,
+        admin = AdminUserFactory.create(
+            username=environ.get("ADMIN_USERNAME", "admin"),
+            first_name=environ.get("ADMIN_FIRST_NAME", "Wilhelm"),
+            last_name=environ.get("ADMIN_LAST_NAME", "Röntgen"),
+            email=environ.get("ADMIN_EMAIL", "wilhelm.roentgen@example.org"),
+            password=environ.get("ADMIN_PASSWORD", "mysecret"),
         )
 
-    return admin
+        if "ADMIN_AUTH_TOKEN" not in environ:
+            print("No admin auth token in environment. Skipping auth token creation.")
+        else:
+            auth_token = environ["ADMIN_AUTH_TOKEN"]
+            TokenFactory.create(
+                token_hashed=hash_token(auth_token),
+                fraction=auth_token[:FRACTION_LENGTH],
+                owner=admin,
+                expires=None,
+            )
+
+        return admin
 
 
 def create_users(users_count: int) -> list[User]:
@@ -54,7 +55,9 @@ def create_users(users_count: int) -> list[User]:
             user = create_admin()
         else:
             user = UserFactory.create(username=fake.unique.user_name())
-        users.append(user)
+
+        if user is not None:
+            users.append(user)
 
     return users
 

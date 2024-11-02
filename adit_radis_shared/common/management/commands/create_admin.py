@@ -13,10 +13,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             username = os.environ["ADMIN_USERNAME"]
-            first_name = os.environ["ADMIN_FIRST_NAME"]
-            last_name = os.environ["ADMIN_LAST_NAME"]
             email = os.environ["ADMIN_EMAIL"]
             password = os.environ["ADMIN_PASSWORD"]
+            first_name = os.environ["ADMIN_FIRST_NAME"]
+            last_name = os.environ["ADMIN_LAST_NAME"]
 
             try:
                 User.objects.get(username=username)

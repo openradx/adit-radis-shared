@@ -7,11 +7,17 @@ from invoke.tasks import task
 
 from adit_radis_shared import invoke_tasks
 from adit_radis_shared.invoke_tasks import (  # noqa: F401
+    Utility,
     compose_down,
     compose_up,
     format,
+    generate_auth_token,
+    generate_certificate_files,
+    generate_django_secret_key,
+    generate_secure_password,
     init_workspace,
     lint,
+    randomize_env_secrets,
     show_outdated,
     stack_deploy,
     stack_rm,
@@ -28,9 +34,7 @@ def copy_statics(ctx: Context):
     """Copy JS and CSS dependencies from node_modules to static vendor folder"""
     print("Copying statics...")
 
-    target_folder = (
-        invoke_tasks.get_project_dir() / "adit_radis_shared" / "common" / "static" / "vendor"
-    )
+    target_folder = Utility.get_project_dir() / "adit_radis_shared" / "common" / "static" / "vendor"
 
     def copy_file(file: str, filename: str | None = None):
         if not filename:

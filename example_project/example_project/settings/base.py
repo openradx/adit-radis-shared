@@ -31,19 +31,27 @@ SECRET_KEY = "django-insecure-4q3@c!62pzy74p2dck1^=d3dyl_gc#zk1bewa@8ch3(czs3bir
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # type: ignore
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 # Needed by sites framework
 SITE_ID = 1
 
 # The following settings are stored in the Site model on startup initially (see common/apps.py).
 # Once set they are stored in the database and can be changed via the admin interface.
-SITE_DOMAIN = env.str("SITE_DOMAIN", default="localhost")  # type: ignore
-SITE_NAME = env.str("SITE_NAME", default="Example Project")  # type: ignore
-SITE_USES_HTTPS = env.bool("SITE_USES_HTTPS", default=False)  # type: ignore
+SITE_DOMAIN = env.str("SITE_DOMAIN")
+SITE_NAME = env.str("SITE_NAME")
+SITE_USES_HTTPS = env.bool("SITE_USES_HTTPS")
 SITE_META_KEYWORDS = "ADIT, RADIS"
 SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
+
+SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
+
+INTERNAL_IPS = env.list("DJANGO_INTERNAL_IPS")
 
 # Application definition
 
@@ -112,9 +120,7 @@ ASGI_APPLICATION = "example_project.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-DATABASES = {
-    "default": env.db(default="sqlite:///example_project-sqlite.db")  # type: ignore
-}
+DATABASES = {"default": env.db()}
 
 
 # Password validation
@@ -146,13 +152,15 @@ REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
 ACCOUNT_ACTIVATION_DAYS = 14
 REGISTRATION_OPEN = True
 
-# Also used by django-registration-redux to send account approval emails
-ADMINS = [
-    (
-        env.str("ADMIN_FULL_NAME", default="ADIT-RADIS-Shared Admin"),  # type: ignore
-        env.str("ADMIN_EMAIL", default="admin@radis-radis-shared.test"),  # type: ignore
-    )
-]
+# The email address critical error messages of the server will be sent from.
+SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL")
+
+# The Email address is also used to notify about finished jobs and management notifications.
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
+
+# The Django server admins that will receive critical error notifications.
+# Also used by django-registration-redux to send account approval emails to.
+ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {
@@ -184,14 +192,14 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = "static/"
 
-STATIC_ROOT = env.str("DJANGO_STATIC_ROOT", default=(BASE_DIR / "staticfiles"))  # type: ignore
+STATIC_ROOT = env.str("DJANGO_STATIC_ROOT")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # A timezone that is used for users of the web interface.
-USER_TIME_ZONE = env.str("USER_TIME_ZONE", default="Europe/Berlin")  # type: ignore
+USER_TIME_ZONE = env.str("USER_TIME_ZONE")
 
 # For crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -200,15 +208,9 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # django-templates2
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 
-# An Email address used by the ADIT server to notify about finished jobs and
-# management notifications.
-SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL", default="support@openradx.test")  # type: ignore
-DEFAULT_FROM_EMAIL = SERVER_EMAIL
-
-# A support Email address that is presented to the users where
-# they can get support.
-SUPPORT_EMAIL = env.str("SUPPORT_EMAIL", default=SERVER_EMAIL)  # type: ignore
+# A support Email address that is presented to the users where they can get support.
+SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
 
 # The salt that is used for hashing new tokens in the token authentication app.
 # Cave, changing the salt after some tokens were already generated makes them all invalid!
-TOKEN_AUTHENTICATION_SALT = env.str("TOKEN_AUTHENTICATION_SALT", default="Rn4YNfgAar5dYbPu")  # type: ignore
+TOKEN_AUTHENTICATION_SALT = env.str("TOKEN_AUTHENTICATION_SALT")
