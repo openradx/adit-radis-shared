@@ -25,13 +25,8 @@ SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "exam
 # Fetch version from the environment which is passed through from the latest git version tag
 PROJECT_VERSION = env.str("PROJECT_VERSION", default="vX.Y.Z")  # type: ignore
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-4q3@c!62pzy74p2dck1^=d3dyl_gc#zk1bewa@8ch3(czs3bir"
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 # Needed by sites framework
 SITE_ID = 1
@@ -52,8 +47,6 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 INTERNAL_IPS = env.list("DJANGO_INTERNAL_IPS")
-
-# Application definition
 
 INSTALLED_APPS = [
     "daphne",
@@ -158,6 +151,9 @@ SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL")
 # The Email address is also used to notify about finished jobs and management notifications.
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
+# A support Email address that is presented to the users where they can get support.
+SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
+
 # The Django server admins that will receive critical error notifications.
 # Also used by django-registration-redux to send account approval emails to.
 ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
@@ -207,9 +203,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # django-templates2
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
-
-# A support Email address that is presented to the users where they can get support.
-SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
 
 # The salt that is used for hashing new tokens in the token authentication app.
 # Cave, changing the salt after some tokens were already generated makes them all invalid!

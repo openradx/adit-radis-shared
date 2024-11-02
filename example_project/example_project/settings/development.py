@@ -1,8 +1,6 @@
 from .base import *  # noqa: F403
 from .base import env
 
-DEBUG = env.bool("DJANGO_DEBUG")
-
 REMOTE_DEBUGGING_ENABLED = env.bool("REMOTE_DEBUGGING_ENABLED")
 REMOTE_DEBUGGING_PORT = env.int("REMOTE_DEBUGGING_PORT")
 
