@@ -408,8 +408,6 @@ def init_workspace(ctx: Context):
             set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
             set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
             set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
-            set_key(env_file, "SERVICE_UID", str(os.getuid()), quote_mode="never")
-            set_key(env_file, "SERVICE_GID", str(os.getgid()), quote_mode="never")
 
         if uses_https:
             set_key(env_file, "SITE_USES_HTTPS", "true", quote_mode="never")
