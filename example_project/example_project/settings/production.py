@@ -8,6 +8,17 @@ DEBUG = False
 
 DATABASES["default"]["PASSWORD"] = env.str("POSTGRES_PASSWORD")  # noqa: F405
 
+STATIC_ROOT = env.str("DJANGO_STATIC_ROOT")
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_TIMEOUT = 60
 email_config = env.email_url("DJANGO_EMAIL_URL")

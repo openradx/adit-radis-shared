@@ -29,8 +29,8 @@ services:
         wait-for-it -s postgres.local:5432 -t 60 && 
         ./manage.py migrate &&
         ./manage.py create_superuser &&
-        ./manage.py create_example_users --count 20 &&
-        ./manage.py create_example_groups --count 3 &&
+        ./manage.py create_example_users &&
+        ./manage.py create_example_groups &&
         ./manage.py runserver 0.0.0.0:8000
       "
 
