@@ -11,7 +11,18 @@ from adit_radis_shared.token_authentication.utils.crypto import hash_token
 class Command(BaseCommand):
     help = "Creates a superuser account from environment variables."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Create another superuser even if one already exists.",
+        )
+
     def handle(self, *args, **options):
+        if User.objects.filter(is_superuser=True).exists() and not options["force"]:
+            self.stdout.write("A superuser already exists. Skipping superuser creation.")
+            return
+
         username = os.environ.get("SUPERUSER_USERNAME")
         email = os.environ.get("SUPERUSER_EMAIL")
         password = os.environ.get("SUPERUSER_PASSWORD")
