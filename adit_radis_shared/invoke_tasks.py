@@ -26,7 +26,7 @@ from invoke.tasks import task
 # Global config
 ###
 
-
+# Those variables are set in tasks.py of the project root.
 PROJECT_NAME: str | None = None
 PROJECT_DIR: Path | None = None
 
@@ -40,16 +40,29 @@ class Utility:
     _is_production_cached: bool | None = None
 
     @staticmethod
+    def get_project_name():
+        assert PROJECT_NAME is not None
+        return PROJECT_NAME
+
+    @staticmethod
+    def get_project_dir():
+        assert PROJECT_DIR is not None
+        return PROJECT_DIR
+
+    @staticmethod
+    def load_config_from_env_file() -> dict[str, str | None]:
+        env_file = Utility.get_project_dir() / ".env"
+        if not env_file.exists():
+            raise Exit("Missing .env file!")
+
+        return dotenv_values(env_file)
+
+    @staticmethod
     def is_production() -> bool:
         global _is_production_cached
         if Utility._is_production_cached is None:
-            assert PROJECT_DIR is not None
+            config = Utility.load_config_from_env_file()
 
-            env_file = PROJECT_DIR / ".env"
-            if not env_file.exists():
-                raise Exit(f"Missing .env file in {PROJECT_DIR}")
-
-            config = dotenv_values(PROJECT_DIR / ".env")
             if "ENVIRONMENT" not in config:
                 raise Exit("Missing ENVIRONMENT setting in .env file.")
 
@@ -60,16 +73,6 @@ class Utility:
             Utility._is_production_cached = environment == "production"
 
         return Utility._is_production_cached
-
-    @staticmethod
-    def get_project_name():
-        assert PROJECT_NAME is not None
-        return PROJECT_NAME
-
-    @staticmethod
-    def get_project_dir():
-        assert PROJECT_DIR is not None
-        return PROJECT_DIR
 
     @staticmethod
     def get_compose_base_file():
@@ -109,11 +112,7 @@ class Utility:
 
     @staticmethod
     def prepare_environment():
-        env_file = Utility.get_project_dir() / ".env"
-        if not env_file.is_file():
-            raise Exit("Workspace not initialized (.env file does not exist).")
-
-        config = dotenv_values(env_file)
+        config = Utility.load_config_from_env_file()
 
         # Check backup dir
         backup_dir = config.get("BACKUP_DIR")
@@ -125,6 +124,38 @@ class Utility:
             backup_path.mkdir(parents=True, exist_ok=True)
         if not backup_path.is_dir():
             raise Exit(f"Invalid BACKUP_DIR {backup_path.absolute()}.")
+
+    @staticmethod
+    def check_development_environment():
+        config = Utility.load_config_from_env_file()
+        if config.get("ENVIRONMENT") != "development":
+            raise Exit(
+                "Command can only be used in development environment. "
+                "Check ENVIRONMENT setting in .env file."
+            )
+
+    @staticmethod
+    def check_production_environment():
+        config = Utility.load_config_from_env_file()
+        if config.get("ENVIRONMENT") != "production":
+            raise Exit(
+                "Command can only be used in production environment. "
+                "Check ENVIRONMENT setting in .env file."
+            )
+
+        cert_file = config.get("SSL_CERT_FILE")
+        if not cert_file or not Path(cert_file).is_file():
+            raise Exit(
+                "Invalid SSL_CERT_FILE setting in .env file. You can generate an unsigned "
+                "certificate with 'invoke generate-certificate-files'."
+            )
+
+        key_file = config.get("SSL_KEY_FILE")
+        if not key_file or not Path(key_file).is_file():
+            raise Exit(
+                "Invalid SSL_KEY_FILE setting in .env file. You can generate an unsigned "
+                "certificate with 'invoke generate-certificate-files'."
+            )
 
     @staticmethod
     def find_running_container_id(ctx: Context, name: str):
@@ -197,13 +228,15 @@ class Utility:
 
     @staticmethod
     def generate_self_signed_certificates(
-        hostname: str, ip_addresses: list[str] | None = None, key: rsa.RSAPrivateKey | None = None
+        hostname: str,
+        ip_addresses: list[str] | None = None,
+        private_key: rsa.RSAPrivateKey | None = None,
     ):
         """Generates self signed certificates for a hostname, and optional IP addresses."""
 
         # Generate our key
-        if key is None:
-            key = rsa.generate_private_key(
+        if private_key is None:
+            private_key = rsa.generate_private_key(
                 public_exponent=65537,
                 key_size=2048,
                 backend=default_backend(),
@@ -215,7 +248,7 @@ class Utility:
         # which *SHOULD* mean COMMON_NAME is ignored.
         alt_names: list[x509.GeneralName] = [x509.DNSName(hostname)]
 
-        # allow addressing by IP, for when you don't have real DNS (common in most testing scenarios
+        # allow addressing by IP, for when you don't have real DNS (common in testing scenarios)
         if ip_addresses:
             for addr in ip_addresses:
                 # openssl wants DNSnames for ips...
@@ -227,22 +260,22 @@ class Utility:
         san = x509.SubjectAlternativeName(alt_names)
 
         # path_len=0 means this cert can only sign itself, not other certs.
-        basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
         now = datetime.now(timezone.utc)
+        basic_constraints = x509.BasicConstraints(ca=True, path_length=0)
         cert = (
             x509.CertificateBuilder()
             .subject_name(name)
             .issuer_name(name)
-            .public_key(key.public_key())
-            .serial_number(1000)
+            .public_key(private_key.public_key())
+            .serial_number(x509.random_serial_number())
             .not_valid_before(now)
             .not_valid_after(now + timedelta(days=10 * 365))
-            .add_extension(basic_contraints, False)
+            .add_extension(basic_constraints, False)
             .add_extension(san, False)
-            .sign(key, hashes.SHA256(), default_backend())
+            .sign(private_key, hashes.SHA256(), default_backend())
         )
         cert_pem = cert.public_bytes(encoding=serialization.Encoding.PEM)
-        key_pem = key.private_bytes(
+        key_pem = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),
@@ -260,6 +293,7 @@ class Utility:
 def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
     """Start containers in specified environment"""
     Utility.prepare_environment()
+    Utility.check_development_environment()
 
     version = Utility.get_latest_local_version_tag(ctx)
     if not Utility.is_production():
@@ -267,7 +301,8 @@ def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
 
     build_opt = "--no-build" if no_build else "--build"
     ctx.run(
-        f"PROJECT_VERSION={version} {Utility.build_compose_cmd(profile)} up {build_opt} --detach",
+        f"{Utility.build_compose_cmd(profile)} up {build_opt} --detach",
+        env={"PROJECT_VERSION": version},
         pty=True,
     )
 
@@ -285,6 +320,7 @@ def compose_down(ctx: Context, cleanup: bool = False, profile: list[str] = []):
 def stack_deploy(ctx: Context, build: bool = False):
     """Deploy the stack to Docker Swarm (prod by default!). Optional build it before."""
     Utility.prepare_environment()
+    Utility.check_production_environment()
 
     if build:
         cmd = f"{Utility.build_compose_cmd()} build"
@@ -294,11 +330,17 @@ def stack_deploy(ctx: Context, build: bool = False):
     if not Utility.is_production():
         version += "-dev"
 
-    cmd = f"PROJECT_VERSION={version} docker stack deploy --detach "
+    # Docker Swarm Mode does not support .env files so we load the .env file manually
+    # and pass the content as an environment variables.
+    env = Utility.load_config_from_env_file()
+
+    env["PROJECT_VERSION"] = version
+
+    cmd = "docker stack deploy --detach "
     cmd += f" -c {Utility.get_compose_base_file()}"
     cmd += f" -c {Utility.get_compose_env_file()}"
     cmd += f" {Utility.get_stack_name()}"
-    ctx.run(cmd, pty=True)
+    ctx.run(cmd, env=env, pty=True)
 
 
 @task
@@ -465,11 +507,7 @@ def generate_auth_token(ctx: Context, length=20):
 @task
 def generate_certificate_files(ctx: Context):
     """Generate self-signed certificate files"""
-    env_file = Utility.get_project_dir() / ".env"
-    if not env_file.is_file():
-        raise Exit("Missing .env file!")
-
-    config = dotenv_values(env_file)
+    config = Utility.load_config_from_env_file()
 
     if "SSL_HOSTNAME" not in config:
         raise Exit("Missing SSL_HOSTNAME setting in .env file")
