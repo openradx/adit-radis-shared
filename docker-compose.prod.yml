@@ -26,7 +26,7 @@ services:
         wait-for-it -s postgres.local:5432 -t 60 && 
         ./manage.py migrate &&
         ./manage.py collectstatic --no-input &&
-        ./manage.py create_admin &&
+        ./manage.py create_superuser &&
         ./manage.py ok_server --host 0.0.0.0 --port 8000
       "
     deploy:
