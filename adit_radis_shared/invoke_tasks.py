@@ -291,7 +291,7 @@ class Utility:
 
 @task(iterable=["profile"])
 def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
-    """Start containers in specified environment"""
+    """Start development containers"""
     Utility.prepare_environment()
     Utility.check_development_environment()
 
@@ -309,7 +309,7 @@ def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
 
 @task(iterable=["profile"])
 def compose_down(ctx: Context, cleanup: bool = False, profile: list[str] = []):
-    """Stop containers in specified environment"""
+    """Stop development containers"""
     cmd = f"{Utility.build_compose_cmd(profile)} down"
     if cleanup:
         cmd += " --remove-orphans --volumes"
@@ -318,7 +318,7 @@ def compose_down(ctx: Context, cleanup: bool = False, profile: list[str] = []):
 
 @task
 def stack_deploy(ctx: Context, build: bool = False):
-    """Deploy the stack to Docker Swarm (prod by default!). Optional build it before."""
+    """Deploy the production stack to Docker Swarm. Optional build it before."""
     Utility.prepare_environment()
     Utility.check_production_environment()
 
@@ -345,7 +345,7 @@ def stack_deploy(ctx: Context, build: bool = False):
 
 @task
 def stack_rm(ctx: Context):
-    """Remove the Docker Swarm stack"""
+    """Remove the production stack from Docker Swarm"""
     ctx.run(f"docker stack rm {Utility.get_stack_name()}", pty=True)
 
 
