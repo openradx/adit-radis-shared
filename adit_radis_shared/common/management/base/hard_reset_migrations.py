@@ -10,6 +10,9 @@ class HardResetMigrationsCommand(BaseCommand):
     help = "Reset all migration files (dangerous!!!)."
 
     def handle(self, *args, **options):
+        self.stdout.write("Resetting migrations...", ending="")
+        self.stdout.flush()
+
         migration_paths = settings.BASE_DIR.glob(f"./{self.project}/*/migrations/**/*.py")
         migration_paths = [i for i in migration_paths if i.name != "__init__.py"]
         for migration_path in migration_paths:
@@ -22,3 +25,5 @@ class HardResetMigrationsCommand(BaseCommand):
         call_command("reset_db", "--noinput")  # needs django_extensions installed
         call_command("makemigrations")
         call_command("migrate")
+
+        self.stdout.write("Done")

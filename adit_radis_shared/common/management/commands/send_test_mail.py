@@ -11,8 +11,12 @@ class Command(BaseCommand):
         parser.add_argument("to_address", nargs="?", type=str, default=settings.ADMINS[0][1])
 
     def handle(self, *args, **options):
+        from_address = settings.SERVER_EMAIL
         to_address = options["to_address"]
         site = Site.objects.get_current()
+
+        self.stdout.write(f"Sending test mail from {from_address} to {to_address}...", ending="")
+        self.stdout.flush()
 
         send_mail(
             f"[{site.name}] Test Mail",
@@ -21,4 +25,4 @@ class Command(BaseCommand):
             [to_address],
         )
 
-        self.stdout.write(f"Test mail sent to {to_address}.")
+        self.stdout.write("Done")

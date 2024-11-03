@@ -28,11 +28,15 @@ class Command(BaseCommand):
             return
 
         if User.objects.filter(username=username).exists():
-            self.stdout.write(f"A user {username} already exists. Skipping superuser creation.")
+            self.stdout.write(
+                f"A user with username '{username}' already exists. Skipping superuser creation."
+            )
             return
 
+        self.stdout.write(f"Creating superuser with username '{username}'...", ending="")
+        self.stdout.flush()
         superuser = User.objects.create_superuser(username, email, password)
-        self.stdout.write(f"Created superuser {username}.")
+        self.stdout.write("Done")
 
         auth_token = os.environ.get("SUPERUSER_AUTH_TOKEN")
         if not auth_token:
@@ -41,9 +45,12 @@ class Command(BaseCommand):
             )
             return
 
+        self.stdout.write(f"Creating auth token for superuser '{username}'...", ending="")
+        self.stdout.flush()
         TokenFactory.create(
             token_hashed=hash_token(auth_token),
             fraction=auth_token[:FRACTION_LENGTH],
             owner=superuser,
             expires=None,
         )
+        self.stdout.write("Done")

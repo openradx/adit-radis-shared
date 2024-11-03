@@ -23,6 +23,10 @@ class Command(BaseCommand):
             return
 
         count = options["count"]
+
+        self.stdout.write(f"Creating {count} example users...", ending="")
+        self.stdout.flush()
+
         if count < 1:
             self.stderr.write("User count must be at least 1. Skipping.\n")
             return
@@ -30,4 +34,4 @@ class Command(BaseCommand):
         for _ in range(count):
             UserFactory.create(username=fake.unique.user_name())
 
-        self.stdout.write(f"Created {count} example users.")
+        self.stdout.write("Done")

@@ -34,6 +34,9 @@ class Command(BaseCommand):
             sys.stderr.write("Group count must be at least 1. Skipping.\n")
             return
 
+        self.stdout.write(f"Creating {count} example groups and assigning users to them...")
+        self.stdout.flush()
+
         groups: list[Group] = []
         for i in range(count):
             if i < len(PREDEFINED_GROUPS):
@@ -57,4 +60,4 @@ class Command(BaseCommand):
             user.groups.add(group)
             user.change_active_group(group)
 
-        self.stdout.write(f"Created {count} example groups and assigned users to them.")
+        self.stdout.write("Done")
