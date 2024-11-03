@@ -43,7 +43,7 @@ class Command(BaseCommand):
                 group = GroupFactory.create()
             groups.append(group)
 
-        superusers = list(User.objects.filter(superuser=True))
+        superusers = list(User.objects.filter(is_superuser=True))
         # Add a superuser to all groups and make the first one the active group
         for superuser in superusers:
             for group in groups:
@@ -51,7 +51,7 @@ class Command(BaseCommand):
             superuser.change_active_group(groups[0])
 
         # Add all users to a random group and make it the active group
-        users = list(User.objects.filter(superuser=False))
+        users = list(User.objects.filter(is_superuser=False))
         for user in users:
             group: Group = fake.random_element(elements=groups)
             user.groups.add(group)

@@ -18,7 +18,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> str | None:
-        if User.objects.filter(superuser=False).exists():
+        if User.objects.filter(is_superuser=False).exists():
             self.stdout.write("Database already populated with example users. Skipping.")
             return
 
