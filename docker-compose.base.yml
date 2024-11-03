@@ -25,7 +25,7 @@ x-app: &default-app
     SITE_USES_HTTPS: ${SITE_USES_HTTPS:-false}
     SUPPORT_EMAIL: ${SUPPORT_EMAIL:?}
     TOKEN_AUTHENTICATION_SALT: ${TOKEN_AUTHENTICATION_SALT:?}
-    USE_DOCKER: true
+    USE_DOCKER: "true"
     USER_TIME_ZONE: ${USER_TIME_ZONE:?}
 
 services:

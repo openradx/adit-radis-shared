@@ -1,13 +1,12 @@
 x-app: &default-app
-  image: example_project_prod
+  image: example_project_prod:latest
+  volumes:
+    - ${SSL_CERT_FILE:?}:/var/www/web/ssl/cert.pem
+    - ${SSL_KEY_FILE:?}:/var/www/web/ssl/key.pem
   environment:
     DJANGO_EMAIL_URL: ${DJANGO_EMAIL_URL:?}
     DJANGO_SETTINGS_MODULE: "example_project.settings.production"
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
-    SSL_CERT_FILE: ${SSL_CERT_FILE:?}
-    SSL_HOSTNAME: ${SSL_HOSTNAME:?}
-    SSL_IP_ADDRESSES: ${SSL_IP_ADDRESSES:?}
-    SSL_KEY_FILE: ${SSL_KEY_FILE:?}
 
 x-deploy: &deploy
   replicas: 1
