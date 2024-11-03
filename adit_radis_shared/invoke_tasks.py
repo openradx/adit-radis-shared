@@ -431,7 +431,6 @@ def init_workspace(ctx: Context):
 
     def modify_env_file(domain: str | None = None, uses_https: bool = False):
         if domain:
-            url = f"https://{domain}"
             hosts = f".localhost,127.0.0.1,[::1],{domain}"
             set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
             set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
