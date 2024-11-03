@@ -601,14 +601,6 @@ def restore_db(ctx: Context):
 
 
 @task
-def upgrade_adit_radis_shared(ctx: Context, version: str | None = None):
-    """Upgrade adit-radis-shared package"""
-    if version is None:
-        version = Utility.get_latest_remote_version_tag("openradx", "adit-radis-shared")
-    ctx.run(f"poetry add git+https://github.com/openradx/adit-radis-shared.git@{version}", pty=True)
-
-
-@task
 def upgrade_postgresql(ctx: Context, version: str = "latest"):
     volume = f"{Utility.get_stack_name()}_postgres_data"
     print(f"Upgrading PostgreSQL database in volume {volume} environment to {version}.")
