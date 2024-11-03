@@ -3,8 +3,7 @@ import os
 from django.core.management.base import BaseCommand
 
 from adit_radis_shared.accounts.models import User
-from adit_radis_shared.token_authentication.factories import TokenFactory
-from adit_radis_shared.token_authentication.models import FRACTION_LENGTH
+from adit_radis_shared.token_authentication.models import FRACTION_LENGTH, Token
 from adit_radis_shared.token_authentication.utils.crypto import hash_token
 
 
@@ -58,10 +57,11 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Creating auth token for superuser '{username}'...", ending="")
         self.stdout.flush()
-        TokenFactory.create(
+        Token.objects.create(
+            owner=superuser,
             token_hashed=hash_token(auth_token),
             fraction=auth_token[:FRACTION_LENGTH],
-            owner=superuser,
+            description="Automatically created by create_superuser command",
             expires=None,
         )
         self.stdout.write("Done")
