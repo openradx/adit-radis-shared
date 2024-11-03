@@ -433,7 +433,6 @@ def init_workspace(ctx: Context):
         if domain:
             url = f"https://{domain}"
             hosts = f".localhost,127.0.0.1,[::1],{domain}"
-            set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", url, quote_mode="never")
             set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
             set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
             set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
