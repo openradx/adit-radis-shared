@@ -20,3 +20,5 @@ class Command(BaseCommand):
             settings.SERVER_EMAIL,
             [to_address],
         )
+
+        self.stdout.write(f"Test mail sent to {to_address}.")

@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         if Group.objects.count() > 0:
-            print("Development database already populated with example groups. Skipping.")
+            self.stdout.write("Database already populated with example groups. Skipping.")
             return
 
         count = options["count"]

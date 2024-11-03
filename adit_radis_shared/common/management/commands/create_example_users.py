@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         if User.objects.filter(superuser=False).exists():
-            print("Database already populated with example users. Skipping.")
+            self.stdout.write("Database already populated with example users. Skipping.")
             return
 
         count = options["count"]

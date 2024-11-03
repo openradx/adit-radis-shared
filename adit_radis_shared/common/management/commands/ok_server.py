@@ -21,6 +21,6 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any):
         host = options["host"]
         port = options["port"]
-        print(f"Serving OK server on {host}:{port}")
+        self.stdout.write(f"Serving OK server on {host}:{port}")
         server = HTTPServer((host, port), SimpleHTTPRequestHandler)
         server.serve_forever()
