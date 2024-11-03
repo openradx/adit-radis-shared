@@ -421,19 +421,6 @@ def test(
 
 
 @task
-def reset_dev(ctx: Context):
-    """Reset the dev environment"""
-    # Wipe the database
-    ctx.run(f"{Utility.build_compose_cmd()} exec web python manage.py flush --noinput", pty=True)
-    # Re-populate the database with users and groups
-    ctx.run(
-        f"{Utility.build_compose_cmd()} exec web python manage.py populate_users_and_groups "
-        "--users 20 --groups 3",
-        pty=True,
-    )
-
-
-@task
 def init_workspace(ctx: Context):
     """Initialize workspace for Github Codespaces, Gitpod or local development"""
     env_file = Utility.get_project_dir() / ".env"
