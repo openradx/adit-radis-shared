@@ -109,10 +109,15 @@ WSGI_APPLICATION = "example_project.wsgi.application"
 
 ASGI_APPLICATION = "example_project.asgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# Loads the DB setup from the DATABASE_URL environment variable.
 DATABASES = {"default": env.db()}
 
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Custom user model
+AUTH_USER_MODEL = "accounts.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -131,9 +136,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
-# Custom user model
-AUTH_USER_MODEL = "accounts.User"
 
 # A custom authentication backend that supports a single currently active group.
 AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
@@ -177,6 +179,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+# A timezone that is presented to the users of the web interface.
+USER_TIME_ZONE = env.str("USER_TIME_ZONE")
+
 # This seems to be important for development on Gitpod as CookieStorage
 # and FallbackStorage does not work there.
 # Seems to be the same problem with Cloud9 https://stackoverflow.com/a/34828308/166229
@@ -185,13 +190,6 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = "static/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# A timezone that is used for users of the web interface.
-USER_TIME_ZONE = env.str("USER_TIME_ZONE")
 
 # For crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
