@@ -20,10 +20,7 @@ MIDDLEWARE += [  # noqa: F405
 ]
 
 if env.bool("FORCE_DEBUG_TOOLBAR"):
-    # https://github.com/jazzband/django-debug-toolbar/issues/1035
-    from django.conf import settings
-
-    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda _: settings.DEBUG}
+    DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda _: True}
 
 if env.bool("USE_DOCKER"):
     import socket
