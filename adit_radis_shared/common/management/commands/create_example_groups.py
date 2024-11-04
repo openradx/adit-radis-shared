@@ -34,7 +34,9 @@ class Command(BaseCommand):
             sys.stderr.write("Group count must be at least 1. Skipping.\n")
             return
 
-        self.stdout.write(f"Creating {count} example groups and assigning users to them...")
+        self.stdout.write(
+            f"Creating {count} example groups and assigning users to them...", ending=""
+        )
         self.stdout.flush()
 
         groups: list[Group] = []
