@@ -23,12 +23,3 @@ MIDDLEWARE += [  # noqa: F405
 
 if env.bool("FORCE_DEBUG_TOOLBAR"):
     DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda _: True}
-
-if env.bool("USE_DOCKER"):
-    import socket
-
-    # For Debug Toolbar to show up on Docker Compose in development mode.
-    # This only works when browsed from the host where the containers are run.
-    # If viewed from somewhere else then DJANGO_INTERNAL_IPS must be set.
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]  # noqa: F405
