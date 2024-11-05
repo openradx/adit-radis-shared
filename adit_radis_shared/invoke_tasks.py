@@ -157,6 +157,15 @@ class Utility:
                 "certificate with 'invoke generate-certificate-files'."
             )
 
+        chain_file = config.get("SSL_CHAIN_FILE")
+        if not chain_file or not Path(chain_file).is_file():
+            raise Exit(
+                "Invalid SSL_CHAIN_FILE setting in .env file. You can generate an unsigned "
+                "chain file with 'invoke generate-certificate-files'. If you have a signed "
+                "certificate, you can generate a valid chain file with "
+                "'invoke generate-chain-file'."
+            )
+
     @staticmethod
     def find_running_container_id(ctx: Context, name: str):
         stack_name = Utility.get_stack_name()
@@ -282,6 +291,15 @@ class Utility:
         )
 
         return cert_pem, key_pem
+
+    @staticmethod
+    def generate_chain_file_for_host(hostname: str):
+        """Generates the chain file for a signed certificate"""
+        url = f"https://whatsmychaincert.com/generate?include_leaf=1&host={hostname}&submit_btn=Generate+Chain&include_root=1"
+        response = requests.get(url)
+        response.raise_for_status()
+        chain_pem = response.content
+        return chain_pem
 
 
 ###
@@ -525,6 +543,12 @@ def generate_certificate_files(ctx: Context):
     if key_path.is_file():
         raise Exit(f"Key file {key_path.absolute()} already exists. Skipping.")
 
+    chain_file = config["SSL_CHAIN_FILE"]
+    assert chain_file
+    chain_path = Path(chain_file)
+    if chain_path.is_file():
+        raise Exit(f"Chain file {chain_path.absolute()} already exists. Skipping.")
+
     cert_path.parent.mkdir(parents=True, exist_ok=True)
     with open(cert_path, "wb") as cert_file:
         cert_file.write(cert_pem)
@@ -534,6 +558,68 @@ def generate_certificate_files(ctx: Context):
     with open(key_path, "wb") as key_file:
         key_file.write(key_pem)
         print(f"Generated key file at {key_path.absolute()}")
+
+    # Necessary copy of cert file to chain file since chain file must not be empty and at
+    #  least the leaf certificate must be present
+    chain_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(chain_path, "wb") as chain_file:
+        chain_file.write(cert_pem)
+        print(f"Generated chain file at {chain_path.absolute()}")
+
+
+@task
+def generate_certificate_chain(ctx: Context):
+    """Generate certificate chain file for a signed certificate"""
+    config = Utility.load_config_from_env_file()
+
+    if "SSL_HOSTNAME" not in config:
+        raise Exit("Missing SSL_HOSTNAME setting in .env file")
+    if "SSL_CERT_FILE" not in config:
+        raise Exit("Missing SSL_CERT_FILE setting in .env file")
+    if "SSL_CHAIN_FILE" not in config:
+        raise Exit("Missing SSL_CHAIN_FILE setting in .env file")
+
+    hostname = config["SSL_HOSTNAME"]
+    assert hostname
+
+    cert_file = config["SSL_CERT_FILE"]
+    assert cert_file
+
+    chain_file = config["SSL_CHAIN_FILE"]
+    assert chain_file
+
+    cert_path = Path(cert_file)
+    if not cert_path.is_file():
+        raise Exit(
+            f"SSL certificate file {cert_path.absolute()} does not exist. "
+            "You can generate an unsigned certificate with 'invoke generate-certificate-files'"
+            " with included chain file. If you have a signed certificate from a CA, be sure to"
+            " provide the correct SSL_CERT_FILE setting in '.env'. Skipping."
+        )
+
+    chain_path = Path(chain_file)
+    if chain_path.is_file():
+        raise Exit(
+            f"Chain file {chain_path.absolute()} already exist. Delete file to generate a new one. "
+            "Skipping."
+        )
+
+    try:
+        chain_pem = Utility.generate_chain_file_for_host(hostname)
+    except Exception:
+        print(
+            "Generating chain file failed. "
+            "You are probably running within a intranet with no public DNS and an internal CA. "
+            "Your signing CA is Root CA of your domain, no intermediate certificates needed. "
+            "Therefore chain is generated based on the provided leaf certificate."
+        )
+        with open(cert_path, "rb") as file:
+            chain_pem = file.read()
+
+    chain_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(chain_path, "wb") as chain_file:
+        chain_file.write(chain_pem)
+        print(f"Generated chain file at {chain_path.absolute()}")
 
 
 @task
