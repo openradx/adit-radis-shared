@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django_extensions",
     "procrastinate.contrib.django",
+    "dbbackup",
     "loginas",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -203,3 +204,8 @@ DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html"
 # The salt that is used for hashing new tokens in the token authentication app.
 # Cave, changing the salt after some tokens were already generated makes them all invalid!
 TOKEN_AUTHENTICATION_SALT = env.str("TOKEN_AUTHENTICATION_SALT")
+
+# django-dbbackup
+DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": env.str("DBBACKUP_STORAGE_LOCATION")}
+DBBACKUP_CLEANUP_KEEP = 30

@@ -8,6 +8,7 @@ from invoke.tasks import task
 from adit_radis_shared import invoke_tasks
 from adit_radis_shared.invoke_tasks import (  # noqa: F401
     Utility,
+    backup_db,
     compose_down,
     compose_up,
     format,
