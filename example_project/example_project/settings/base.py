@@ -25,9 +25,6 @@ SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "exam
 # Fetch version from the environment which is passed through from the latest git version tag
 PROJECT_VERSION = env.str("PROJECT_VERSION", default="vX.Y.Z")  # type: ignore
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 # Needed by sites framework
 SITE_ID = 1
 
@@ -109,6 +106,9 @@ WSGI_APPLICATION = "example_project.wsgi.application"
 
 ASGI_APPLICATION = "example_project.asgi.application"
 
+# This seems to be important for Cloud IDEs as CookieStorage does not work there.
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
 # Loads the DB setup from the DATABASE_URL environment variable.
 DATABASES = {"default": env.db()}
 
@@ -140,10 +140,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # A custom authentication backend that supports a single currently active group.
 AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
 
+# Where to redirect to after login
+LOGIN_REDIRECT_URL = "home"
+
 # Settings for django-registration-redux
 REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
 ACCOUNT_ACTIVATION_DAYS = 14
 REGISTRATION_OPEN = True
+
+EMAIL_SUBJECT_PREFIX = "[ADIT-RADIS-Shared] "
 
 # The email address critical error messages of the server will be sent from.
 SERVER_EMAIL = env.str("DJANGO_SERVER_EMAIL")
@@ -168,6 +173,8 @@ REST_FRAMEWORK = {
     ],
 }
 
+# TODO: Setup LOGGING
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -181,11 +188,6 @@ USE_TZ = True
 
 # A timezone that is presented to the users of the web interface.
 USER_TIME_ZONE = env.str("USER_TIME_ZONE")
-
-# This seems to be important for development on Gitpod as CookieStorage
-# and FallbackStorage does not work there.
-# Seems to be the same problem with Cloud9 https://stackoverflow.com/a/34828308/166229
-MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
