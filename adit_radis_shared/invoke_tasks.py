@@ -29,6 +29,7 @@ from invoke.tasks import task
 # Those variables are set in tasks.py of the project root.
 PROJECT_NAME: str | None = None
 PROJECT_DIR: Path | None = None
+FORCE_SWARM_MODE_IN_PRODUCTION: bool = False
 
 
 ###
@@ -118,57 +119,16 @@ class Utility:
     def prepare_environment():
         config = Utility.load_config_from_env_file()
 
-        # Check backup dir
         backup_dir = config.get("BACKUP_DIR")
         if not backup_dir:
-            raise Exit("Missing BACKUP_DIR setting in .env file.")
+            return
+
         backup_path = Path(backup_dir)
         if not backup_path.exists():
             print(f"Creating non-existent BACKUP_DIR {backup_path.absolute()}")
             backup_path.mkdir(parents=True, exist_ok=True)
         if not backup_path.is_dir():
             raise Exit(f"Invalid BACKUP_DIR {backup_path.absolute()}.")
-
-    @staticmethod
-    def check_development_environment():
-        config = Utility.load_config_from_env_file()
-        if config.get("ENVIRONMENT") != "development":
-            raise Exit(
-                "Command can only be used in development environment. "
-                "Check ENVIRONMENT setting in .env file."
-            )
-
-    @staticmethod
-    def check_production_environment():
-        config = Utility.load_config_from_env_file()
-        if config.get("ENVIRONMENT") != "production":
-            raise Exit(
-                "Command can only be used in production environment. "
-                "Check ENVIRONMENT setting in .env file."
-            )
-
-        cert_file = config.get("SSL_CERT_FILE")
-        if not cert_file or not Path(cert_file).is_file():
-            raise Exit(
-                "Invalid SSL_CERT_FILE setting in .env file. You can generate an unsigned "
-                "certificate with 'invoke generate-certificate-files'."
-            )
-
-        key_file = config.get("SSL_KEY_FILE")
-        if not key_file or not Path(key_file).is_file():
-            raise Exit(
-                "Invalid SSL_KEY_FILE setting in .env file. You can generate an unsigned "
-                "certificate with 'invoke generate-certificate-files'."
-            )
-
-        chain_file = config.get("SSL_CHAIN_FILE")
-        if not chain_file or not Path(chain_file).is_file():
-            raise Exit(
-                "Invalid SSL_CHAIN_FILE setting in .env file. You can generate an unsigned "
-                "chain file with 'invoke generate-certificate-files'. If you have a signed "
-                "certificate, you can generate a valid chain file with "
-                "'invoke generate-chain-file'."
-            )
 
     @staticmethod
     def find_running_container_id(ctx: Context, name: str):
@@ -299,7 +259,10 @@ class Utility:
     @staticmethod
     def generate_chain_file_for_host(hostname: str):
         """Generates the chain file for a signed certificate"""
-        url = f"https://whatsmychaincert.com/generate?include_leaf=1&host={hostname}&submit_btn=Generate+Chain&include_root=1"
+        url = (
+            f"https://whatsmychaincert.com/generate?include_leaf=1&host={hostname}"
+            "&submit_btn=Generate+Chain&include_root=1"
+        )
         response = requests.get(url)
         response.raise_for_status()
         chain_pem = response.content
@@ -315,7 +278,14 @@ class Utility:
 def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
     """Start development containers"""
     Utility.prepare_environment()
-    Utility.check_development_environment()
+
+    if FORCE_SWARM_MODE_IN_PRODUCTION:
+        config = Utility.load_config_from_env_file()
+        if config.get("ENVIRONMENT") != "development":
+            raise Exit(
+                "compose-up task can only be used in development environment. "
+                "Check ENVIRONMENT setting in .env file."
+            )
 
     version = Utility.get_latest_local_version_tag(ctx)
     if not Utility.is_production():
@@ -342,7 +312,14 @@ def compose_down(ctx: Context, cleanup: bool = False, profile: list[str] = []):
 def stack_deploy(ctx: Context, build: bool = False):
     """Deploy the production stack to Docker Swarm. Optional build it before."""
     Utility.prepare_environment()
-    Utility.check_production_environment()
+
+    if FORCE_SWARM_MODE_IN_PRODUCTION:
+        config = Utility.load_config_from_env_file()
+        if config.get("ENVIRONMENT") != "production":
+            raise Exit(
+                "stack-deploy task can only be used in production environment. "
+                "Check ENVIRONMENT setting in .env file."
+            )
 
     if build:
         cmd = f"{Utility.build_compose_cmd()} build"
