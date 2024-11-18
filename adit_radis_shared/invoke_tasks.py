@@ -85,7 +85,11 @@ class Utility:
         return Utility.get_project_dir() / "docker-compose.dev.yml"
 
     @staticmethod
-    def get_stack_name():
+    def get_stack_name() -> str:
+        config = Utility.load_config_from_env_file()
+        if stack_name := config.get("STACK_NAME", ""):
+            return stack_name
+
         if Utility.is_production():
             return f"{Utility.get_project_name()}_prod"
         return f"{Utility.get_project_name()}_dev"
