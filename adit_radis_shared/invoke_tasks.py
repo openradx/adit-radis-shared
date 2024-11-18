@@ -50,13 +50,6 @@ class Utility:
         return PROJECT_DIR
 
     @staticmethod
-    def get_compose_project_name():
-        config = Utility.load_config_from_env_file()
-        if config.get("COMPOSE_PROJECT_NAME") is not None:
-            return
-        return Utility.get_project_name()
-
-    @staticmethod
     def load_config_from_env_file() -> dict[str, str | None]:
         env_file = Utility.get_project_dir() / ".env"
         if not env_file.exists():
@@ -92,10 +85,14 @@ class Utility:
         return Utility.get_project_dir() / "docker-compose.dev.yml"
 
     @staticmethod
-    def get_stack_name():
+    def get_stack_name() -> str:
+        config = Utility.load_config_from_env_file()
+        if stack_name := config.get("STACK_NAME", ""):
+            return stack_name
+
         if Utility.is_production():
-            return f"{Utility.get_compose_project_name()}_prod"
-        return f"{Utility.get_compose_project_name()}_dev"
+            return f"{Utility.get_project_name()}_prod"
+        return f"{Utility.get_project_name()}_dev"
 
     @staticmethod
     def build_compose_cmd(profiles: list[str] = []):
