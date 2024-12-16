@@ -100,6 +100,7 @@
             let holdover = fromKeyHoldovers[toKey];
             from2.appendChild(holdover);
             currentFrom = holdover;
+            fromKey = getKey(currentFrom);
           } else {
             if (!shouldSkip(adding, currentTo)) {
               let clone = currentTo.cloneNode(true);
@@ -173,6 +174,7 @@
             if (fromKeys[toKey]) {
               currentFrom.replaceWith(fromKeys[toKey]);
               currentFrom = fromKeys[toKey];
+              fromKey = getKey(currentFrom);
             }
           }
           if (toKey && fromKey) {
@@ -181,6 +183,7 @@
               fromKeyHoldovers[fromKey] = currentFrom;
               currentFrom.replaceWith(fromKeyNode);
               currentFrom = fromKeyNode;
+              fromKey = getKey(currentFrom);
             } else {
               fromKeyHoldovers[fromKey] = currentFrom;
               currentFrom = addNodeBefore(from2, currentTo, currentFrom);
@@ -325,6 +328,8 @@
   function seedingMatchingId(to, from) {
     let fromId = from && from._x_bindings && from._x_bindings.id;
     if (!fromId)
+      return;
+    if (!to.setAttribute)
       return;
     to.setAttribute("id", fromId);
     to.id = fromId;
