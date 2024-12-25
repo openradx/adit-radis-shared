@@ -5,14 +5,22 @@ from procrastinate.contrib.django import app
 
 def _run_worker_once_sync() -> None:
     with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
-        app.run_worker(wait=False, install_signal_handlers=False, listen_notify=False)
+        app.run_worker(
+            wait=False,
+            install_signal_handlers=False,
+            listen_notify=False,
+            delete_jobs="always",
+        )
 
 
 async def _run_worker_once_async() -> None:
     with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
         async with app.open_async():
             await app.run_worker_async(
-                wait=False, install_signal_handlers=False, listen_notify=False
+                wait=False,
+                install_signal_handlers=False,
+                listen_notify=False,
+                delete_jobs="always",
             )
 
 
