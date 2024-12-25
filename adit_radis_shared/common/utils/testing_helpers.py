@@ -79,9 +79,9 @@ def add_permission(
         user_or_group.permissions.add(permission)
 
 
-def add_user_to_group(user: User, group: Group):
+def add_user_to_group(user: User, group: Group, force_activate_group: bool = False):
     user.groups.add(group)
-    if not user.active_group:
+    if not user.active_group or force_activate_group:
         user.change_active_group(group)
 
 
