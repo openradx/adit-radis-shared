@@ -1,5 +1,4 @@
 import time
-from multiprocessing import Process
 from typing import Callable
 
 import pytest
@@ -7,7 +6,7 @@ from django.db import connection
 from django_test_migrations.migrator import Migrator
 from playwright.sync_api import Locator, Page, Response
 from procrastinate import testing
-from procrastinate.contrib.django import app, procrastinate_app
+from procrastinate.contrib.django import procrastinate_app
 
 from adit_radis_shared.accounts.factories import UserFactory
 from adit_radis_shared.common.utils.testing import ChannelsLiveServer
@@ -74,22 +73,6 @@ def in_memory_app(monkeypatch):
     with procrastinate_app.current_app.replace_connector(in_memory) as app:
         monkeypatch.setattr(procrastinate_app, "current_app", app)
         yield app
-
-
-@pytest.fixture
-def run_worker():
-    def _worker():
-        my_app = app.with_connector(app.connector.get_worker_connector())  # type: ignore
-        my_app.run_worker(
-            wait=False, install_signal_handlers=False, listen_notify=False, delete_jobs="always"
-        )
-
-    def _run_worker():
-        p = Process(target=_worker)
-        p.start()
-        p.join()
-
-    return _run_worker
 
 
 @pytest.fixture
