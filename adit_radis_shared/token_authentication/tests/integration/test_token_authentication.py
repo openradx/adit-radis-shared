@@ -1,20 +1,21 @@
 import pytest
 import requests
 from playwright.sync_api import Page, expect
+from pytest_django.live_server_helper import LiveServer
 
-from adit_radis_shared.common.utils.auth_utils import add_user_to_group
+from adit_radis_shared.common.utils.testing_helpers import (
+    add_user_to_group,
+    create_and_login_example_user,
+    create_token_authentication_group,
+)
 
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_create_and_delete_authentication_token(
-    page: Page,
-    live_server,
-    create_and_login_user,
-    token_authentication_group,
-):
-    user = create_and_login_user(live_server.url)
-    add_user_to_group(user, token_authentication_group)
+def test_create_and_delete_authentication_token(live_server: LiveServer, page: Page):
+    user = create_and_login_example_user(page, live_server.url)
+    group = create_token_authentication_group()
+    add_user_to_group(user, group)
 
     page.goto(live_server.url + "/token-authentication/")
     page.get_by_label("Description").fill("Just a test token")
@@ -41,9 +42,7 @@ def test_create_and_delete_authentication_token(
 
 @pytest.mark.integration
 @pytest.mark.django_db(transaction=True)
-def test_invalid_authentication_token(
-    live_server,
-):
+def test_invalid_authentication_token(live_server: LiveServer):
     response = requests.get(
         live_server.url + "/api/token-authentication/check-auth",
         headers={"Authorization": "Token invalid_token"},
