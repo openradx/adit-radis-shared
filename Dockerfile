@@ -41,6 +41,11 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     postgresql-client-17
 
+# Install tzdata and configure timezone
+ARG SYSTEM_TIME_ZONE
+RUN apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/${SYSTEM_TIME_ZONE} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
 
 # `builder-base` stage is used to build deps + create our virtual environment
 FROM python-base AS builder-base
