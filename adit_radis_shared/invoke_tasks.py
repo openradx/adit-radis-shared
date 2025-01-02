@@ -279,7 +279,7 @@ class Utility:
 
 
 @task(iterable=["profile"])
-def compose_up(ctx: Context, profile: list[str] = []):
+def compose_up(ctx: Context, no_build: bool = False, profile: list[str] = []):
     """Start development containers"""
     Utility.prepare_environment()
 
@@ -295,11 +295,11 @@ def compose_up(ctx: Context, profile: list[str] = []):
     if not Utility.is_production():
         version += "-dev"
 
-    ctx.run(
-        f"{Utility.build_compose_cmd(profile)} up --detach",
-        env={"PROJECT_VERSION": version},
-        pty=True,
-    )
+    cmd = f"{Utility.build_compose_cmd(profile)} up"
+    if no_build:
+        cmd += " --no-build"
+    cmd += " --detach"
+    ctx.run(cmd, env={"PROJECT_VERSION": version}, pty=True)
 
 
 @task(iterable=["profile"])
