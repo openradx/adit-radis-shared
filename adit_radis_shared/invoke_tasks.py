@@ -5,6 +5,7 @@ import re
 import secrets
 import shutil
 import string
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from os import urandom
@@ -106,11 +107,10 @@ class Utility:
         return cmd
 
     @staticmethod
-    def check_compose_up(ctx: Context):
+    def check_compose_up():
         stack_name = Utility.get_stack_name()
-        result = ctx.run("docker compose ls", hide=True, warn=True)
-        assert result and result.ok
-        for line in result.stdout.splitlines():
+        result = Utility.capture("docker compose ls")
+        for line in result.splitlines():
             if line.startswith(stack_name) and line.find("running") != -1:
                 return True
         return False
@@ -131,14 +131,14 @@ class Utility:
             raise Exit(f"Invalid BACKUP_DIR {backup_path.absolute()}.")
 
     @staticmethod
-    def find_running_container_id(ctx: Context, name: str):
+    def find_running_container_id(name: str):
         stack_name = Utility.get_stack_name()
         sep = "_" if Utility.is_production() else "-"
         cmd = f"docker ps -q -f name={stack_name}{sep}{name} -f status=running"
         cmd += " | head -n1"
-        result = ctx.run(cmd, hide=True, warn=True)
-        if result and result.ok:
-            container_id = result.stdout.strip()
+        result = Utility.capture(cmd)
+        if result:
+            container_id = result.strip()
             if container_id:
                 return container_id
         return None
@@ -157,6 +157,11 @@ class Utility:
                 sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
     @staticmethod
+    def capture(cmd: str) -> str:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
+        return result.stdout
+
+    @staticmethod
     def get_latest_remote_version_tag(owner, repo) -> str | None:
         url = f"https://api.github.com/repos/{owner}/{repo}/tags"
         response = requests.get(url)
@@ -173,11 +178,10 @@ class Utility:
         return None
 
     @staticmethod
-    def get_latest_local_version_tag(ctx: Context) -> str:
+    def get_latest_local_version_tag() -> str:
         # Get all tags sorted by creation date (newest first)
-        result = ctx.run("git tag -l --sort=-creatordate", hide=True)
-        assert result and result.ok
-        all_tags = result.stdout.splitlines()
+        result = Utility.capture("git tag -l --sort=-creatordate")
+        all_tags = result.splitlines()
 
         version_pattern = re.compile(r"^\d+\.\d+\.\d+$")
         for tag in all_tags:
@@ -275,7 +279,7 @@ class Utility:
 
 
 @task(iterable=["profile"])
-def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
+def compose_up(ctx: Context, profile: list[str] = []):
     """Start development containers"""
     Utility.prepare_environment()
 
@@ -287,13 +291,12 @@ def compose_up(ctx: Context, no_build=False, profile: list[str] = []):
                 "Check ENVIRONMENT setting in .env file."
             )
 
-    version = Utility.get_latest_local_version_tag(ctx)
+    version = Utility.get_latest_local_version_tag()
     if not Utility.is_production():
         version += "-dev"
 
-    build_opt = "--no-build" if no_build else "--build"
     ctx.run(
-        f"{Utility.build_compose_cmd(profile)} up {build_opt} --detach",
+        f"{Utility.build_compose_cmd(profile)} up --detach",
         env={"PROJECT_VERSION": version},
         pty=True,
     )
@@ -325,7 +328,7 @@ def stack_deploy(ctx: Context, build: bool = False):
         cmd = f"{Utility.build_compose_cmd()} build"
         ctx.run(cmd, pty=True)
 
-    version = Utility.get_latest_local_version_tag(ctx)
+    version = Utility.get_latest_local_version_tag()
     if not Utility.is_production():
         version += "-dev"
 
@@ -392,7 +395,7 @@ def test(
     failfast: bool = False,
 ):
     """Run the test suite"""
-    if not Utility.check_compose_up(ctx):
+    if not Utility.check_compose_up():
         raise Exit("Integration tests need dev containers running.\nRun 'invoke compose-up' first.")
 
     cmd = (
@@ -642,7 +645,10 @@ def backup_db(ctx: Context):
         if Utility.is_production()
         else f"{Utility.get_project_name()}.settings.development"
     )
-    web_container_id = Utility.find_running_container_id(ctx, "web")
+    web_container_id = Utility.find_running_container_id("web")
+    if web_container_id is None:
+        raise Exit("Web container is not running. Run 'invoke compose-up' first.")
+
     ctx.run(
         (
             f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
@@ -660,7 +666,10 @@ def restore_db(ctx: Context):
         if Utility.is_production()
         else f"{Utility.get_project_name()}.settings.development"
     )
-    web_container_id = Utility.find_running_container_id(ctx, "web")
+    web_container_id = Utility.find_running_container_id("web")
+    if web_container_id is None:
+        raise Exit("Web container is not running. Run 'invoke compose-up' first.")
+
     ctx.run(
         (
             f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
