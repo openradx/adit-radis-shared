@@ -24,6 +24,9 @@ x-app: &default-app
     SUPPORT_EMAIL: ${SUPPORT_EMAIL:?}
     TOKEN_AUTHENTICATION_SALT: ${TOKEN_AUTHENTICATION_SALT:?}
     USER_TIME_ZONE: ${USER_TIME_ZONE:?}
+  build:
+      args:
+        SYSTEM_TIME_ZONE: ${SYSTEM_TIME_ZONE:-Etc/UTC}
 
 services:
   # We have to to define the init servce in base (even if we don't use it
