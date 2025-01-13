@@ -1,8 +1,8 @@
+import sys
 from typing import Any
 
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandParser
-from environ import sys
 from faker import Faker
 
 from adit_radis_shared.accounts.factories import GroupFactory
