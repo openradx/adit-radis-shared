@@ -501,10 +501,10 @@ def generate_certificate_files(ctx: Context):
 
     if "SSL_HOSTNAME" not in config:
         raise Exit("Missing SSL_HOSTNAME setting in .env file")
-    if "SSL_CERT_FILE" not in config:
-        raise Exit("Missing SSL_CERT_FILE setting in .env file")
-    if "SSL_KEY_FILE" not in config:
-        raise Exit("Missing SSL_KEY_FILE setting in .env file")
+    if "SSL_SERVER_CERT_FILE" not in config:
+        raise Exit("Missing SSL_SERVER_CERT_FILE setting in .env file")
+    if "SSL_SERVER_KEY_FILE" not in config:
+        raise Exit("Missing SSL_SERVER_KEY_FILE setting in .env file")
 
     hostname = config["SSL_HOSTNAME"]
     assert hostname
@@ -515,19 +515,19 @@ def generate_certificate_files(ctx: Context):
 
     (cert_pem, key_pem) = Utility.generate_self_signed_certificates(hostname, ip_addresses)
 
-    cert_file = config["SSL_CERT_FILE"]
+    cert_file = config["SSL_SERVER_CERT_FILE"]
     assert cert_file
     cert_path = Path(cert_file)
     if cert_path.is_file():
         raise Exit(f"A SSL certificate file {cert_path.absolute()} already exists.")
 
-    key_file = config["SSL_KEY_FILE"]
+    key_file = config["SSL_SERVER_KEY_FILE"]
     assert key_file
     key_path = Path(key_file)
     if key_path.is_file():
         raise Exit(f"Key file {key_path.absolute()} already exists. Skipping.")
 
-    chain_file = config["SSL_CHAIN_FILE"]
+    chain_file = config["SSL_SERVER_CHAIN_FILE"]
     assert chain_file
     chain_path = Path(chain_file)
     if chain_path.is_file():
@@ -558,18 +558,18 @@ def generate_certificate_chain(ctx: Context):
 
     if "SSL_HOSTNAME" not in config:
         raise Exit("Missing SSL_HOSTNAME setting in .env file")
-    if "SSL_CERT_FILE" not in config:
-        raise Exit("Missing SSL_CERT_FILE setting in .env file")
-    if "SSL_CHAIN_FILE" not in config:
-        raise Exit("Missing SSL_CHAIN_FILE setting in .env file")
+    if "SSL_SERVER_CERT_FILE" not in config:
+        raise Exit("Missing SSL_SERVER_CERT_FILE setting in .env file")
+    if "SSL_SERVER_CHAIN_FILE" not in config:
+        raise Exit("Missing SSL_SERVER_CHAIN_FILE setting in .env file")
 
     hostname = config["SSL_HOSTNAME"]
     assert hostname
 
-    cert_file = config["SSL_CERT_FILE"]
+    cert_file = config["SSL_SERVER_CERT_FILE"]
     assert cert_file
 
-    chain_file = config["SSL_CHAIN_FILE"]
+    chain_file = config["SSL_SERVER_CHAIN_FILE"]
     assert chain_file
 
     cert_path = Path(cert_file)
@@ -578,7 +578,7 @@ def generate_certificate_chain(ctx: Context):
             f"SSL certificate file {cert_path.absolute()} does not exist. "
             "You can generate an unsigned certificate with 'invoke generate-certificate-files'"
             " with included chain file. If you have a signed certificate from a CA, be sure to"
-            " provide the correct SSL_CERT_FILE setting in '.env'. Skipping."
+            " provide the correct SSL_SERVER_CERT_FILE setting in '.env'. Skipping."
         )
 
     chain_path = Path(chain_file)
