@@ -2,12 +2,11 @@ import logging
 from datetime import date, datetime, time
 from typing import Any, Literal
 
-from django.contrib.sites.models import Site
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest
 from django.template import Library
 from django.template.defaultfilters import join
-
-from adit_radis_shared.common.models import SiteProfile
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +21,31 @@ def access_item(d: dict, key: str) -> Any:
 @register.simple_tag(takes_context=True)
 def base_url(context: dict[str, Any]) -> str:
     """Get the base URL of the current site."""
-    site = Site.objects.get_current()
-
-    # Requires django.template.context_processors.request
     protocol: Literal["http", "https"]
     request: HttpRequest | None = context.get("request")
     if request:
         protocol = "https" if request.is_secure() else "http"
+        site = get_current_site(request)
+        domain = site.domain
     else:
-        site_profile = SiteProfile.objects.get(site_id=site.pk)
-        protocol = "https" if site_profile.uses_https else "http"
+        protocol = "https" if settings.ENVIRONMENT == "production" else "http"
+        domain = settings.SITE_DOMAIN
 
-    return f"{protocol}://{site.domain}"
+    return f"{protocol}://{domain}"
+
+
+@register.simple_tag
+def get_setting(name) -> Any:
+    """Access a setting from a template.
+
+    Cave, should be used carefully! Don't expose private data in templates.
+    """
+    return getattr(settings, name, "")
+
+
+@register.simple_tag
+def get_site_name() -> str:
+    return get_setting("SITE_NAME")
 
 
 @register.inclusion_tag("common/_bootstrap_icon.html")

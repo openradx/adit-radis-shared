@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('common', '0003_projectsettings_delete_siteprofile'),
-        ('sites', '0002_alter_domain_unique'),
+        # ('sites', '0002_alter_domain_unique'),
     ]
 
     operations = [
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('meta_keywords', models.CharField(blank=True, max_length=120)),
                 ('meta_description', models.TextField(blank=True, max_length=200)),
                 ('project_url', models.URLField(blank=True)),
-                ('site', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='sites.site')),
+                # ('site', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='sites.site')),
             ],
         ),
     ]

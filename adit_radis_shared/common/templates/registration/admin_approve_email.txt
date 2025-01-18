@@ -1,7 +1,8 @@
 {% load blocktrans from i18n %}
-{% load base_url from common_extras %}
+{% load base_url, get_site_name from common_extras %}
+{% get_site_name as site_name %}
 
-{% blocktrans with site_name=site.name %}
+{% blocktrans %}
     The user ({{ user }}) has asked to register an account at {{ site_name }}.
 {% endblocktrans %}
 

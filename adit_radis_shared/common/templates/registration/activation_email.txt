@@ -1,7 +1,8 @@
 {% load blocktrans from i18n %}
-{% load base_url from common_extras %}
+{% load base_url, get_site_name from common_extras %}
+{% get_site_name as site_name %}
 
-{% blocktrans with site_name=site.name %}
+{% blocktrans %}
 You (or someone pretending to be you) have asked to register an account at
 {{ site_name }}. If this wasn't you, please ignore this email
 and your address will be removed from our records.
@@ -14,7 +15,7 @@ To activate this account, please click the following link within the next
 
 {% base_url %}{% url 'registration_activate' activation_key %}
 
-{% blocktrans with site_name=site.name %}
+{% blocktrans %}
 Sincerely,
 {{ site_name }} Support Team
 {% endblocktrans %}

@@ -1,16 +1,4 @@
-from django.contrib.sites.models import Site
 from django.db import models
-
-
-class SiteProfile(models.Model):
-    uses_https = models.BooleanField(default=False)
-    meta_keywords = models.CharField(max_length=120, blank=True)
-    meta_description = models.TextField(max_length=200, blank=True)
-    project_url = models.URLField(blank=True)
-    site = models.OneToOneField(Site, on_delete=models.CASCADE, related_name="profile")
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__} [{self.pk}]"
 
 
 class ProjectSettings(models.Model):

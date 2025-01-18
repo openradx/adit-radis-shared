@@ -1,6 +1,7 @@
 {% load trans from i18n %}
-
-{% trans "Account activation on" %} {{ site.name }}
+{% load get_site_name from common_extras %}
+{% get_site_name as site_name %}
+{% trans "Account activation on" %} {{ site_name }}
 {% comment %}
 **registration/activation_email_subject.txt**
 
@@ -23,6 +24,6 @@ being used. This template has the following context:
     (if the sites application is installed) or
     ``django.contrib.sites.requests.RequestSite`` (if not). Consult `the
     documentation for the Django sites framework
-    <http://docs.djangoproject.com/en/dev/ref/contrib/sites/>`_ for
+    <http://docs.djangoproject.com/en/dev/ref/contrib/sites />`_ for
     details regarding these objects' interfaces.
 {% endcomment %}

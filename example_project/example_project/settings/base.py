@@ -28,16 +28,10 @@ SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "exam
 # Fetch version from the environment which is passed through from the latest git version tag
 PROJECT_VERSION = env.str("PROJECT_VERSION", default="vX.Y.Z")
 
-# Needed by sites framework
-SITE_ID = 1
-
 # The following settings are stored in the Site model on startup initially (see common/apps.py).
 # Once set they are stored in the database and can be changed via the admin interface.
 SITE_DOMAIN = env.str("SITE_DOMAIN")
 SITE_NAME = env.str("SITE_NAME")
-SITE_USES_HTTPS = env.bool("SITE_USES_HTTPS")
-SITE_META_KEYWORDS = "ADIT, RADIS"
-SITE_META_DESCRIPTION = "Shared apps between ADIT and RADIS"
 SITE_PROJECT_URL = "https://github.com/openradx/adit-radis-shared"
 
 SECRET_KEY = env.str("DJANGO_SECRET_KEY")
@@ -57,7 +51,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-    "django.contrib.sites",
     "django_extensions",
     "procrastinate.contrib.django",
     "dbbackup",

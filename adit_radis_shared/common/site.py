@@ -36,6 +36,11 @@ def base_context_processor(request: HttpRequest) -> dict[str, Any]:
     return {
         "main_menu_items": main_menu_items,
         "project_version": settings.PROJECT_VERSION,
+        "site_info": {
+            "domain": settings.SITE_DOMAIN,
+            "name": settings.SITE_NAME,
+            "project_url": settings.SITE_PROJECT_URL,
+        },
         "support_email": settings.SUPPORT_EMAIL,
         "theme": theme,
         "theme_color": theme_color,
