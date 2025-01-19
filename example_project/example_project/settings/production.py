@@ -21,6 +21,8 @@ STORAGES = {
     },
 }
 
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT")
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_TIMEOUT = 60
 email_config = env.dj_email_url("DJANGO_EMAIL_URL")
