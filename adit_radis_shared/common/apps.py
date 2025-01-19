@@ -14,27 +14,15 @@ class CommonConfig(AppConfig):
 def init_db(**kwargs):
     from django.contrib.sites.models import Site
 
-    from .models import ProjectSettings, SiteProfile
+    from .models import ProjectSettings
 
-    site_id = settings.SITE_ID
-    site_profile_exists = SiteProfile.objects.filter(site_id=site_id).exists()
-
-    if not site_profile_exists:
-        Site.objects.update_or_create(
-            pk=site_id,
-            defaults={
-                "domain": settings.SITE_DOMAIN,
-                "name": settings.SITE_NAME,
-            },
-        )
-
-        SiteProfile.objects.create(
-            site_id=site_id,
-            uses_https=settings.SITE_USES_HTTPS,
-            meta_keywords=settings.SITE_META_KEYWORDS,
-            meta_description=settings.SITE_META_DESCRIPTION,
-            project_url=settings.SITE_PROJECT_URL,
-        )
+    Site.objects.update_or_create(
+        pk=settings.SITE_ID,
+        defaults={
+            "domain": settings.SITE_DOMAIN,
+            "name": settings.SITE_NAME,
+        },
+    )
 
     if not ProjectSettings.objects.exists():
         ProjectSettings.objects.create()

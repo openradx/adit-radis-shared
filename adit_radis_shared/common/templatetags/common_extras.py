@@ -2,12 +2,11 @@ import logging
 from datetime import date, datetime, time
 from typing import Any, Literal
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpRequest
 from django.template import Library
 from django.template.defaultfilters import join
-
-from adit_radis_shared.common.models import SiteProfile
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +29,7 @@ def base_url(context: dict[str, Any]) -> str:
     if request:
         protocol = "https" if request.is_secure() else "http"
     else:
-        site_profile = SiteProfile.objects.get(site_id=site.pk)
-        protocol = "https" if site_profile.uses_https else "http"
+        protocol = "https" if settings.ENVIRONMENT == "production" else "http"
 
     return f"{protocol}://{site.domain}"
 
