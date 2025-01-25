@@ -11,6 +11,7 @@ from adit_radis_shared.common.utils.testing_helpers import (
 
 
 @pytest.mark.integration
+@pytest.mark.order("last")
 @pytest.mark.django_db(transaction=True)
 def test_create_and_delete_authentication_token(live_server: LiveServer, page: Page):
     user = create_and_login_example_user(page, live_server.url)
@@ -41,6 +42,7 @@ def test_create_and_delete_authentication_token(live_server: LiveServer, page: P
 
 
 @pytest.mark.integration
+@pytest.mark.order("last")
 @pytest.mark.django_db(transaction=True)
 def test_invalid_authentication_token(live_server: LiveServer):
     response = requests.get(
