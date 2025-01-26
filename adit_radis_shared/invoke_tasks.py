@@ -154,7 +154,7 @@ class Utility:
             elif choice in valid:
                 return valid[choice]
             else:
-                sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+                sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
 
     @staticmethod
     def capture(cmd: str) -> str:
@@ -438,11 +438,8 @@ def init_workspace(ctx: Context):
             set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
             set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
 
-            origin = f"{"https" if uses_https else "http"}://{domain}"
+            origin = f"{'https' if uses_https else 'http'}://{domain}"
             set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", origin, quote_mode="never")
-
-        if uses_https:
-            set_key(env_file, "SITE_USES_HTTPS", "true", quote_mode="never")
 
         set_key(env_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
 
