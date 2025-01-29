@@ -10,7 +10,7 @@ from adit_radis_shared.common.utils.testing_helpers import (
 )
 
 
-@pytest.mark.integration
+@pytest.mark.acceptance
 @pytest.mark.order("last")
 @pytest.mark.django_db(transaction=True)
 def test_create_and_delete_authentication_token(live_server: LiveServer, page: Page):
@@ -41,7 +41,7 @@ def test_create_and_delete_authentication_token(live_server: LiveServer, page: P
     assert response.status_code == 401
 
 
-@pytest.mark.integration
+@pytest.mark.acceptance
 @pytest.mark.order("last")
 @pytest.mark.django_db(transaction=True)
 def test_invalid_authentication_token(live_server: LiveServer):

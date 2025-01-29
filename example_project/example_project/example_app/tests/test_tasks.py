@@ -2,7 +2,7 @@ import time_machine
 from procrastinate.app import App
 from pytest import CaptureFixture
 
-from ..tasks import example_task
+from example_project.example_app.tasks import example_task
 
 
 def test_example_task(in_memory_app: App, capsys: CaptureFixture[str]):

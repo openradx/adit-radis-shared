@@ -396,7 +396,7 @@ def test(
 ):
     """Run the test suite"""
     if not Utility.check_compose_up():
-        raise Exit("Integration tests need dev containers running.\nRun 'invoke compose-up' first.")
+        raise Exit("Acceptance tests need dev containers running.\nRun 'invoke compose-up' first.")
 
     cmd = (
         f"{Utility.build_compose_cmd()} exec "
