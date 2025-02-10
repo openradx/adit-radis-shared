@@ -28,6 +28,11 @@
       "managers": ["dockerfile"],
       "matchPackageNames": ["python"],
       "allowedVersions": "<=3.12"
+    },
+    {
+      "managers": ["poetry"],
+      "matchPackageNames": ["factory-boy"],
+      "allowedVersions": "<=3.3.2"
     }
   ]
 }
