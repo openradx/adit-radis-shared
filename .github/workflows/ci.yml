@@ -48,7 +48,7 @@ jobs:
         run: poetry run scripts/lint_code.py
       - name: Run tests
         shell: 'script -q -e -c "bash {0}"'
-        run: poetry run scripts/test.py --cov
+        run: poetry run scripts/run_tests.py --cov
       - name: Stop Docker containers
         if: ${{ always() }}
         run: poetry run scripts/compose_down.py
