@@ -9,6 +9,6 @@
     "htmx.org": "^1.9.5"
   },
   "scripts": {
-    "copy-statics": "invoke copy-statics"
+    "copy-statics": "poetry run scripts/copy_statics.py"
   }
 }

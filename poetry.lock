@@ -1311,18 +1311,6 @@ files = [
 ]
 
 [[package]]
-name = "invoke"
-version = "2.2.0"
-description = "Pythonic task execution"
-optional = false
-python-versions = ">=3.6"
-groups = ["dev"]
-files = [
-    {file = "invoke-2.2.0-py3-none-any.whl", hash = "sha256:6ea924cc53d4f78e3d98bc436b08069a03077e6f85ad1ddaa8a116d7dad15820"},
-    {file = "invoke-2.2.0.tar.gz", hash = "sha256:ee6cbb101af1a859c7fe84f2a264c059020b0cb7fe3535f9424300ab568f6bd5"},
-]
-
-[[package]]
 name = "ipykernel"
 version = "6.29.5"
 description = "IPython Kernel for Jupyter"
@@ -3272,4 +3260,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "de3a9449d23c0399e831905c795e11a2b531f31f3e6ce232870f4154bf8d1967"
+content-hash = "c05915798246b0b726a24d20804c709efd0761b28691bc75f753e40b6547428c"
