@@ -17,6 +17,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
+from django.conf import settings
 from django.core.management.utils import get_random_secret_key
 from django_typer.management import TyperCommand
 from dotenv import dotenv_values
@@ -24,9 +25,8 @@ from typer import Exit
 
 
 class MaintenanceCommand(TyperCommand):
-    project_name = "example_project"
-    project_path = Path(__file__).resolve().parent.parent.parent.parent.parent
-    force_swarm_mode_in_production = False
+    root_path: Path = settings.ROOT_PATH
+    project_id: str = settings.PROJECT_ID
     _is_production_cached = None
 
     ###
@@ -51,12 +51,12 @@ class MaintenanceCommand(TyperCommand):
         return self._is_production_cached
 
     def get_compose_base_file(self):
-        return self.project_path / "docker-compose.base.yml"
+        return self.root_path / "docker-compose.base.yml"
 
     def get_compose_env_file(self):
         if self.is_production():
-            return self.project_path / "docker-compose.prod.yml"
-        return self.project_path / "docker-compose.dev.yml"
+            return self.root_path / "docker-compose.prod.yml"
+        return self.root_path / "docker-compose.dev.yml"
 
     def get_stack_name(self) -> str:
         config = self.load_config_from_env_file()
@@ -64,11 +64,11 @@ class MaintenanceCommand(TyperCommand):
             return stack_name
 
         if self.is_production():
-            return f"{self.project_name}_prod"
-        return f"{self.project_name}_dev"
+            return f"{self.project_id}_prod"
+        return f"{self.project_id}_dev"
 
     def load_config_from_env_file(self) -> dict[str, str | None]:
-        env_file = self.project_path / ".env"
+        env_file = self.root_path / ".env"
         if not env_file.exists():
             print("Missing .env file!")
             raise Exit(1)

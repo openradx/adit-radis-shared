@@ -7,17 +7,17 @@ from pathlib import Path
 from dotenv import set_key
 
 
-def init_workspace(project_path: Path):
+def init_workspace(root_path: Path):
     """Initialize workspace for Github Codespaces or local development"""
-    env_file = project_path / ".env"
+    env_file = root_path / ".env"
     if env_file.is_file():
         sys.exit("Workspace already initialized (.env file exists).")
 
-    example_env_file = project_path / "example.env"
+    example_env_file = root_path / "example.env"
     if not example_env_file.is_file():
         sys.exit("Missing example.env file!")
 
-    shutil.copy(project_path / "example.env", env_file)
+    shutil.copy(root_path / "example.env", env_file)
 
     def modify_env_file(domain: str | None = None, uses_https: bool = False):
         if domain:

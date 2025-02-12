@@ -15,14 +15,13 @@ class Command(MaintenanceCommand):
     ):
         self.prepare_environment()
 
-        if self.force_swarm_mode_in_production:
-            config = self.load_config_from_env_file()
-            if config.get("ENVIRONMENT") != "production":
-                print(
-                    "stack-deploy task can only be used in production environment. "
-                    "Check ENVIRONMENT setting in .env file."
-                )
-                raise Exit(1)
+        config = self.load_config_from_env_file()
+        if config.get("ENVIRONMENT") != "production":
+            print(
+                "stack-deploy task can only be used in production environment. "
+                "Check ENVIRONMENT setting in .env file."
+            )
+            raise Exit(1)
 
         if build:
             cmd = f"{self.build_compose_cmd()} build"

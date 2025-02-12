@@ -24,7 +24,7 @@ class Command(MaintenanceCommand):
 
         cmd = (
             f"{self.build_compose_cmd()} exec "
-            f"--env DJANGO_SETTINGS_MODULE={self.project_name}.settings.test web pytest "
+            f"--env DJANGO_SETTINGS_MODULE={self.project_id}.settings.test web pytest "
         )
         cmd += " ".join(ctx.args)
         self.execute_cmd(cmd, simulate=simulate)

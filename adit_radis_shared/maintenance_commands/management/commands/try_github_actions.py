@@ -12,7 +12,7 @@ class Command(MaintenanceCommand):
         self,
         simulate: Annotated[bool, Option(help="Simulate the command")] = False,
     ):
-        act_path = self.project_path / "bin" / "act"
+        act_path = self.root_path / "bin" / "act"
         if not act_path.exists():
             print("Installing act...")
             self.execute_cmd(

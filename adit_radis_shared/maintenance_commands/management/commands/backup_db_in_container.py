@@ -18,9 +18,9 @@ class Command(MaintenanceCommand):
         simulate: Annotated[bool, Option(help="Simulate the command")] = False,
     ):
         settings = (
-            f"{self.project_name}.settings.production"
+            f"{self.project_id}.settings.production"
             if self.is_production()
-            else f"{self.project_name}.settings.development"
+            else f"{self.project_id}.settings.development"
         )
 
         web_container_id = self.find_running_container_id("web")

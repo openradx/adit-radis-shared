@@ -19,11 +19,14 @@ from environs import env
 if not env.bool("IS_DOCKER_CONTAINER", default=False):
     env.read_env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# The base directory of the project (the root of the repository)
+ROOT_PATH = Path(__file__).resolve(strict=True).parent.parent.parent.parent
 
-# Used by the ServerCommand to check for file changes during development for autoreload.
-SOURCE_FOLDERS = [BASE_DIR / ".." / "adit_radis_shared", BASE_DIR / ".." / "example_project"]  # noqa: F405
+# The source paths of the project
+SOURCE_PATHS = [ROOT_PATH / "adit_radis_shared", ROOT_PATH / "example_project"]  # noqa: F405
+
+# The ID of the project and also the project module
+PROJECT_ID = "example_project"
 
 # Fetch version from the environment which is passed through from the latest git version tag
 PROJECT_VERSION = env.str("PROJECT_VERSION", default="vX.Y.Z")

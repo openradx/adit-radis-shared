@@ -16,13 +16,12 @@ class Command(MaintenanceCommand):
     ):
         self.prepare_environment()
 
-        if self.force_swarm_mode_in_production:
-            if self.is_production():
-                print(
-                    "Starting containers with compose-up can only be used in development. "
-                    "Check ENVIRONMENT setting in .env file."
-                )
-                raise Exit(1)
+        if self.is_production():
+            print(
+                "Starting containers with compose-up can only be used in development. "
+                "Check ENVIRONMENT setting in .env file."
+            )
+            raise Exit(1)
 
         version = self.get_latest_local_version_tag()
         if not self.is_production():

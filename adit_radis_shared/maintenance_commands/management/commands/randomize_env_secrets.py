@@ -8,7 +8,7 @@ class Command(MaintenanceCommand):
     """Randomize secrets in the .env file"""
 
     def handle(self):
-        env_file = self.project_path / ".env"
+        env_file = self.root_path / ".env"
         if not env_file.is_file():
             print("Workspace not initialized (.env file does not exist).")
             raise Exit(1)

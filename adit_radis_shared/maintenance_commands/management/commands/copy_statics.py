@@ -15,7 +15,7 @@ class Command(MaintenanceCommand):
         simulate: Annotated[bool, Option(help="Simulate the command")] = False,
     ):
         print("Copying statics...")
-        target_folder = self.project_path / "adit_radis_shared" / "common" / "static" / "vendor"
+        target_folder = self.root_path / "adit_radis_shared" / "common" / "static" / "vendor"
 
         if not target_folder.exists():
             print(f"Missing target folder {target_folder}")
