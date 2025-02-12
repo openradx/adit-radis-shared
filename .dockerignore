@@ -65,7 +65,7 @@ venv/
 **/*.swp
 
 # More development stuff
-.github/
-.pytest_cache/
-.ruff_cache/
-.vscode/
+/.github/
+/.pytest_cache/
+/.ruff_cache/
+/.vscode/
