@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import Annotated
 
-from typer import Option
+from typer import Exit, Option
 
 from ..base.maintenance_command import MaintenanceCommand
 
@@ -12,12 +12,14 @@ class Command(MaintenanceCommand):
 
     def handle(
         self,
-        no_build: Annotated[bool, Option(help="Do not build images")] = False,
-        profile: Annotated[list[str], Option(help="Docker Compose profile(s)")] = [],
         simulate: Annotated[bool, Option(help="Simulate the command")] = False,
     ):
         print("Copying statics...")
         target_folder = self.project_path / "adit_radis_shared" / "common" / "static" / "vendor"
+
+        if not target_folder.exists():
+            print(f"Missing target folder {target_folder}")
+            raise Exit(1)
 
         def copy_file(file: str, filename: str | None = None):
             if not filename:

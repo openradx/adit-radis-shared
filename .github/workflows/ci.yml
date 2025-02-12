@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Configure environment
-        run: poetry run ./manage.py init_workspace
+        run: poetry run ./init_workspace.py
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build and cache Docker images
