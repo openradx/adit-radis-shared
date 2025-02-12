@@ -18,70 +18,68 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from django.core.management.utils import get_random_secret_key
+from django_typer.management import TyperCommand
 from dotenv import dotenv_values
+from typer import Exit
 
 
-class ScriptHelper:
-    _is_production_cached: bool | None = None
+class MaintenanceCommand(TyperCommand):
+    project_name = "example_project"
+    project_path = Path(__file__).resolve().parent.parent.parent.parent.parent
+    force_swarm_mode_in_production = False
+    _is_production_cached = None
 
-    def __init__(
-        self,
-        project_name: str,
-        project_path: Path,
-        simulate_execution: bool = False,
-    ) -> None:
-        self.project_name = project_name
-        self.project_path = project_path
-        self.simulate_execution = simulate_execution
+    ###
+    # Helper methods
+    ###
 
-    @property
     def is_production(self) -> bool:
         if self._is_production_cached is None:
             config = self.load_config_from_env_file()
 
             if "ENVIRONMENT" not in config:
-                sys.exit("Missing ENVIRONMENT setting in .env file.")
+                print("Missing ENVIRONMENT setting in .env file.")
+                raise Exit(1)
 
             environment = config["ENVIRONMENT"]
             if environment not in ["development", "production"]:
-                sys.exit(f"Invalid ENVIRONMENT setting {environment} in .env file.")
+                print(f"Invalid ENVIRONMENT setting {environment} in .env file.")
+                raise Exit(1)
 
             self._is_production_cached = environment == "production"
 
         return self._is_production_cached
 
-    @property
-    def compose_base_file(self):
+    def get_compose_base_file(self):
         return self.project_path / "docker-compose.base.yml"
 
-    @property
-    def compose_env_file(self):
-        if self.is_production:
+    def get_compose_env_file(self):
+        if self.is_production():
             return self.project_path / "docker-compose.prod.yml"
         return self.project_path / "docker-compose.dev.yml"
 
-    @property
-    def stack_name(self) -> str:
+    def get_stack_name(self) -> str:
         config = self.load_config_from_env_file()
         if stack_name := config.get("STACK_NAME", ""):
             return stack_name
 
-        if self.is_production:
+        if self.is_production():
             return f"{self.project_name}_prod"
         return f"{self.project_name}_dev"
 
     def load_config_from_env_file(self) -> dict[str, str | None]:
         env_file = self.project_path / ".env"
         if not env_file.exists():
-            sys.exit("Missing .env file!")
+            print("Missing .env file!")
+            raise Exit(1)
 
         return dotenv_values(env_file)
 
     def build_compose_cmd(self, profiles: list[str] | None = None):
         cmd = "docker compose"
-        cmd += f" -f {self.compose_base_file}"
-        cmd += f" -f {self.compose_env_file}"
-        cmd += f" -p {self.stack_name}"
+        cmd += f" -f {self.get_compose_base_file()}"
+        cmd += f" -f {self.get_compose_env_file()}"
+        cmd += f" -p {self.get_stack_name()}"
 
         if profiles:
             for profile in profiles:
@@ -90,9 +88,9 @@ class ScriptHelper:
         return cmd
 
     def check_compose_up(self):
-        result = self.capture("docker compose ls")
+        result = self.capture_cmd("docker compose ls")
         for line in result.splitlines():
-            if line.startswith(self.stack_name) and line.find("running") != -1:
+            if line.startswith(self.get_stack_name()) and line.find("running") != -1:
                 return True
         return False
 
@@ -108,13 +106,14 @@ class ScriptHelper:
             print(f"Creating non-existent BACKUP_DIR {backup_path.absolute()}")
             backup_path.mkdir(parents=True, exist_ok=True)
         if not backup_path.is_dir():
-            sys.exit(f"Invalid BACKUP_DIR {backup_path.absolute()}.")
+            print(f"Invalid BACKUP_DIR {backup_path.absolute()}.")
+            raise Exit(1)
 
     def find_running_container_id(self, name: str):
-        sep = "_" if self.is_production else "-"
-        cmd = f"docker ps -q -f name={self.stack_name}{sep}{name} -f status=running"
+        sep = "_" if self.is_production() else "-"
+        cmd = f"docker ps -q -f name={self.get_stack_name()}{sep}{name} -f status=running"
         cmd += " | head -n1"
-        result = self.capture(cmd)
+        result = self.capture_cmd(cmd)
         if result:
             container_id = result.strip()
             if container_id:
@@ -150,7 +149,7 @@ class ScriptHelper:
 
     def get_latest_local_version_tag(self) -> str:
         # Get all tags sorted by creation date (newest first)
-        result = self.capture("git tag -l --sort=-creatordate")
+        result = self.capture_cmd("git tag -l --sort=-creatordate")
         all_tags = result.splitlines()
 
         version_pattern = re.compile(r"^\d+\.\d+\.\d+$")
@@ -238,7 +237,7 @@ class ScriptHelper:
         chain_pem = response.content
         return chain_pem
 
-    def capture(self, cmd: str) -> str:
+    def capture_cmd(self, cmd: str) -> str:
         """Capture the output of a shell command.
 
         Args:
@@ -249,24 +248,24 @@ class ScriptHelper:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
         return result.stdout
 
-    def execute(
+    def execute_cmd(
         self,
         cmd: str,
         env: dict[str, Any] | None = None,
-        force: bool = False,
         hidden: bool = False,
+        simulate: bool = False,
     ):
         """Execute a shell command.
 
         Args:
             cmd: The command to execute.
             env: Additional environment variables to set for the command.
-            force: If True, the command will be executed even if simulate_execution is True.
             hidden: If True, the command will not be printed to stdout.
+            simulate: If True, the command will not be executed, but just printed.
         Returns:
             The subprocess.CompletedProcess object.
         """
-        if self.simulate_execution and not force:
+        if simulate and not hidden:
             print(f"Simulating: {cmd}")
         else:
             if not hidden:

@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
+    "adit_radis_shared.maintenance_commands.apps.MaintenanceCommandsConfig",
+    "django_typer",
 ]
 
 MIDDLEWARE = [
