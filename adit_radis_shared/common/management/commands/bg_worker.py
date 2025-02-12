@@ -4,4 +4,4 @@ from adit_radis_shared.common.management.base.procrastinate_worker import Procra
 
 
 class Command(ProcrastinateServerCommand):
-    paths_to_watch = settings.SOURCE_FOLDERS
+    paths_to_watch = settings.SOURCE_PATHS
