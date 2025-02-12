@@ -1,43 +1,28 @@
+#!/usr/bin/env python3
+
+import argparse
 import os
 import shutil
-from pathlib import Path
 
-from invoke.context import Context
-from invoke.tasks import task
+from _common import PROJECT_NAME, PROJECT_PATH
 
-from adit_radis_shared import invoke_tasks
-from adit_radis_shared.invoke_tasks import (  # noqa: F401
-    Utility,
-    backup_db,
-    compose_down,
-    compose_up,
-    format,
-    generate_auth_token,
-    generate_certificate_chain,
-    generate_certificate_files,
-    generate_django_secret_key,
-    generate_secure_password,
-    init_workspace,
-    lint,
-    randomize_env_secrets,
-    show_outdated,
-    stack_deploy,
-    stack_rm,
-    test,
-    try_github_actions,
-    web_shell,
-)
-
-invoke_tasks.PROJECT_NAME = "example_project"
-invoke_tasks.PROJECT_DIR = Path(__file__).resolve().parent
+from adit_radis_shared.script_helper import ScriptHelper
 
 
-@task
-def copy_statics(ctx: Context):
+def main():
     """Copy JS and CSS dependencies from node_modules to static vendor folder"""
-    print("Copying statics...")
 
-    target_folder = Utility.get_project_dir() / "adit_radis_shared" / "common" / "static" / "vendor"
+    class CopyStaticsArgs(argparse.Namespace):
+        simulate: bool = False
+
+    parser = argparse.ArgumentParser(description=main.__doc__)
+    parser.add_argument("--simulate", action="store_true", help="Simulate the copy operation")
+    args = parser.parse_args(namespace=CopyStaticsArgs)
+
+    helper = ScriptHelper(PROJECT_NAME, PROJECT_PATH, simulate_execution=args.simulate)
+
+    print("Copying statics...")
+    target_folder = helper.project_path / "adit_radis_shared" / "common" / "static" / "vendor"
 
     def copy_file(file: str, filename: str | None = None):
         if not filename:
@@ -55,3 +40,7 @@ def copy_statics(ctx: Context):
     copy_file("node_modules/htmx.org/dist/htmx.js")
     copy_file("node_modules/htmx.org/dist/ext/ws.js", "htmx-ws.js")
     copy_file("node_modules/htmx.org/dist/ext/alpine-morph.js", "htmx-alpine-morph.js")
+
+
+if __name__ == "__main__":
+    main()

@@ -6,7 +6,7 @@ tasks:
     init: |
       poetry install
       npm install
-      poetry run invoke init-workspace
+      poetry run scripts/init_workspace.py
 
 ports:
   - port: 8000

@@ -3,7 +3,6 @@ FROM gitpod/workspace-python-3.12
 USER root
 
 # Install system dependencies
-# - bash-completion for shell completions of invoke
 # - gettext for Django translations
 # - postgresql-common for the apt.postgresql.org.sh script
 # - postgresql-client-17 for a current version of psql
@@ -35,9 +34,6 @@ RUN mkdir $NVM_DIR \
 
 RUN python3 -m pip install --user pipx \
   && python3 -m pipx ensurepath
-
-RUN python3 -m pipx install invoke \
-  && invoke --print-completion-script=bash >> $HOME/.bash_completion
 
 # Poetry is already installed in the base Gitpod Python image,
 # but we make sure uses the latest version and make bash completions available

@@ -24,11 +24,10 @@ It also contains a Django example project to play around with the features.
 git clone https://github.com/openradx/adit-radis-shared.git
 cd adit-radis-shared
 poetry install
-poetry shell
-invoke compose-up
+poetry run scripts/compose_up.py
 ```
 
 The development server of the example project will be started on <http://localhost:8000>
 
 If a library dependency is changed, the containers need to be rebuilt (e.g. by running
-`invoke compose-down && invoke compose-up`).
+`portry run scripts/compose_down.py && poetry run scripts/compose_up.py`).
