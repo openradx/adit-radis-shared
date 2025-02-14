@@ -39,9 +39,7 @@ app.command()(commands.randomize_env_secrets)
 app.command()(commands.try_github_actions)
 
 
-app.command()
-
-
+@app.command()
 def copy_statics(
     simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
 ):
