@@ -11,6 +11,7 @@ from os import urandom
 from pathlib import Path
 from typing import Any
 
+import environs
 import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -63,18 +64,20 @@ def execute_cmd(
     cmd: str,
     env: dict[str, Any] | None = None,
     hidden: bool = False,
-    simulate: bool = False,
 ):
     """Execute a shell command.
+
+    If the SIMULATE environment variable is set to True, the command will not be executed,
+    but only printed to stdout.
 
     Args:
         cmd: The command to execute.
         env: Additional environment variables to set for the command.
         hidden: If True, the command will not be printed to stdout.
-        simulate: If True, the command will not be executed, but just printed.
     Returns:
         The subprocess.CompletedProcess object.
     """
+    simulate = environs.env.bool("SIMULATE", False)
     if simulate and not hidden:
         print(f"Simulating: {cmd}")
     else:
@@ -147,6 +150,14 @@ def check_compose_up():
     result = capture_cmd("docker compose ls")
     for line in result.splitlines():
         if line.startswith(get_stack_name()) and line.find("running") != -1:
+            return True
+    return False
+
+
+def check_dev_container_up(container_name):
+    result = capture_cmd("docker ps")
+    for line in result.splitlines():
+        if re.search(rf"{get_project_id()}_dev.*{container_name}-1", line):
             return True
     return False
 

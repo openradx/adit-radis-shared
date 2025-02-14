@@ -57,7 +57,6 @@ def init_workspace():
 def compose_up(
     build: Annotated[bool, typer.Option(help="Do not build images")] = True,
     profile: Annotated[list[str], typer.Option(help="Docker Compose profile(s)")] = [],
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
 ):
     """Start stack with docker compose"""
 
@@ -79,13 +78,12 @@ def compose_up(
         cmd += " --no-build"
 
     cmd += " --detach"
-    helpers.execute_cmd(cmd, env={"PROJECT_VERSION": version}, simulate=simulate)
+    helpers.execute_cmd(cmd, env={"PROJECT_VERSION": version})
 
 
 def compose_down(
     cleanup: Annotated[bool, typer.Option(help="Remove orphans and volumes")] = False,
     profile: Annotated[list[str], typer.Option(help="Docker Compose profile(s)")] = [],
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
 ):
     """Stop stack with docker compose"""
 
@@ -94,13 +92,10 @@ def compose_down(
     if cleanup:
         cmd += " --remove-orphans --volumes"
 
-    helpers.execute_cmd(cmd, simulate=simulate)
+    helpers.execute_cmd(cmd)
 
 
-def stack_deploy(
-    build: Annotated[bool, typer.Option(help="Build images")] = False,
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def stack_deploy(build: Annotated[bool, typer.Option(help="Build images")] = False):
     """Deploy stack with docker swarm"""
 
     helpers.prepare_environment()
@@ -114,7 +109,7 @@ def stack_deploy(
 
     if build:
         cmd = f"{helpers.build_compose_cmd()} build"
-        helpers.execute_cmd(cmd, simulate=simulate)
+        helpers.execute_cmd(cmd)
 
     version = helpers.get_latest_local_version_tag()
     if not helpers.is_production():
@@ -130,15 +125,13 @@ def stack_deploy(
     cmd += f" -c {helpers.get_compose_base_file()}"
     cmd += f" -c {helpers.get_compose_env_file()}"
     cmd += f" {helpers.get_stack_name()}"
-    helpers.execute_cmd(cmd, env=env, simulate=simulate)
+    helpers.execute_cmd(cmd, env=env)
 
 
-def stack_rm(
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def stack_rm():
     """Remove stack from docker swarm"""
 
-    helpers.execute_cmd(f"docker stack rm {helpers.get_stack_name()}", simulate=simulate)
+    helpers.execute_cmd(f"docker stack rm {helpers.get_stack_name()}")
 
 
 def lint():
@@ -154,23 +147,20 @@ def lint():
     helpers.execute_cmd("poetry run djlint . --lint")
 
 
-def format_code(simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False):
+def format_code():
     """Format the source code with ruff and djlint"""
 
     print("Formatting Python code with ruff...")
-    helpers.execute_cmd("poetry run ruff format .", simulate=simulate)
+    helpers.execute_cmd("poetry run ruff format .")
 
     print("Sorting Python imports with ruff...")
-    helpers.execute_cmd("poetry run ruff check . --fix --select I", simulate=simulate)
+    helpers.execute_cmd("poetry run ruff check . --fix --select I")
 
     print("Formatting Django templates with djlint...")
-    helpers.execute_cmd("poetry run djlint . --reformat", simulate=simulate)
+    helpers.execute_cmd("poetry run djlint . --reformat")
 
 
-def test(
-    ctx: typer.Context,
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def test(ctx: typer.Context):
     """Run the test suite with pytest"""
 
     if not helpers.check_compose_up():
@@ -184,7 +174,7 @@ def test(
         f"--env DJANGO_SETTINGS_MODULE={helpers.get_project_id()}.settings.test web pytest "
     )
     cmd += " ".join(ctx.args)
-    helpers.execute_cmd(cmd, simulate=simulate)
+    helpers.execute_cmd(cmd)
 
 
 def show_outdated():
@@ -197,9 +187,7 @@ def show_outdated():
     helpers.execute_cmd("npm outdated")
 
 
-def backup_db(
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def backup_db():
     """Backup database in running container stack
 
     For backup location see setting DBBACKUP_STORAGE_OPTIONS
@@ -220,14 +208,11 @@ def backup_db(
         (
             f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
             f"{web_container_id} ./manage.py dbbackup --clean -v 2"
-        ),
-        simulate=simulate,
+        )
     )
 
 
-def restore_db(
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def restore_db():
     """Restore database in container from the last backup"""
 
     settings = (
@@ -243,8 +228,7 @@ def restore_db(
         (
             f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
             f"{web_container_id} ./manage.py dbrestore"
-        ),
-        simulate=simulate,
+        )
     )
 
 
@@ -407,7 +391,6 @@ def randomize_env_secrets():
 
 def upgrade_postgres_volume(
     version: Annotated[str, typer.Option(help="PostgreSQL version to upgrade to")] = "latest",
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
 ):
     """Upgrade PostgreSQL volume data"""
 
@@ -419,16 +402,13 @@ def upgrade_postgres_volume(
         print("Watch the output if everything went fine or if any further steps are necessary.")
         helpers.execute_cmd(
             f"docker run -e POSTGRES_PASSWORD=postgres -e PGAUTO_ONESHOT=yes "
-            f"-v {volume}:/var/lib/postgresql/data pgautoupgrade/pgautoupgrade:{version}",
-            simulate=simulate,
+            f"-v {volume}:/var/lib/postgresql/data pgautoupgrade/pgautoupgrade:{version}"
         )
     else:
         print("Cancelled")
 
 
-def try_github_actions(
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def try_github_actions():
     """Try Github Actions locally using Act"""
 
     act_path = helpers.get_root_path() / "bin" / "act"
@@ -439,6 +419,4 @@ def try_github_actions(
             hidden=True,
         )
 
-    helpers.execute_cmd(
-        f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest", simulate=simulate
-    )
+    helpers.execute_cmd(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest")

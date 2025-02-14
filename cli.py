@@ -4,7 +4,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Annotated
 
 import typer
 
@@ -40,9 +39,7 @@ app.command()(commands.try_github_actions)
 
 
 @app.command()
-def copy_statics(
-    simulate: Annotated[bool, typer.Option(help="Simulate the command")] = False,
-):
+def copy_statics():
     """Start stack with docker compose"""
 
     print("Copying statics...")
@@ -54,13 +51,11 @@ def copy_statics(
     def copy_file(file: str, filename: str | None = None):
         if not filename:
             print(f"Copying {file} to {target_folder}")
-            if not simulate:
-                shutil.copy(file, target_folder)
+            shutil.copy(file, target_folder)
         else:
             target_file = os.path.join(target_folder, filename)
             print(f"Copying {file} to {target_file}")
-            if not simulate:
-                shutil.copy(file, target_file)
+            shutil.copy(file, target_file)
 
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js")
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js.map")
