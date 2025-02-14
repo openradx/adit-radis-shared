@@ -187,7 +187,7 @@ def test(
     helpers.execute_cmd(cmd, simulate=simulate)
 
 
-def show_outdated_deps():
+def show_outdated():
     """Show outdated dependencies"""
 
     print("### Outdated Python dependencies ###")
@@ -214,7 +214,7 @@ def backup_db(
 
     web_container_id = helpers.find_running_container_id("web")
     if web_container_id is None:
-        sys.exit("Web container is not running. Run 'poetry run ./manage.py compose_up' first.")
+        sys.exit("Web container is not running. Run 'poetry run ./cli.py compose-up' first.")
 
     helpers.execute_cmd(
         (
