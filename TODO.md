@@ -10,5 +10,4 @@
 - Remove sandbox
 - Is Markdown package still needed?
 - Reorder stuff in settings files
-- Use django-environ as in the docs (see shared)
 - Make package.json more minimal (as in shared)
