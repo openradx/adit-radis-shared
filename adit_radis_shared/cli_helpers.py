@@ -311,3 +311,26 @@ def generate_chain_file_for_host(hostname: str):
     response.raise_for_status()
     chain_pem = response.content
     return chain_pem
+
+
+def print_uv_outdated():
+    # Run the uv tree command and capture its text output.
+    result = subprocess.run(
+        ["uv", "tree", "--outdated", "--depth", "1"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    result = capture_cmd("uv tree --depth 1 --outdated")
+
+    # Sample line: "├── django v5.1.2 (latest: v5.1.3)"
+    pattern = re.compile(r"^[│├└─]+\s+([\w\-\._]+)\s+v([\d\.]+).*?\(latest:\s*v([\d\.]+)\)")
+
+    for line in result.splitlines():
+        match = pattern.search(line)
+        if match:
+            pkg_name = match.group(1)
+            installed = match.group(2)
+            latest = match.group(3)
+            if installed != latest:
+                print(f"{pkg_name}: {installed} (latest: {latest})")

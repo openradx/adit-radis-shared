@@ -30,7 +30,7 @@
       "allowedVersions": "<=3.12"
     },
     {
-      "managers": ["poetry"],
+      "managers": ["pep621"],
       "matchPackageNames": ["factory-boy"],
       "allowedVersions": "<=3.3.2"
     }
