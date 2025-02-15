@@ -2,8 +2,7 @@ x-app: &default-app
   image: example_project_dev:latest
   volumes:
     - .:/app
-    - vscode-server:/root/.vscode-server/extensions
-    - vscode-server-insiders:/root/.vscode-server-insiders/extensions
+    - /app/.venv
   environment:
     DJANGO_INTERNAL_IPS: ${DJANGO_INTERNAL_IPS:?}
     DJANGO_SETTINGS_MODULE: example_project.settings.development
@@ -49,7 +48,3 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - ${POSTGRES_DEV_PORT:-5432}:5432
-
-volumes:
-  vscode-server:
-  vscode-server-insiders:

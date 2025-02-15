@@ -138,26 +138,26 @@ def lint():
     """Lint the source code with ruff, pyright and djlint"""
 
     print("Linting Python code with ruff...")
-    helpers.execute_cmd("poetry run ruff check .")
+    helpers.execute_cmd("uv run ruff check .")
 
     print("Linting Python code with pyright...")
-    helpers.execute_cmd("poetry run pyright")
+    helpers.execute_cmd("uv run pyright")
 
     print("Linting Django templates with djlint...")
-    helpers.execute_cmd("poetry run djlint . --lint")
+    helpers.execute_cmd("uv run djlint . --lint")
 
 
 def format_code():
     """Format the source code with ruff and djlint"""
 
     print("Formatting Python code with ruff...")
-    helpers.execute_cmd("poetry run ruff format .")
+    helpers.execute_cmd("uv run ruff format .")
 
     print("Sorting Python imports with ruff...")
-    helpers.execute_cmd("poetry run ruff check . --fix --select I")
+    helpers.execute_cmd("uv run ruff check . --fix --select I")
 
     print("Formatting Django templates with djlint...")
-    helpers.execute_cmd("poetry run djlint . --reformat")
+    helpers.execute_cmd("uv run djlint . --reformat")
 
 
 def test(ctx: typer.Context):
@@ -165,8 +165,7 @@ def test(ctx: typer.Context):
 
     if not helpers.check_compose_up():
         sys.exit(
-            "Acceptance tests need dev containers running.\n"
-            "Run 'poetry run ./cli.py compose-up' first."
+            "Acceptance tests need dev containers running.\nRun 'uv run ./cli.py compose-up' first."
         )
 
     cmd = (
@@ -181,10 +180,10 @@ def show_outdated():
     """Show outdated dependencies"""
 
     print("### Outdated Python dependencies ###")
-    helpers.execute_cmd("poetry show --outdated --top-level")
+    helpers.print_uv_outdated()
 
     print("### Outdated NPM dependencies ###")
-    helpers.execute_cmd("npm outdated")
+    helpers.execute_cmd("npm outdated", hidden=True)
 
 
 def backup_db():
@@ -202,7 +201,7 @@ def backup_db():
 
     web_container_id = helpers.find_running_container_id("web")
     if web_container_id is None:
-        sys.exit("Web container is not running. Run 'poetry run ./cli.py compose-up' first.")
+        sys.exit("Web container is not running. Run 'uv run ./cli.py compose-up' first.")
 
     helpers.execute_cmd(
         (
@@ -222,7 +221,7 @@ def restore_db():
     )
     web_container_id = helpers.find_running_container_id("web")
     if web_container_id is None:
-        sys.exit("Web container is not running. Run 'poetry run ./manage.py compose_up' first.")
+        sys.exit("Web container is not running. Run 'uv run ./manage.py compose-up' first.")
 
     helpers.execute_cmd(
         (
@@ -324,7 +323,7 @@ def generate_certificate_chain(self):
     if not cert_path.is_file():
         sys.exit(
             f"SSL certificate file {cert_path.absolute()} does not exist. You can generate an"
-            " unsigned certificate with 'poetry run ./manage.py generate_certificate_files'"
+            " unsigned certificate with 'uv run ./manage.py generate-certificate_files'"
             " with included chain file. If you have a signed certificate from a CA, be sure to"
             " provide the correct SSL_SERVER_CERT_FILE setting in '.env'."
         )

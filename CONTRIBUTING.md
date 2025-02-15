@@ -23,11 +23,11 @@ It also contains a Django example project to play around with the features.
 ```terminal
 git clone https://github.com/openradx/adit-radis-shared.git
 cd adit-radis-shared
-poetry install
-poetry run ./cli.py compose-up
+uv sync
+uv run ./cli.py compose-up
 ```
 
 The development server of the example project will be started on <http://localhost:8000>
 
 If a library dependency is changed, the containers need to be rebuilt (e.g. by running
-`poetry run ./cli.py compose-down && poetry run ./cli.py compose-up`).
+`uv run ./cli.py compose-down && uv run ./cli.py compose-up`).
