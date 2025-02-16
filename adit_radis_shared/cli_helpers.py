@@ -154,14 +154,6 @@ def check_compose_up():
     return False
 
 
-def check_dev_container_up(container_name):
-    result = capture_cmd("docker ps")
-    for line in result.splitlines():
-        if re.search(rf"{get_project_id()}_dev.*{container_name}-1", line):
-            return True
-    return False
-
-
 def prepare_environment():
     config = load_config_from_env_file()
 
