@@ -7,6 +7,7 @@ from typing import Annotated
 
 import typer
 from dotenv import set_key
+from rich import print
 
 from . import cli_helpers as helpers
 
@@ -16,7 +17,10 @@ def init_workspace():
 
     env_file = helpers.get_root_path() / ".env"
     if env_file.is_file():
-        sys.exit("Workspace already initialized (.env file exists).")
+        print(
+            "[bold yellow]Workspace already initialized (.env file exists). Skipping.[/bold yellow]"
+        )
+        sys.exit()
 
     example_env_file = helpers.get_root_path() / "example.env"
     if not example_env_file.is_file():
