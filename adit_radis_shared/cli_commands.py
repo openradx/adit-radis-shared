@@ -72,17 +72,13 @@ def compose_up(
             "Check ENVIRONMENT setting in .env file."
         )
 
-    version = helpers.get_latest_local_version_tag()
-    if not helpers.is_production():
-        version += "-dev"
+    if build:
+        cmd = f"{helpers.build_compose_cmd()} build"
+        cmd += f" --build-arg PROJECT_VERSION={helpers.get_project_version()}-cli"
+        helpers.execute_cmd(cmd)
 
-    cmd = f"{helpers.build_compose_cmd(profile)} up"
-
-    if not build:
-        cmd += " --no-build"
-
-    cmd += " --detach"
-    helpers.execute_cmd(cmd, env={"PROJECT_VERSION": version})
+    cmd = f"{helpers.build_compose_cmd(profile)} up --no-build --detach"
+    helpers.execute_cmd(cmd)
 
 
 def compose_down(
@@ -104,8 +100,7 @@ def stack_deploy(build: Annotated[bool, typer.Option(help="Build images")] = Fal
 
     helpers.prepare_environment()
 
-    config = helpers.load_config_from_env_file()
-    if config.get("ENVIRONMENT") != "production":
+    if not helpers.is_production():
         sys.exit(
             "stack-deploy task can only be used in production environment. "
             "Check ENVIRONMENT setting in .env file."
@@ -113,17 +108,12 @@ def stack_deploy(build: Annotated[bool, typer.Option(help="Build images")] = Fal
 
     if build:
         cmd = f"{helpers.build_compose_cmd()} build"
+        cmd += f" --build-arg PROJECT_VERSION={helpers.get_project_version()}-cli"
         helpers.execute_cmd(cmd)
-
-    version = helpers.get_latest_local_version_tag()
-    if not helpers.is_production():
-        version += "-dev"
 
     # Docker Swarm Mode does not support .env files so we load the .env file manually
     # and pass the content as an environment variables.
     env = helpers.load_config_from_env_file()
-
-    env["PROJECT_VERSION"] = version
 
     cmd = "docker stack deploy --detach "
     cmd += f" -c {helpers.get_compose_base_file()}"

@@ -21,10 +21,14 @@ dependencies = [
     { name = "django-revproxy" },
     { name = "django-tables2" },
     { name = "djangorestframework" },
+    { name = "dunamai" },
     { name = "environs", extra = ["django"] },
     { name = "procrastinate", extra = ["django"] },
     { name = "psycopg", extra = ["binary"] },
+    { name = "python-dotenv" },
+    { name = "requests" },
     { name = "twisted", extra = ["http2", "tls"] },
+    { name = "typer" },
     { name = "wait-for-it" },
     { name = "watchfiles" },
     { name = "whitenoise" },
@@ -56,12 +60,9 @@ dev = [
     { name = "pytest-playwright" },
     { name = "pytest-timeout" },
     { name = "pytest-watch" },
-    { name = "python-dotenv" },
     { name = "pywatchman" },
-    { name = "requests" },
     { name = "ruff" },
     { name = "time-machine" },
-    { name = "typer" },
     { name = "vermin" },
 ]
 
@@ -82,10 +83,14 @@ requires-dist = [
     { name = "django-revproxy", specifier = "~=0.13" },
     { name = "django-tables2", specifier = "~=2.7" },
     { name = "djangorestframework", specifier = "~=3.15" },
+    { name = "dunamai", specifier = ">=1.23.0" },
     { name = "environs", extras = ["django"], specifier = "~=14.1" },
     { name = "procrastinate", extras = ["django"], specifier = "~=3.0" },
     { name = "psycopg", extras = ["binary"], specifier = "~=3.2" },
+    { name = "python-dotenv", specifier = "~=1.0" },
+    { name = "requests", specifier = "~=2.32" },
     { name = "twisted", extras = ["http2", "tls"], specifier = "~=24.11" },
+    { name = "typer", specifier = "~=0.15" },
     { name = "wait-for-it", specifier = "~=2.3" },
     { name = "watchfiles", specifier = "~=1.0" },
     { name = "whitenoise", specifier = "~=6.9" },
@@ -117,12 +122,9 @@ dev = [
     { name = "pytest-playwright", specifier = "~=0.7" },
     { name = "pytest-timeout", specifier = "~=2.3" },
     { name = "pytest-watch", specifier = "~=4.2" },
-    { name = "python-dotenv", specifier = "~=1.0" },
     { name = "pywatchman", specifier = "~=2.0" },
-    { name = "requests", specifier = "~=2.32" },
     { name = "ruff", specifier = "~=0.9" },
     { name = "time-machine", specifier = "~=2.16" },
-    { name = "typer", specifier = "~=0.15" },
     { name = "vermin", specifier = "~=1.6" },
 ]
 
@@ -772,6 +774,18 @@ name = "docopt"
 version = "0.6.2"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491", size = 25901 }
+
+[[package]]
+name = "dunamai"
+version = "1.23.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/4e/a5c8c337a1d9ac0384298ade02d322741fb5998041a5ea74d1cd2a4a1d47/dunamai-1.23.0.tar.gz", hash = "sha256:a163746de7ea5acb6dacdab3a6ad621ebc612ed1e528aaa8beedb8887fccd2c4", size = 44681 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/4c/963169386309fec4f96fd61210ac0a0666887d0fb0a50205395674d20b71/dunamai-1.23.0-py3-none-any.whl", hash = "sha256:a0906d876e92441793c6a423e16a4802752e723e9c9a5aabdc5535df02dbe041", size = 26342 },
+]
 
 [[package]]
 name = "editorconfig"

@@ -20,6 +20,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 from django.core.management.utils import get_random_secret_key
 from dotenv import dotenv_values
+from dunamai import Pattern, Version
 
 PROJECT_ID: str | None = None
 ROOT_PATH: Path | None = None
@@ -210,17 +211,8 @@ def get_latest_remote_version_tag(owner, repo) -> str | None:
     return None
 
 
-def get_latest_local_version_tag() -> str:
-    # Get all tags sorted by creation date (newest first)
-    result = capture_cmd("git tag -l --sort=-creatordate")
-    all_tags = result.splitlines()
-
-    version_pattern = re.compile(r"^\d+\.\d+\.\d+$")
-    for tag in all_tags:
-        if version_pattern.match(tag):
-            return tag
-
-    return "0.0.0"
+def get_project_version() -> str:
+    return Version.from_git(pattern=Pattern.DefaultUnprefixed).serialize()
 
 
 def generate_django_secret_key():
