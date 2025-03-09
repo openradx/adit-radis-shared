@@ -1,17 +1,14 @@
 {% extends "registration/registration_base.html" %}
-{% load trans from i18n %}
 {% block title %}
-    {% trans "Account activated" %}
+    Account Activated
 {% endblock title %}
 {% block heading %}
-    <h4>{% trans "Account activated" %}</h4>
+    <c-heading title="Account Activated" />
 {% endblock heading %}
 {% block content %}
     <p>
-        {% trans "Your account is now activated." %}
-        {% if not user.is_authenticated %}
-            {% trans "You can log in." %}
-        {% endif %}
+        Your account is now activated.
+        {% if not user.is_authenticated %}You can log in.{% endif %}
     </p>
 {% endblock content %}
 {% comment %}

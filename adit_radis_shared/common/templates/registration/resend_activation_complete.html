@@ -1,17 +1,12 @@
 {% extends "registration/registration_base.html" %}
-{% load trans blocktrans from i18n %}
 {% block title %}
-    {% trans "Account activation resent" %}
+    Account Activation Resent
 {% endblock title %}
 {% block heading %}
-    <h4>{% trans "Account activation resent" %}</h4>
+    <c-heading title="Account Activation Resent" />
 {% endblock heading %}
 {% block content %}
-    <p>
-        {% blocktrans %}
-            We have sent an email to {{ email }} with further instructions.
-        {% endblocktrans %}
-    </p>
+    <p>We have sent an email to {{ email }} with further instructions.</p>
 {% endblock content %}
 {% comment %}
 **registration/resend_activation_complete.html**

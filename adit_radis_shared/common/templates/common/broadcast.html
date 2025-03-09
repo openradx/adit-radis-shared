@@ -1,12 +1,13 @@
 {% extends "core/core_layout.html" %}
 {% load crispy from crispy_forms_tags %}
 {% block title %}
-    Broadcast
+    Broadcast Email
 {% endblock title %}
 {% block heading %}
-    <h4 class="mb-3">Send a message to all signed up users</h4>
+    <c-heading title="Broadcast Email" />
 {% endblock heading %}
 {% block content %}
+    <p>Send an email to all registered users.</p>
     <form action="{% url 'broadcast' %}" method="post">
         {% csrf_token %}
         {{ form|crispy }}

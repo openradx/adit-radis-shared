@@ -1,44 +1,39 @@
 {% extends "registration/registration_base.html" %}
-{% load trans blocktrans from i18n %}
 {% load crispy from crispy_forms_tags %}
 {% block title %}
-    {% trans "Log in" %}
+    Login
 {% endblock title %}
 {% block heading %}
-    <h4>Login</h4>
+    <c-heading title="Login" />
 {% endblock heading %}
 {% block content %}
-    {% if form.errors %}
-        <p>{% trans "Your username or password is incorrect. Try again?" %}</p>
-    {% endif %}
+    {% if form.errors %}<p>Your username or password is incorrect. Try again?</p>{% endif %}
     {% if next %}
         {% if user.is_authenticated %}
             <p>
-                {% blocktrans %}
                 Your account doesn't have access to this page. To proceed,
                 please login with an account that has access.
-                {% endblocktrans %}
             </p>
         {% else %}
-            <p>{% trans "You must login to access this page." %}</p>
+            <p>You must login to access this page.</p>
         {% endif %}
     {% endif %}
     <p>
         <form method="post" action="">
             {% csrf_token %}
             {{ form|crispy }}
-            <input type="submit" class="btn btn-primary" value="{% trans 'Log in' %}" />
+            <input type="submit" class="btn btn-primary" value="Log In" />
             <input type="hidden" name="next" value="{{ next }}" />
         </form>
     </p>
     <hr />
     <p>
-        {% trans "Forgot your password?" %}
-        <a href="{% url 'auth_password_reset' %}">{% trans "Reset it" %}</a>
+        Forgot your password?
+        <a href="{% url 'auth_password_reset' %}">Reset</a>
     </p>
     <p>
-        {% trans "No account yet?" %}
-        <a href="{% url 'registration_register' %}">{% trans "Register" %}</a>
+        No account yet?
+        <a href="{% url 'registration_register' %}">Register</a>
     </p>
 {% endblock content %}
 {% comment %}

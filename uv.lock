@@ -12,6 +12,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "daphne" },
     { name = "django" },
+    { name = "django-cotton" },
     { name = "django-crispy-forms" },
     { name = "django-dbbackup" },
     { name = "django-extensions" },
@@ -74,6 +75,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=44.0.1" },
     { name = "daphne", specifier = ">=4.1.2" },
     { name = "django", specifier = ">=5.1.6" },
+    { name = "django-cotton", specifier = ">=1.6.0" },
     { name = "django-crispy-forms", specifier = ">=2.3" },
     { name = "django-dbbackup", specifier = ">=4.2.1" },
     { name = "django-extensions", specifier = ">=3.2.3" },
@@ -545,6 +547,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/20/28/d420aaa89028d2ec0cf17c1510d06ff6a8ed0bf1abfb7f33c999e1c5befa/django-cache-url-3.4.5.tar.gz", hash = "sha256:eb9fb194717524348c95cad9905b70b647452741c1d9e481fac6d2125f0ad917", size = 7230 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/90/01755e4a42558b763f7021e9369aa6aa94c2ede7313deed56cb7483834ab/django_cache_url-3.4.5-py2.py3-none-any.whl", hash = "sha256:5f350759978483ab85dc0e3e17b3d53eed3394a28148f6bf0f53d11d0feb5b3c", size = 4760 },
+]
+
+[[package]]
+name = "django-cotton"
+version = "1.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bb/0b/db7c0b308eda95922645be3e0473233d6766cff5c085e3a78e62bc20b7e0/django_cotton-1.6.0.tar.gz", hash = "sha256:1feb2ab486491f304e701fda82f37e608f0b9874473b3ec92922f3891d1a6cd7", size = 21360 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/7f/62ec3bb6bbbef6c082dfdda52a7fbed5cbb4831dd073a502bf2dd60d83fc/django_cotton-1.6.0-py3-none-any.whl", hash = "sha256:46452e5fc9ddfff43ac3b10925ba63151e2e9143ffa665a9519178122204b456", size = 20973 },
 ]
 
 [[package]]

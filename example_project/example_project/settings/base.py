@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "procrastinate.contrib.django",
     "dbbackup",
     "loginas",
+    "django_cotton",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_htmx",

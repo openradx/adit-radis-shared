@@ -1,13 +1,12 @@
 {% extends "registration/registration_base.html" %}
-{% load trans from i18n %}
 {% block title %}
-    {% trans "Account approved" %}
+    Account Approved
 {% endblock title %}
 {% block heading %}
-    <h4>User account approved.</h4>
+    <c-heading title="Account Approved" />
 {% endblock heading %}
 {% block content %}
-    <p>{% trans "The user's account is now approved." %}</p>
+    <p>The user's account is now approved.</p>
 {% endblock content %}
 {% comment %}
 **registration/admin_approve_complete.html**
