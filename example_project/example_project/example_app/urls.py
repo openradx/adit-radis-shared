@@ -4,6 +4,7 @@ from .views import (
     AsyncExampleClassView,
     ExampleListView,
     HomeView,
+    UpdatePreferencesView,
     admin_section,
     example_messages,
     example_task_view,
@@ -12,6 +13,7 @@ from .views import (
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
+    path("update-preferences/", UpdatePreferencesView.as_view()),
     path("admin-section/", admin_section, name="admin_section"),
     path(
         "examples/",

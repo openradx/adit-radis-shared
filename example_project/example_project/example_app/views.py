@@ -10,7 +10,8 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from adit_radis_shared.accounts.models import User
-from adit_radis_shared.common.views import BaseHomeView
+from adit_radis_shared.common.site import THEME_PREFERENCE_KEY
+from adit_radis_shared.common.views import BaseHomeView, BaseUpdatePreferencesView
 
 from .tasks import example_task
 
@@ -57,3 +58,7 @@ def example_task_view(request: HttpRequest) -> HttpResponse:
 class AsyncExampleClassView(View):
     async def get(self, request: HttpRequest) -> HttpResponse:
         return await sync_to_async(render)(request, "example_app/example_async_view.html")
+
+
+class UpdatePreferencesView(BaseUpdatePreferencesView):
+    allowed_keys = [THEME_PREFERENCE_KEY]
