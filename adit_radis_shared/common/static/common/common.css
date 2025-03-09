@@ -1,10 +1,12 @@
 /***
 * Bootstrap
 ***/
-[data-bs-theme="dark"] {
-  .list-group-item {
-    --bs-list-group-action-hover-bg: #3d4e52;
-  }
+.navbar {
+  background-color: #13795b;
+}
+
+.navbar .nav-link {
+  color: #ffffffcc;
 }
 
 /* No wrap of long Bootstrap tooltips. */

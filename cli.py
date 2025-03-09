@@ -59,7 +59,7 @@ def copy_statics():
 
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js")
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js.map")
-    copy_file("node_modules/bootswatch/dist/flatly/bootstrap.css")
+    copy_file("node_modules/bootstrap/dist/css/bootstrap.css")
     copy_file("node_modules/bootstrap-icons/bootstrap-icons.svg")
     copy_file("node_modules/alpinejs/dist/cdn.js", "alpine.js")
     copy_file("node_modules/@alpinejs/morph/dist/cdn.js", "alpine-morph.js")
