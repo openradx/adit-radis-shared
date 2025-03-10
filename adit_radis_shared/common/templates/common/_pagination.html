@@ -1,5 +1,4 @@
 {% load django_tables2 %}
-{% load i18n %}
 {% if page_obj.has_other_pages %}
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
@@ -7,7 +6,7 @@
                 <a href="{% querystring 'page'=page_obj.previous_page_number %}"
                    class="page-link">
                     <span aria-hidden="true">«</span>
-                    {% trans 'previous' %}
+                    previous
                 </a>
             </li>
         {% endif %}
@@ -23,7 +22,7 @@
             <li class="next page-item">
                 <a href="{% querystring 'page'=page_obj.next_page_number %}"
                    class="page-link">
-                    {% trans 'next' %}
+                    next
                     <span aria-hidden="true">»</span>
                 </a>
             </li>

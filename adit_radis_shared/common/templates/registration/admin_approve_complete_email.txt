@@ -1,8 +1,7 @@
-{% load blocktrans from i18n %}
 {% load base_url from common_extras %}
-{% blocktrans %}
-    Your account is now approved. You can log in using the following link
-{% endblocktrans %}
+
+Your account is now approved. You can log in using the following link:
+
 {% base_url %}{% url 'auth_login' %}
 {% comment %}
 **registration/admin_approve_complete_email.txt**

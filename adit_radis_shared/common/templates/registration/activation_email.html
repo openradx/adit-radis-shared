@@ -1,25 +1,20 @@
-{% load trans blocktrans from i18n %}
 {% load base_url from common_extras %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Registration |" %} {{ site.name }}</title>
+        <title>Registration | {{ site.name }}</title>
         <meta name="description"
               content="Activate your account on {{ site.name }}." />
     </head>
     <body>
         <p>
-            {% blocktrans with site_name=site.name %}
             You (or someone pretending to be you) have asked to register an account at
-            {{ site_name }}. If this wasn't you, please ignore this email
+            {{ site.name }}. If this wasn't you, please ignore this email
             and your address will be removed from our records.
-            {% endblocktrans %}
         </p>
         <p>
-            {% blocktrans %}
             To activate this account, please click the following link within the next
             {{ expiration_days }} days:
-            {% endblocktrans %}
         </p>
         <p>
             <a href="{% base_url %}{% url 'registration_activate' activation_key %}">
@@ -27,10 +22,8 @@
             </a>
         </p>
         <p>
-            {% blocktrans with site_name=site.name %}
             Sincerely,
-            {{ site_name }} Support Team
-            {% endblocktrans %}
+            {{ site.name }} Support Team
         </p>
     </body>
 </html>

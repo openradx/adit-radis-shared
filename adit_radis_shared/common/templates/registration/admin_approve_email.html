@@ -1,48 +1,39 @@
-{% load trans blocktrans from i18n %}
 {% load base_url from common_extras %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>{% trans "Registration |" %} {{ site.name }}</title>
+        <title>Registration | {{ site.name }}</title>
         <meta name="description"
               content="Approve account registration on {{ site.name }}." />
     </head>
     <body>
-        <p>
-            {% blocktrans with site_name=site.name %}
-            The user ({{ user }}) has asked to register an account at {{ site_name }}.
-            {% endblocktrans %}
-        </p>
-        <p>
-            {% blocktrans %}
-            To approve the account, please click the following link:
-            {% endblocktrans %}
-        </p>
+        <p>The user ({{ user }}) has asked to register an account at {{ site.name }}.</p>
+        <p>To approve the account, please click the following link:</p>
         <p>
             <a href="{% base_url %}{% url 'registration_admin_approve' profile_id %}">
                 {% base_url %}{% url 'registration_admin_approve' profile_id %}
             </a>
         </p>
         <p>
-            <h4>{% trans "User Details:" %}</h4>
+            <h4>User Details:</h4>
             <dl class="row">
-                <dt class="col-sm-3">{% trans "Username" %}</dt>
+                <dt class="col-sm-3">Username</dt>
                 <dd class="col-sm-9">
                     {{ user.username }}
                 </dd>
-                <dt class="col-sm-3">{% trans "Email" %}</dt>
+                <dt class="col-sm-3">Email</dt>
                 <dd class="col-sm-9">
                     {{ user.email }}
                 </dd>
-                <dt class="col-sm-3">{% trans "Full name" %}</dt>
+                <dt class="col-sm-3">Full name</dt>
                 <dd class="col-sm-9">
                     {{ user.get_full_name }}
                 </dd>
-                <dt class="col-sm-3">{% trans "Phone number" %}</dt>
+                <dt class="col-sm-3">Phone number</dt>
                 <dd class="col-sm-9">
                     {{ user.phone_number }}
                 </dd>
-                <dt class="col-sm-3">{% trans "Department" %}</dt>
+                <dt class="col-sm-3">Department</dt>
                 <dd class="col-sm-9">
                     {{ user.department }}
                 </dd>

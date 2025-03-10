@@ -1,10 +1,12 @@
 {% extends "registration/registration_base.html" %}
-{% load trans from i18n %}
 {% block title %}
-    {% trans "Approval failure" %}
+    Approval Failure
 {% endblock title %}
+{% block heading %}
+    <c-heading title="Approval Failure" />
+{% endblock heading %}
 {% block content %}
-    <p>{% trans "Account approval failed." %}</p>
+    <p>The account approval failed.</p>
 {% endblock content %}
 {% comment %}
 **registration/admin_approve.html**
