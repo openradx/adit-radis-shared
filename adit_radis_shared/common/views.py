@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import (
@@ -13,8 +13,10 @@ from django.views.generic import FormView, View
 from django.views.generic.base import TemplateView
 from revproxy.views import ProxyView
 
+from adit_radis_shared.accounts.models import User
 from adit_radis_shared.common.forms import BroadcastForm
 from adit_radis_shared.common.models import ProjectSettings
+from adit_radis_shared.common.tasks import broadcast_mail
 
 from .types import AuthenticatedHttpRequest, HtmxHttpRequest
 
@@ -66,8 +68,7 @@ class BaseUpdatePreferencesView(LoginRequiredMixin, View):
         return HttpResponse()
 
 
-class BaseBroadcastView(LoginRequiredMixin, UserPassesTestMixin, FormView):
-    success_url: str | Callable[..., str]
+class BroadcastView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     template_name = "common/broadcast.html"
     form_class = BroadcastForm
     request: AuthenticatedHttpRequest
@@ -75,21 +76,24 @@ class BaseBroadcastView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     def test_func(self) -> bool:
         return self.request.user.is_staff
 
-    def form_valid(self, form: Form) -> HttpResponse:
-        subject = form.cleaned_data["subject"]
-        message = form.cleaned_data["message"]
+    def get_success_url(self) -> str:
+        return self.request.path
 
-        self.send_mails(subject, message)
+    def form_valid(self, form: Form) -> HttpResponse:
+        recipients: list[User] = form.cleaned_data["recipients"]
+        subject: str = form.cleaned_data["subject"]
+        message: str = form.cleaned_data["message"]
+
+        emails: list[str] = [recipient.email for recipient in recipients]
+        broadcast_mail.defer(recipients=emails, subject=subject, message=message)
 
         messages.add_message(
             self.request,
             messages.SUCCESS,
-            "Successfully queued an Email for sending it to all users.",
+            "Email will be sent to selected users.",
         )
 
         return super().form_valid(form)
-
-    def send_mails(self, subject: str, message: str) -> None: ...
 
 
 class AdminProxyView(LoginRequiredMixin, UserPassesTestMixin, ProxyView):

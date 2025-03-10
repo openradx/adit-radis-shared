@@ -6,10 +6,25 @@ from crispy_forms.layout import Div, Field, Hidden, Layout, Submit
 from django import forms
 from django.http.request import QueryDict
 
+from adit_radis_shared.accounts.models import User
+
+
+class RecipientsField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj: User):
+        return f"{obj.username} <{obj.email}>"
+
 
 class BroadcastForm(forms.Form):
+    recipients = RecipientsField(
+        label="Recipients",
+        queryset=User.objects.order_by("username"),
+    )
     subject = forms.CharField(label="Subject", max_length=200)
     message = forms.CharField(label="Message", max_length=10000, widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["recipients"].widget.attrs["size"] = 10
 
 
 class PageSizeSelectForm(forms.Form):

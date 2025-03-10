@@ -1,6 +1,8 @@
 from django.urls import path
 from django.views.generic import TemplateView
 
+from adit_radis_shared.common.views import BroadcastView
+
 from .views import (
     AsyncExampleClassView,
     HomeView,
@@ -14,6 +16,7 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("update-preferences/", UpdatePreferencesView.as_view()),
     path("admin-section/", admin_section, name="admin_section"),
+    path("admin-section/broadcast/", BroadcastView.as_view(), name="broadcast"),
     path(
         "examples/",
         TemplateView.as_view(template_name="example_app/example_list.html"),
