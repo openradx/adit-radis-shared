@@ -1,14 +1,13 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
 from .views import (
     AsyncExampleClassView,
-    ExampleListView,
     HomeView,
     UpdatePreferencesView,
     admin_section,
     example_messages,
     example_task_view,
-    example_toasts,
 )
 
 urlpatterns = [
@@ -17,7 +16,7 @@ urlpatterns = [
     path("admin-section/", admin_section, name="admin_section"),
     path(
         "examples/",
-        ExampleListView.as_view(),
+        TemplateView.as_view(template_name="example_app/example_list.html"),
         name="example_list",
     ),
     path(
@@ -27,17 +26,22 @@ urlpatterns = [
     ),
     path(
         "examples/toasts/",
-        example_toasts,
+        TemplateView.as_view(template_name="example_app/example_toasts.html"),
         name="example_toasts",
     ),
     path(
-        "async-class-view/",
+        "examples/async-class-view/",
         AsyncExampleClassView.as_view(),
         name="example_async_class_view",
     ),
     path(
-        "example-task/",
+        "examples/example-task/",
         example_task_view,
         name="example_task",
+    ),
+    path(
+        "examples/heading/",
+        TemplateView.as_view(template_name="example_app/example_heading.html"),
+        name="example_heading",
     ),
 ]

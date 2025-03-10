@@ -1,10 +1,13 @@
 /***
-* Bootstrap
+* Bootstrap Enhancements
 ***/
+
+/* Set our navbar theme color. */
 .navbar {
   background-color: #13795b;
 }
 
+/* Make menu items a bit brighter. */
 .navbar .nav-link {
   color: #ffffffcc;
 }
@@ -12,6 +15,13 @@
 /* No wrap of long Bootstrap tooltips. */
 .tooltip-inner {
   max-width: none;
+}
+
+/* Align icons with text in buttons. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 /***

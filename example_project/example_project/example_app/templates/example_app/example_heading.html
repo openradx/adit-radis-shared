@@ -1,0 +1,33 @@
+{% extends "example_app/example_app_layout.html" %}
+{% load bootstrap_icon from common_extras %}
+{% block title %}
+    Example Heading
+{% endblock title %}
+{% block heading %}
+    <c-heading title="Example Heading">
+    <c-slot name="left">
+    <button type="button" class="btn btn-info">
+        Help
+        {% bootstrap_icon "question-circle" %}
+    </button>
+    </c-slot>
+    <c-slot name="right">
+    <a href="" class="btn btn-primary">
+        {% bootstrap_icon "plus-lg" %}
+        Create
+    </a>
+    <form action="" method="post">
+        {% csrf_token %}
+        <button type="submit"
+                class="btn btn-danger"
+                onclick="return confirm(`Really delete nothing?`)">
+            {% bootstrap_icon "trash" %}
+            Delete All
+        </button>
+    </form>
+    </c-slot>
+    </c-heading>
+{% endblock heading %}
+{% block content %}
+    <p>Demonstrate the heading with buttons</p>
+{% endblock content %}

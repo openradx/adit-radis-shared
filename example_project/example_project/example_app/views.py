@@ -7,7 +7,6 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
-from django.views.generic import TemplateView
 
 from adit_radis_shared.accounts.models import User
 from adit_radis_shared.common.site import THEME_PREFERENCE_KEY
@@ -26,14 +25,6 @@ def admin_section(request: HttpRequest) -> HttpResponse:
     if not user.is_staff:
         raise PermissionDenied
     return render(request, "example_app/admin_section.html", {})
-
-
-class ExampleListView(TemplateView):
-    template_name = "example_app/example_list.html"
-
-
-def example_toasts(request: HttpRequest) -> HttpResponse:
-    return render(request, "example_app/example_toasts.html", {})
 
 
 def example_messages(request: HttpRequest) -> HttpResponse:
