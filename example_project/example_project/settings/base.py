@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     "dbbackup",
     "loginas",
     "django_cotton.apps.SimpleAppConfig",
-    "template_partials.apps.SimpleAppConfig",
+    "block_fragments.apps.SimpleAppConfig",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_htmx",
@@ -97,7 +97,7 @@ TEMPLATES = [
         "OPTIONS": {
             "loaders": [
                 (
-                    "template_partials.loader.Loader",
+                    "block_fragments.loader.Loader",
                     [
                         (
                             "django.template.loaders.cached.Loader",
@@ -112,7 +112,6 @@ TEMPLATES = [
             ],
             "builtins": [
                 "django_cotton.templatetags.cotton",
-                "template_partials.templatetags.partials",
             ],
             "context_processors": [
                 "django.template.context_processors.debug",
