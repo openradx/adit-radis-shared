@@ -4,14 +4,22 @@ from asgiref.sync import sync_to_async
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
+from django.views.generic import ListView
+from django_filters.views import FilterView
+from django_tables2 import SingleTableMixin
 
 from adit_radis_shared.accounts.models import User
+from adit_radis_shared.common.mixins import PageSizeSelectMixin
 from adit_radis_shared.common.site import THEME_PREFERENCE_KEY
 from adit_radis_shared.common.views import BaseHomeView, BaseUpdatePreferencesView
 
+from .filters import ExampleJobFilter
+from .models import ExampleJob
+from .tables import ExampleJobTable
 from .tasks import example_task
 
 
@@ -36,7 +44,7 @@ def example_messages(request: HttpRequest) -> HttpResponse:
     return render(request, "example_app/example_messages.html", {})
 
 
-def example_task_view(request: HttpRequest) -> HttpResponse:
+def example_background_task_view(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         job_id = example_task.defer()
         messages.info(request, f"Job started with ID {job_id}!")
@@ -45,10 +53,28 @@ def example_task_view(request: HttpRequest) -> HttpResponse:
     return render(request, "example_app/example_task.html", {})
 
 
-# Cave, LoginRequiredMixin won't work with async views! One has to implement it himself.
 class AsyncExampleClassView(View):
     async def get(self, request: HttpRequest) -> HttpResponse:
         return await sync_to_async(render)(request, "example_app/example_async_view.html")
+
+
+class ExampleTableHeadingView(PageSizeSelectMixin, SingleTableMixin, FilterView):
+    model = ExampleJob
+    table_class = ExampleJobTable
+    filterset_class = ExampleJobFilter
+    template_name = "example_app/example_table_heading.html"
+
+
+class ExampleCustomPaginationView(PageSizeSelectMixin, ListView):
+    model = ExampleJob
+    template_name = "example_app/example_custom_pagination.html"
+    context_object_name = "jobs"
+
+    def get_paginate_by(self, queryset: QuerySet) -> int | None:
+        per_page = 25
+        if self.request.GET.get("per_page"):
+            return int(self.request.GET.get("per_page", per_page))
+        return per_page
 
 
 class UpdatePreferencesView(BaseUpdatePreferencesView):

@@ -1,0 +1,17 @@
+{% extends "example_app/example_app_layout.html" %}
+{% block title %}
+    Custom Pagination Example
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Custom Pagination Example" />
+{% endblock heading %}
+{% block content %}
+    <ul class="list-group mb-3">
+        {% for job in page_obj %}
+            <li class="list-group-item">{{ job.id }} - {{ job.name }} - {{ job.get_status_display }}</li>
+        {% endfor %}
+    </ul>
+    <div>
+        <c-pagination :page-obj="page_obj" :page-sizes="page_sizes" />
+    </div>
+{% endblock content %}
