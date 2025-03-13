@@ -31,6 +31,7 @@ services:
         ./manage.py create_superuser &&
         ./manage.py create_example_users &&
         ./manage.py create_example_groups &&
+        ./manage.py create_example_jobs &&
         ./manage.py runserver 0.0.0.0:8000
       "
 
