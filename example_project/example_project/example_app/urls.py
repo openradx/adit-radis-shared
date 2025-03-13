@@ -43,8 +43,8 @@ urlpatterns = [
         name="example_task",
     ),
     path(
-        "examples/heading/",
-        TemplateView.as_view(template_name="example_app/example_heading.html"),
-        name="example_heading",
+        "examples/page-heading/",
+        TemplateView.as_view(template_name="example_app/example_page_heading.html"),
+        name="example_page_heading",
     ),
 ]

@@ -3,7 +3,7 @@
     Examples
 {% endblock title %}
 {% block heading %}
-    <c-heading title="Examples" />
+    <c-page-heading title="Examples" />
 {% endblock heading %}
 {% block content %}
     <ul class="list-group">
@@ -20,7 +20,7 @@
             <a href="{% url 'example_task' %}">Task</a>
         </li>
         <li class="list-group-item">
-            <a href="{% url 'example_heading' %}">Heading</a>
+            <a href="{% url 'example_page_heading' %}">Page Heading</a>
         </li>
     </ul>
 {% endblock content %}

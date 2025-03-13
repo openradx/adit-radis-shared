@@ -1,10 +1,10 @@
 {% extends "example_app/example_app_layout.html" %}
 {% load bootstrap_icon from common_extras %}
 {% block title %}
-    Example Heading
+    Page Heading
 {% endblock title %}
 {% block heading %}
-    <c-heading title="Example Heading">
+    <c-page-heading title="Page Heading">
     <c-slot name="left">
     <button type="button" class="btn btn-info">
         Help
@@ -26,8 +26,8 @@
         </button>
     </form>
     </c-slot>
-    </c-heading>
+    </c-page-heading>
 {% endblock heading %}
 {% block content %}
-    <p>Demonstrate the heading with buttons</p>
+    <p>Demonstrate a page heading with buttons</p>
 {% endblock content %}
