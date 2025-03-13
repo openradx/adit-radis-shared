@@ -1,0 +1,10 @@
+<div>
+    <div class="btn-group pagination page-size-selector"
+         role="group"
+         aria-label="Page Size">
+        {% for page_size in page_sizes %}
+            <a href="{% querystring per_page=page_size page=None %}"
+               class="btn btn-outline-secondary {% if page_size == per_page %}active{% endif %}">{{ page_size }}</a>
+        {% endfor %}
+    </div>
+</div>

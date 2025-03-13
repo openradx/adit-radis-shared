@@ -1,5 +1,5 @@
 /***
-* Bootstrap Enhancements
+* Bootstrap
 ***/
 
 /* Set our navbar theme color. */
@@ -87,8 +87,15 @@ table.table thead th.orderable {
 }
 
 /***
-* Misc
+* Miscellaneous
 ***/
+
+/* Make the border of the page size selector similar to the pagination
+   (works only together with the pagination class). */
+.page-size-selector a.btn {
+  border-color: var(--bs-pagination-border-color);
+}
+
 /* Place caption of tables on the top. */
 caption {
   caption-side: top;

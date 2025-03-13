@@ -8,7 +8,6 @@ from django.views.generic import TemplateView
 from django_filters.filterset import FilterSet
 from django_filters.views import FilterMixin
 
-from .forms import PageSizeSelectForm
 from .models import AppSettings
 from .types import HtmxHttpRequest
 from .utils.auth_utils import is_logged_in_user
@@ -138,8 +137,9 @@ class PageSizeSelectMixin:
         context = super().get_context_data(**kwargs)
 
         if not hasattr(self, "page_sizes") or self.page_sizes is None:
-            self.page_sizes = [50, 100, 250, 500]
-        context["page_size_select"] = PageSizeSelectForm(self.request.GET, self.page_sizes)
+            self.page_sizes = [25, 50, 100, 250, 500]
+
+        context["page_sizes"] = self.page_sizes
 
         return context
 

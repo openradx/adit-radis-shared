@@ -1,0 +1,9 @@
+{% extends "django_tables2/bootstrap5.html" %}
+{% block pagination %}
+    <div class="d-flex justify-content-around">
+        <div>{{ block.super }}</div>
+        {% if table.context.page_sizes %}
+            <c-page-size-selector :page-sizes="table.context.page_sizes" :per-page="table.page.paginator.per_page" />
+        {% endif %}
+    </div>
+{% endblock pagination %}
