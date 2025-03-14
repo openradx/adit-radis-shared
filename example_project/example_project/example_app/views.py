@@ -48,9 +48,9 @@ def example_background_task_view(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         job_id = example_task.defer()
         messages.info(request, f"Job started with ID {job_id}!")
-        return redirect("example_task")
+        return redirect("example_background_task")
 
-    return render(request, "example_app/example_task.html", {})
+    return render(request, "example_app/example_background_task.html", {})
 
 
 class AsyncExampleClassView(View):
