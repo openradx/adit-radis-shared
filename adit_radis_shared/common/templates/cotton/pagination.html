@@ -34,7 +34,7 @@
             </nav>
         {% endif %}
     </div>
-    {% if page_sizes %}
+    {% if page_sizes and page_obj.paginator.count > page_sizes.0 %}
         <c-page-size-selector :page-sizes="page_sizes" :per-page="page_obj.paginator.per_page" />
     {% endif %}
 </div>

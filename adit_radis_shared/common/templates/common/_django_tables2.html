@@ -2,7 +2,7 @@
 {% block pagination %}
     <div class="d-flex justify-content-around">
         <div>{{ block.super }}</div>
-        {% if table.context.page_sizes %}
+        {% if table.context.page_sizes and table.paginator.count > table.context.page_sizes.0 %}
             <c-page-size-selector :page-sizes="table.context.page_sizes" :per-page="table.page.paginator.per_page" />
         {% endif %}
     </div>
