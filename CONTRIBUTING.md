@@ -24,10 +24,10 @@ It also contains a Django example project to play around with the features.
 git clone https://github.com/openradx/adit-radis-shared.git
 cd adit-radis-shared
 uv sync
-uv run ./scripts/compose_up.py
+uv run ./cli.py compose_up
 ```
 
 The development server of the example project will be started on <http://localhost:8000>
 
 If a library dependency is changed, the containers need to be rebuilt (e.g. by running
-`uv run ./scripts/compose_down.py && uv run ./scripts/compose_up.py`).
+`uv run ./cli.py compose_down && uv run ./cli.py compose_up`).
