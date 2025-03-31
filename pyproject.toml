@@ -31,7 +31,6 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
     "Twisted[tls,http2]>=24.11.0",
-    "typer>=0.15.1",
     "wait-for-it>=2.3.0",
     "watchfiles>=1.0.4",
     "whitenoise>=6.9.0",
@@ -39,6 +38,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "argcomplete>=3.6.1",
     "debugpy>=1.8.12",
     "django-browser-reload>=1.18.0",
     "django-debug-permissions>=1.0.0",

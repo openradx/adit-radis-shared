@@ -9,6 +9,6 @@
     "htmx.org": "^1.9.5"
   },
   "scripts": {
-    "copy-statics": "uv run ./cli.py copy-statics"
+    "copy-statics": "uv run ./scripts/copy_statics.py"
   }
 }
