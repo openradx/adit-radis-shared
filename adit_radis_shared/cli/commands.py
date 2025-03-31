@@ -10,37 +10,6 @@ from dotenv import set_key
 from .helper import CommandHelper
 
 
-def register_backup_db(subparsers: argparse._SubParsersAction):
-    def call(**kwargs):
-        helper = CommandHelper()
-
-        settings = (
-            f"{helper.project_id}.settings.production"
-            if helper.is_production()
-            else f"{helper.project_id}.settings.development"
-        )
-
-        web_container_id = helper.find_running_container_id("web")
-        if web_container_id is None:
-            sys.exit("Web container is not running.")
-
-        helper.execute_cmd(
-            (
-                f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-                f"{web_container_id} ./manage.py dbbackup --clean -v 2"
-            )
-        )
-
-    info = "Backup database in running container stack"
-    parser = subparsers.add_parser(
-        "backup_db",
-        help=info,
-        description=info,
-        epilog="For backup location see DBBACKUP_STORAGE_OPTIONS setting",
-    )
-    parser.set_defaults(func=call)
-
-
 def register_compose_up(subparsers: argparse._SubParsersAction):
     def call(build: bool, profile: list[str], extra_args: list[str], **kwargs):
         helper = CommandHelper()
@@ -64,7 +33,7 @@ def register_compose_up(subparsers: argparse._SubParsersAction):
         helper.execute_cmd(cmd)
 
     info = "Start stack with docker compose"
-    parser = subparsers.add_parser("compose_up", help=info, description=info)
+    parser = subparsers.add_parser("compose-up", help=info, description=info)
     parser.add_argument("--build", action="store_true", help="Build images before starting")
     parser.add_argument("--profile", action="append", help="Docker compose profile(s) to use")
     parser.set_defaults(func=call)
@@ -81,9 +50,65 @@ def register_compose_down(subparsers: argparse._SubParsersAction):
         helper.execute_cmd(cmd)
 
     info = "Stop stack with docker compose"
-    parser = subparsers.add_parser("compose_down", help=info, description=info)
+    parser = subparsers.add_parser("compose-down", help=info, description=info)
     parser.add_argument("--cleanup", action="store_true", help="Remove orphans and volumes")
     parser.add_argument("--profile", action="append", help="Docker compose profile(s) to use")
+    parser.set_defaults(func=call)
+
+
+def register_db_backup(subparsers: argparse._SubParsersAction):
+    def call(**kwargs):
+        helper = CommandHelper()
+
+        settings = (
+            f"{helper.project_id}.settings.production"
+            if helper.is_production()
+            else f"{helper.project_id}.settings.development"
+        )
+
+        web_container_id = helper.find_running_container_id("web")
+        if web_container_id is None:
+            sys.exit("Web container is not running.")
+
+        helper.execute_cmd(
+            (
+                f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+                f"{web_container_id} ./manage.py dbbackup --clean -v 2"
+            )
+        )
+
+    info = "Backup database in running container stack"
+    parser = subparsers.add_parser(
+        "db-backup",
+        help=info,
+        description=info,
+        epilog="For backup location see DBBACKUP_STORAGE_OPTIONS setting",
+    )
+    parser.set_defaults(func=call)
+
+
+def register_db_restore(subparsers: argparse._SubParsersAction):
+    def call(**kwargs):
+        helper = CommandHelper()
+
+        settings = (
+            f"{helper.project_id}.settings.production"
+            if helper.is_production()
+            else f"{helper.project_id}.settings.development"
+        )
+        web_container_id = helper.find_running_container_id("web")
+        if web_container_id is None:
+            sys.exit("Web container is not running. Run 'uv run ./manage.py compose-up' first.")
+
+        helper.execute_cmd(
+            (
+                f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+                f"{web_container_id} ./manage.py dbrestore"
+            )
+        )
+
+    info = "Restore database in container from the last backup"
+    parser = subparsers.add_parser("db-restore", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -101,7 +126,7 @@ def register_format_code(subparsers: argparse._SubParsersAction):
         helper.execute_cmd("uv run djlint . --reformat")
 
     parser = subparsers.add_parser(
-        "format_code",
+        "format-code",
         help="Format the source code with ruff and djlint",
     )
     parser.set_defaults(func=call)
@@ -113,7 +138,7 @@ def register_generate_auth_token(subparsers: argparse._SubParsersAction):
         print(helper.generate_auth_token(length))
 
     info = "Generate an authentication token"
-    parser = subparsers.add_parser("generate_auth_token", help=info, description=info)
+    parser = subparsers.add_parser("generate-auth-token", help=info, description=info)
     parser.add_argument("--length", type=int, default=20, help="Length of the token (default: 20)")
     parser.set_defaults(func=call)
 
@@ -174,7 +199,7 @@ def register_generate_certificate_chain(subparsers: argparse._SubParsersAction):
             print(f"Generated chain file at {chain_path.absolute()}")
 
     info = "Generate certificate chain file for a signed certificate"
-    parser = subparsers.add_parser("generate_certificate_chain", help=info, description=info)
+    parser = subparsers.add_parser("generate-certificate-chain", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -236,7 +261,7 @@ def register_generate_certificate_files(subparsers: argparse._SubParsersAction):
             print(f"Generated chain file at {chain_path.absolute()}")
 
     info = "Generate self-signed certificate files for local development"
-    parser = subparsers.add_parser("generate_certificate_files", help=info, description=info)
+    parser = subparsers.add_parser("generate-certificate-files", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -246,7 +271,7 @@ def register_generate_django_secret_key(subparsers: argparse._SubParsersAction):
         print(helper.generate_django_secret_key())
 
     info = "Generate a Django secret key"
-    parser = subparsers.add_parser("generate_django_secret_key", help=info, description=info)
+    parser = subparsers.add_parser("generate-django-secret-key", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -256,7 +281,7 @@ def register_generate_secure_password(subparsers: argparse._SubParsersAction):
         print(helper.generate_secure_password(length))
 
     info = "Generate a secure password"
-    parser = subparsers.add_parser("generate_secure_password", help=info, description=info)
+    parser = subparsers.add_parser("generate-secure-password", help=info, description=info)
     parser.add_argument(
         "--length", type=int, default=12, help="Length of the password (default: 12)"
     )
@@ -308,7 +333,7 @@ def register_init_workspace(subparsers: argparse._SubParsersAction):
         print("Successfully initialized .env file.")
 
     info = "Initialize workspace for Github Codespaces or local development"
-    parser = subparsers.add_parser("init_workspace", help=info, description=info)
+    parser = subparsers.add_parser("init-workspace", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -344,32 +369,7 @@ def register_randomize_env_secrets(subparsers: argparse._SubParsersAction):
         set_key(env_file, "ADMIN_AUTH_TOKEN", helper.generate_auth_token())
 
     info = "Randomize secrets in the .env file"
-    parser = subparsers.add_parser("randomize_env_secrets", help=info, description=info)
-    parser.set_defaults(func=call)
-
-
-def register_restore_db(subparsers: argparse._SubParsersAction):
-    def call(**kwargs):
-        helper = CommandHelper()
-
-        settings = (
-            f"{helper.project_id}.settings.production"
-            if helper.is_production()
-            else f"{helper.project_id}.settings.development"
-        )
-        web_container_id = helper.find_running_container_id("web")
-        if web_container_id is None:
-            sys.exit("Web container is not running. Run 'uv run ./manage.py compose-up' first.")
-
-        helper.execute_cmd(
-            (
-                f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-                f"{web_container_id} ./manage.py dbrestore"
-            )
-        )
-
-    info = "Restore database in container from the last backup"
-    parser = subparsers.add_parser("restore_db", help=info, description=info)
+    parser = subparsers.add_parser("randomize-env-secrets", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -400,7 +400,7 @@ def register_show_outdated(subparsers: argparse._SubParsersAction):
         helper.execute_cmd("npm outdated", hidden=True)
 
     info = "Show outdated dependencies"
-    parser = subparsers.add_parser("show_outdated", help=info, description=info)
+    parser = subparsers.add_parser("show-outdated", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -431,7 +431,7 @@ def register_stack_deploy(subparsers: argparse._SubParsersAction):
         helper.execute_cmd(cmd, env=env)
 
     info = "Deploy stack with docker swarm"
-    parser = subparsers.add_parser("stack_deploy", help=info, description=info)
+    parser = subparsers.add_parser("stack-deploy", help=info, description=info)
     parser.add_argument("--build", action="store_true", help="Build images")
     parser.set_defaults(func=call)
 
@@ -442,7 +442,7 @@ def register_stack_rm(subparsers: argparse._SubParsersAction):
         helper.execute_cmd(f"docker stack rm {helper.get_stack_name()}")
 
     info = "Remove stack from docker swarm"
-    parser = subparsers.add_parser("stack_rm", help=info, description=info)
+    parser = subparsers.add_parser("stack-rm", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -482,7 +482,7 @@ def register_try_github_actions(subparsers: argparse._SubParsersAction):
         helper.execute_cmd(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest")
 
     info = "Try Github Actions locally using Act"
-    parser = subparsers.add_parser("try_github_actions", help=info, description=info)
+    parser = subparsers.add_parser("try-github-actions", help=info, description=info)
     parser.set_defaults(func=call)
 
 
@@ -504,7 +504,7 @@ def register_upgrade_postgres_volume(subparsers: argparse._SubParsersAction):
             print("Cancelled")
 
     info = "Upgrade PostgreSQL volume data"
-    parser = subparsers.add_parser("upgrade_postgres_volume", help=info, description=info)
+    parser = subparsers.add_parser("upgrade-postgres-volume", help=info, description=info)
     parser.add_argument(
         "--version",
         type=str,
