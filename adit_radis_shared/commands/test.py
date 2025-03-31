@@ -18,7 +18,9 @@ def call():
 
     cmd = (
         f"{helper.build_compose_cmd()} exec "
-        f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest "
+        f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest"
     )
-    cmd += " ".join(extra_args)
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
+
     helper.execute_cmd(cmd)

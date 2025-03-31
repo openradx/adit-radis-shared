@@ -16,7 +16,7 @@ def call():
     parser.add_argument("--build", action="store_true", help="Build images before starting")
     parser.add_argument("--profile", action="append", help="Docker compose profile(s) to use")
     argcomplete.autocomplete(parser)
-    args = parser.parse_args(namespace=Namespace())
+    args, extra_args = parser.parse_known_args(namespace=Namespace())
 
     helper = CommandHelper()
     helper.prepare_environment()
@@ -32,5 +32,8 @@ def call():
         cmd += f" --build-arg PROJECT_VERSION={helper.get_project_version()}-local"
         helper.execute_cmd(cmd)
 
-    cmd = f"{helper.build_compose_cmd(args.profile)} up --no-build --detach"
+    cmd = f"{helper.build_compose_cmd(args.profile)} up --detach"
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
+
     helper.execute_cmd(cmd)
