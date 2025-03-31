@@ -8,7 +8,9 @@ def register_compose_up(subparsers: argparse._SubParsersAction, func: Callable |
     info = "Start stack with docker compose"
     parser = subparsers.add_parser("compose-up", help=info, description=info)
     parser.add_argument("--build", action="store_true", help="Build images before starting")
-    parser.add_argument("--profile", action="append", help="Docker compose profile(s) to use")
+    parser.add_argument(
+        "--profile", action="append", default=[], help="Docker compose profile(s) to use"
+    )
     parser.set_defaults(func=func or commands.compose_up)
 
 
@@ -16,7 +18,9 @@ def register_compose_down(subparsers: argparse._SubParsersAction, func: Callable
     info = "Stop stack with docker compose"
     parser = subparsers.add_parser("compose-down", help=info, description=info)
     parser.add_argument("--cleanup", action="store_true", help="Remove orphans and volumes")
-    parser.add_argument("--profile", action="append", help="Docker compose profile(s) to use")
+    parser.add_argument(
+        "--profile", action="append", default=[], help="Docker compose profile(s) to use"
+    )
     parser.set_defaults(func=func or commands.compose_down)
 
 
