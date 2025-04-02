@@ -12,9 +12,6 @@ from adit_radis_shared.cli import parsers
 
 
 def copy_statics(**kwargs):
-    parser = argparse.ArgumentParser(description="Copy statics for the project")
-    parser.parse_args()
-
     helper = cli_helper.CommandHelper()
 
     print("Copying statics...")
