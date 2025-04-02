@@ -9,7 +9,19 @@ from dotenv import set_key
 from .helper import CommandHelper
 
 
-def compose_up(build: bool, profile: list[str], extra_args: list[str], **kwargs):
+def compose_build(profile: list[str], extra_args: list[str], **kwargs):
+    helper = CommandHelper()
+    helper.prepare_environment()
+
+    cmd = f"{helper.build_compose_cmd(profile)} build"
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
+
+    helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
+    print("Build finished.")
+
+
+def compose_up(profile: list[str], extra_args: list[str], **kwargs):
     helper = CommandHelper()
     helper.prepare_environment()
 
@@ -19,16 +31,11 @@ def compose_up(build: bool, profile: list[str], extra_args: list[str], **kwargs)
             "Check ENVIRONMENT setting in .env file."
         )
 
-    if build:
-        cmd = f"{helper.build_compose_cmd()} build"
-        cmd += f" --build-arg PROJECT_VERSION={helper.get_project_version()}-local"
-        helper.execute_cmd(cmd)
-
     cmd = f"{helper.build_compose_cmd(profile)} up --detach"
     if extra_args:
         cmd += " " + " ".join(extra_args)
 
-    helper.execute_cmd(cmd)
+    helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
 
 def compose_down(cleanup: bool, profile: list[str], **kwargs):
@@ -38,7 +45,7 @@ def compose_down(cleanup: bool, profile: list[str], **kwargs):
     if cleanup:
         cmd += " --remove-orphans --volumes"
 
-    helper.execute_cmd(cmd)
+    helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
 
 def db_backup(**kwargs):
@@ -308,7 +315,7 @@ def show_outdated(**kwargs):
     helper.execute_cmd("npm outdated", hidden=True)
 
 
-def stack_deploy(build: bool, **kwargs):
+def stack_deploy(**kwargs):
     helper = CommandHelper()
     helper.prepare_environment()
 
@@ -318,14 +325,11 @@ def stack_deploy(build: bool, **kwargs):
             "Check ENVIRONMENT setting in .env file."
         )
 
-    if build:
-        cmd = f"{helper.build_compose_cmd()} build"
-        cmd += f" --build-arg PROJECT_VERSION={helper.get_project_version()}-local"
-        helper.execute_cmd(cmd)
-
     # Docker Swarm Mode does not support .env files so we load the .env file manually
     # and pass the content as an environment variables.
     env = helper.load_config_from_env_file()
+
+    env["PROJECT_VERSION"] = helper.get_local_project_version()
 
     cmd = "docker stack deploy --detach "
     cmd += f" -c {helper.get_compose_base_file()}"

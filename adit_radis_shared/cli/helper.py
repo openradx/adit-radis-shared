@@ -218,6 +218,9 @@ class CommandHelper:
     def get_project_version(self) -> str:
         return Version.from_git(pattern=Pattern.DefaultUnprefixed).serialize()
 
+    def get_local_project_version(self) -> str:
+        return f"{self.get_project_version()}-local"
+
     def generate_django_secret_key(self):
         return get_random_secret_key()
 

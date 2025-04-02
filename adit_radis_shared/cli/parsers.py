@@ -4,10 +4,18 @@ from typing import Callable
 from . import commands
 
 
+def register_compose_build(subparsers: argparse._SubParsersAction, func: Callable | None = None):
+    info = "Build the base images with docker compose"
+    parser = subparsers.add_parser("compose-build", help=info, description=info)
+    parser.add_argument(
+        "--profile", action="append", default=[], help="Docker compose profile(s) to use"
+    )
+    parser.set_defaults(func=func or commands.compose_build)
+
+
 def register_compose_up(subparsers: argparse._SubParsersAction, func: Callable | None = None):
     info = "Start stack with docker compose"
     parser = subparsers.add_parser("compose-up", help=info, description=info)
-    parser.add_argument("--build", action="store_true", help="Build images before starting")
     parser.add_argument(
         "--profile", action="append", default=[], help="Docker compose profile(s) to use"
     )
@@ -131,7 +139,6 @@ def register_show_outdated(subparsers: argparse._SubParsersAction, func: Callabl
 def register_stack_deploy(subparsers: argparse._SubParsersAction, func: Callable | None = None):
     info = "Deploy stack with docker swarm"
     parser = subparsers.add_parser("stack-deploy", help=info, description=info)
-    parser.add_argument("--build", action="store_true", help="Build images")
     parser.set_defaults(func=func or commands.stack_deploy)
 
 
