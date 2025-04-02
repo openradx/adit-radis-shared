@@ -312,7 +312,7 @@ def show_outdated(**kwargs):
     helper.print_uv_outdated()
 
     print("### Outdated NPM dependencies ###")
-    helper.execute_cmd("npm outdated", hidden=True)
+    helper.execute_cmd("npm outdated || true", hidden=True)
 
 
 def stack_deploy(**kwargs):
