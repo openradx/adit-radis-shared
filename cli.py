@@ -5,10 +5,9 @@ import os
 import shutil
 import sys
 
-import argcomplete
-
 from adit_radis_shared.cli import helper as cli_helper
 from adit_radis_shared.cli import parsers
+from adit_radis_shared.cli.setup import setup_root_parser
 
 
 def copy_statics(**kwargs):
@@ -69,10 +68,4 @@ if __name__ == "__main__":
     parser = subparsers.add_parser("copy_statics", help="Copy statics for the project")
     parser.set_defaults(func=copy_statics)
 
-    argcomplete.autocomplete(root_parser)
-    args, extra_args = root_parser.parse_known_args()
-    if not args.command:
-        root_parser.print_help()
-        sys.exit(1)
-
-    args.func(**vars(args), extra_args=extra_args)
+    setup_root_parser(root_parser)
