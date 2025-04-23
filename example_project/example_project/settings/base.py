@@ -235,3 +235,6 @@ DBBACKUP_STORAGE_OPTIONS = {
     "location": env.str("DBBACKUP_STORAGE_LOCATION", default="/tmp/backups-radis")
 }
 DBBACKUP_CLEANUP_KEEP = 30
+
+# The priority for stalled jobs that are retried.
+STALLED_JOBS_RETRY_PRIORITY = 10
