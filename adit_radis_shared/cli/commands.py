@@ -17,7 +17,13 @@ def compose_build(profile: list[str], extra_args: list[str], **kwargs):
     if extra_args:
         cmd += " " + " ".join(extra_args)
 
-    helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
+    helper.execute_cmd(
+        cmd,
+        env={
+            "COMPOSE_BAKE": "true",
+            "PROJECT_VERSION": helper.get_local_project_version(),
+        },
+    )
     print("Build finished.")
 
 
@@ -35,7 +41,13 @@ def compose_up(profile: list[str], extra_args: list[str], **kwargs):
     if extra_args:
         cmd += " " + " ".join(extra_args)
 
-    helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
+    helper.execute_cmd(
+        cmd,
+        env={
+            "COMPOSE_BAKE": "true",
+            "PROJECT_VERSION": helper.get_local_project_version(),
+        },
+    )
 
 
 def compose_down(cleanup: bool, profile: list[str], **kwargs):
