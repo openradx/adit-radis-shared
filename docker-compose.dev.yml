@@ -1,14 +1,22 @@
 x-app: &default-app
   image: example_project_dev:latest
-  volumes:
-    - .:/app
-    - /app/.venv
+  build:
+    target: development
   environment:
     DJANGO_INTERNAL_IPS: ${DJANGO_INTERNAL_IPS:?}
     DJANGO_SETTINGS_MODULE: example_project.settings.development
     FORCE_DEBUG_TOOLBAR: ${FORCE_DEBUG_TOOLBAR:-true}
     REMOTE_DEBUGGING_ENABLED: ${REMOTE_DEBUGGING_ENABLED:-false}
     REMOTE_DEBUGGING_PORT: ${REMOTE_DEBUGGING_PORT:-5678}
+  develop:
+    watch:
+      - action: sync
+        path: .
+        target: /app
+        ignore:
+          - .venv/
+      - action: rebuild
+        path: ./pyproject.toml
 
 services:
   init:
@@ -17,8 +25,6 @@ services:
 
   web:
     <<: *default-app
-    build:
-      target: development
     pull_policy: build
     ports:
       - ${WEB_DEV_PORT:-8000}:8000

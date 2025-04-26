@@ -31,7 +31,7 @@ def compose_up(profile: list[str], extra_args: list[str], **kwargs):
             "Check ENVIRONMENT setting in .env file."
         )
 
-    cmd = f"{helper.build_compose_cmd(profile)} up --detach"
+    cmd = f"{helper.build_compose_cmd(profile)} up --watch"
     if extra_args:
         cmd += " " + " ".join(extra_args)
 
