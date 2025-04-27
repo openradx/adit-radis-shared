@@ -4,7 +4,6 @@ x-app: &default-app
   depends_on:
     - postgres
   environment:
-    BACKUP_DIR: ${BACKUP_DIR:?}
     DATABASE_URL: postgres://postgres:postgres@postgres.local:5432/postgres
     DBBACKUP_STORAGE_LOCATION: /backups
     DJANGO_ADMIN_EMAIL: ${DJANGO_ADMIN_EMAIL:?}

@@ -135,6 +135,9 @@ class CommandHelper:
             return self.root_path / "docker-compose.prod.yml"
         return self.root_path / "docker-compose.dev.yml"
 
+    def get_compose_watch_file(self):
+        return self.root_path / "docker-compose.watch.yml"
+
     def get_stack_name(self) -> str:
         config = self.load_config_from_env_file()
         if stack_name := config.get("STACK_NAME", ""):
@@ -144,10 +147,12 @@ class CommandHelper:
             return f"{self.project_id}_prod"
         return f"{self.project_id}_dev"
 
-    def build_compose_cmd(self, profiles: list[str] | None = None):
+    def build_compose_cmd(self, profiles: list[str] | None = None, watch_mode: bool = False) -> str:
         cmd = "docker compose"
         cmd += f" -f {self.get_compose_base_file()}"
         cmd += f" -f {self.get_compose_env_file()}"
+        if watch_mode:
+            cmd += f" -f {self.get_compose_watch_file()}"
         cmd += f" -p {self.get_stack_name()}"
 
         if profiles:
