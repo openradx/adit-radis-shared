@@ -28,6 +28,11 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
+# Install tzdata and configure timezone
+ARG SYSTEM_TIME_ZONE
+RUN apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/${SYSTEM_TIME_ZONE} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
 
 # development image
 FROM builder-base AS development
