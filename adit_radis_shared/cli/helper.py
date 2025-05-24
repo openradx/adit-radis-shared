@@ -110,7 +110,10 @@ class CommandHelper:
                 custom_env = os.environ.copy()
                 custom_env.update(env or {})
 
-            return subprocess.run(cmd, shell=True, check=True, env=custom_env)
+            try:
+                return subprocess.run(cmd, shell=True, check=True, env=custom_env)
+            except subprocess.CalledProcessError as e:
+                sys.exit(e.returncode)
 
     def is_production(self) -> bool:
         if self._is_production_cached is None:
