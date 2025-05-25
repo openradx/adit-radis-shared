@@ -85,7 +85,6 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware",
     "adit_radis_shared.accounts.middlewares.ActiveGroupMiddleware",
     "adit_radis_shared.common.middlewares.MaintenanceMiddleware",
-    "adit_radis_shared.common.middlewares.TimezoneMiddleware",
 ]
 
 ROOT_URLCONF = "example_project.urls"
@@ -205,14 +204,12 @@ REST_FRAMEWORK = {
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
-
+# TODO: We don't want use translations yet, but everything is hardcoded in English
 USE_I18N = True
 
 USE_TZ = True
 
-# A timezone that is presented to the users of the web interface.
-USER_TIME_ZONE = env.str("USER_TIME_ZONE")
+TIME_ZONE = env.str("TIME_ZONE", default="UTC")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

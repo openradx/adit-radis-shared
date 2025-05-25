@@ -1,11 +1,8 @@
 import re
-import zoneinfo
 
-from django.conf import settings
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils import timezone
 
 from adit_radis_shared.common.models import ProjectSettings
 from adit_radis_shared.common.types import HtmxHttpRequest
@@ -56,16 +53,3 @@ class MaintenanceMiddleware:
                 response.content.decode("utf-8"),
             )
         return response
-
-
-class TimezoneMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        tzname = settings.USER_TIME_ZONE
-        if tzname:
-            timezone.activate(zoneinfo.ZoneInfo(tzname))
-        else:
-            timezone.deactivate()
-        return self.get_response(request)
