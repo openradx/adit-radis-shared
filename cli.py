@@ -31,6 +31,7 @@ def copy_statics(**kwargs):
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js")
     copy_file("node_modules/bootstrap/dist/js/bootstrap.bundle.js.map")
     copy_file("node_modules/bootstrap/dist/css/bootstrap.css")
+    copy_file("node_modules/bootstrap/dist/css/bootstrap.css.map")
     copy_file("node_modules/bootstrap-icons/bootstrap-icons.svg")
     copy_file("node_modules/alpinejs/dist/cdn.js", "alpine.js")
     copy_file("node_modules/@alpinejs/morph/dist/cdn.js", "alpine-morph.js")
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     parsers.register_try_github_actions(subparsers)
     parsers.register_upgrade_postgres_volume(subparsers)
 
-    parser = subparsers.add_parser("copy_statics", help="Copy statics for the project")
+    parser = subparsers.add_parser("copy-statics", help="Copy statics for the project")
     parser.set_defaults(func=copy_statics)
 
     setup_root_parser(root_parser)
