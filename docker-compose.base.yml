@@ -42,7 +42,7 @@ services:
     hostname: worker.local
 
   postgres:
-    image: postgres:latest
+    image: postgres:17
     hostname: postgres.local
     volumes:
       - postgres_data:/var/lib/postgresql/data
