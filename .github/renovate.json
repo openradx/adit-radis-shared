@@ -27,7 +27,7 @@
     {
       "managers": ["dockerfile"],
       "matchPackageNames": ["python"],
-      "allowedVersions": "<=3.12"
+      "allowedVersions": "<=3.13"
     },
     {
       "managers": ["pep621"],
