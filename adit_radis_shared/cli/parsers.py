@@ -41,6 +41,12 @@ def register_compose_down(subparsers: argparse._SubParsersAction, func: Callable
     parser.set_defaults(func=func or commands.compose_down)
 
 
+def register_compose_pull(subparsers: argparse._SubParsersAction, func: Callable | None = None):
+    info = "Pull images with docker compose"
+    parser = subparsers.add_parser("compose-pull", help=info, description=info)
+    parser.set_defaults(func=func or commands.compose_pull)
+
+
 def register_db_backup(subparsers: argparse._SubParsersAction, func: Callable | None = None):
     info = "Backup database in running container stack"
     parser = subparsers.add_parser(

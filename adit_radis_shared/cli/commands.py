@@ -73,6 +73,19 @@ def compose_up(profile: list[str], extra_args: list[str], **kwargs):
     )
 
 
+def compose_pull(**kwargs):
+    helper = CommandHelper()
+    cmd = f"{helper.build_compose_cmd()} pull"
+
+    helper.execute_cmd(
+        cmd,
+        env={
+            "COMPOSE_BAKE": "true",
+            "PROJECT_VERSION": helper.get_local_project_version(),
+        },
+    )
+
+
 def compose_down(cleanup: bool, profile: list[str], **kwargs):
     helper = CommandHelper()
 
