@@ -4,12 +4,12 @@ import subprocess
 import sys
 import threading
 from abc import ABC, abstractmethod
-from datetime import datetime
 from pathlib import Path
 from threading import Event
 from types import FrameType
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from watchfiles import PythonFilter, watch
 
 from ...utils.debounce import debounce
@@ -65,7 +65,7 @@ class ServerCommand(BaseCommand, ABC):
 
             self.stdout.write(
                 f"Autoreload enabled for {self.server_name} and "
-                f"watching paths: {", ".join(map(str, self.paths_to_watch))}."
+                f"watching paths: {', '.join(map(str, self.paths_to_watch))}."
             )
 
             # We debounce to give the Django webserver time to restart first
@@ -98,7 +98,7 @@ class ServerCommand(BaseCommand, ABC):
             self.stdout.write("Performing system checks...")
             self.check(display_num_errors=True)
 
-            self.stdout.write(datetime.now().strftime("%B %d, %Y - %X"))
+            self.stdout.write(timezone.now().strftime("%B %d, %Y - %X"))
             self.stdout.write(f"Starting {self.server_name}")
             self.stdout.write("Quit with CONTROL-C.")
 
