@@ -40,7 +40,7 @@ def copy_statics(**kwargs):
     copy_file("node_modules/htmx.org/dist/ext/alpine-morph.js", "htmx-alpine-morph.js")
 
 
-if __name__ == "__main__":
+def main():
     root_parser = argparse.ArgumentParser()
     subparsers = root_parser.add_subparsers(dest="command")
 
@@ -72,3 +72,7 @@ if __name__ == "__main__":
     parser.set_defaults(func=copy_statics)
 
     setup_root_parser(root_parser)
+
+
+if __name__ == "__main__":
+    main()
