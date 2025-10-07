@@ -3,13 +3,81 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Annotated
 
+import typer
 from dotenv import set_key
 
 from .helper import CommandHelper
 
 
-def compose_build(profile: list[str], extra_args: list[str], **kwargs):
+def init_workspace():
+    """Initialize workspace for Github Codespaces or local development"""
+
+    helper = CommandHelper()
+
+    env_file = helper.root_path / ".env"
+    if env_file.is_file():
+        print("Workspace already initialized (.env file exists). Skipping.")
+        sys.exit()
+
+    example_env_file = helper.root_path / "example.env"
+    if not example_env_file.is_file():
+        sys.exit("Missing example.env file!")
+
+    shutil.copy(helper.root_path / "example.env", env_file)
+
+    def modify_env_file(domain: str | None = None, uses_https: bool = False):
+        if domain:
+            hosts = f".localhost,127.0.0.1,[::1],{domain}"
+            set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
+            set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
+            set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
+
+            origin = f"{'https' if uses_https else 'http'}://{domain}"
+            set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", origin, quote_mode="never")
+
+        set_key(env_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
+
+    if os.environ.get("CODESPACE_NAME"):
+        # Inside GitHub Codespaces
+        domain = f"{os.environ['CODESPACE_NAME']}-8000.preview.app.github.dev"
+        modify_env_file(domain, uses_https=True)
+    elif os.environ.get("GITPOD_WORKSPACE_ID"):
+        # Inside Gitpod
+        result = subprocess.run(
+            "gp url 8000", shell=True, capture_output=True, text=True, check=True
+        )
+        domain = result.stdout.strip().removeprefix("https://")
+        modify_env_file(domain, uses_https=True)
+    else:
+        # Inside some local environment
+        modify_env_file()
+
+    print("Successfully initialized .env file.")
+
+
+def randomize_env_secrets():
+    """Randomize secrets in the .env file"""
+
+    helper = CommandHelper()
+
+    env_file = helper.root_path / ".env"
+    if not env_file.is_file():
+        sys.exit("Workspace not initialized (.env file does not exist).")
+
+    set_key(env_file, "DJANGO_SECRET_KEY", helper.generate_django_secret_key())
+    set_key(env_file, "POSTGRES_PASSWORD", helper.generate_secure_password())
+    set_key(env_file, "ADMIN_USER_PASSWORD", helper.generate_secure_password())
+    set_key(env_file, "ADMIN_AUTH_TOKEN", helper.generate_auth_token())
+
+
+def compose_build(
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+):
+    """Build the base images with docker compose"""
+
     helper = CommandHelper()
     helper.prepare_environment()
 
@@ -24,10 +92,33 @@ def compose_build(profile: list[str], extra_args: list[str], **kwargs):
             "PROJECT_VERSION": helper.get_local_project_version(),
         },
     )
-    print("Build finished.")
 
 
-def compose_up(profile: list[str], extra_args: list[str], **kwargs):
+def compose_pull(
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+):
+    """Pull images with docker compose"""
+
+    helper = CommandHelper()
+    cmd = f"{helper.build_compose_cmd()} pull"
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
+
+    helper.execute_cmd(
+        cmd,
+        env={
+            "COMPOSE_BAKE": "true",
+            "PROJECT_VERSION": helper.get_local_project_version(),
+        },
+    )
+
+
+def compose_up(
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+):
+    """Start stack with docker compose"""
+
     helper = CommandHelper()
     helper.prepare_environment()
 
@@ -50,30 +141,128 @@ def compose_up(profile: list[str], extra_args: list[str], **kwargs):
     )
 
 
-def compose_pull(**kwargs):
-    helper = CommandHelper()
-    cmd = f"{helper.build_compose_cmd()} pull"
+def compose_down(
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+):
+    """Stop stack with docker compose"""
 
-    helper.execute_cmd(
-        cmd,
-        env={
-            "COMPOSE_BAKE": "true",
-            "PROJECT_VERSION": helper.get_local_project_version(),
-        },
-    )
-
-
-def compose_down(cleanup: bool, profile: list[str], **kwargs):
     helper = CommandHelper()
 
     cmd = f"{helper.build_compose_cmd(profile)} down"
-    if cleanup:
-        cmd += " --remove-orphans --volumes"
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
 
     helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
 
-def db_backup(**kwargs):
+def stack_deploy():
+    """Deploy stack with Docker Swarm"""
+
+    helper = CommandHelper()
+    helper.prepare_environment()
+
+    if not helper.is_production():
+        sys.exit(
+            "stack-deploy task can only be used in production environment. "
+            "Check ENVIRONMENT setting in .env file."
+        )
+
+    # Docker Swarm Mode does not support .env files so we load the .env file manually
+    # and pass the content as an environment variables.
+    env = helper.load_config_from_env_file()
+
+    env["PROJECT_VERSION"] = helper.get_local_project_version()
+
+    cmd = "docker stack deploy --detach "
+    cmd += f" -c {helper.get_compose_base_file()}"
+    cmd += f" -c {helper.get_compose_env_file()}"
+    cmd += f" {helper.get_stack_name()}"
+    helper.execute_cmd(cmd, env=env)
+
+
+def stack_rm():
+    """Remove stack from Docker Swarm"""
+
+    helper = CommandHelper()
+    helper.execute_cmd(f"docker stack rm {helper.get_stack_name()}")
+
+
+def lint():
+    """Lint the source code with ruff, pyright and djlint"""
+
+    helper = CommandHelper()
+
+    print("Linting Python code with ruff...")
+    helper.execute_cmd("uv run ruff check .")
+
+    print("Linting Python code with pyright...")
+    helper.execute_cmd("uv run pyright")
+
+    print("Linting Django templates with djlint...")
+    helper.execute_cmd("uv run djlint . --lint")
+
+
+def format_code():
+    """Format code with ruff and djlint"""
+
+    helper = CommandHelper()
+
+    print("Formatting Python code with ruff...")
+    helper.execute_cmd("uv run ruff format .")
+
+    print("Sorting Python imports with ruff...")
+    helper.execute_cmd("uv run ruff check . --fix --select I")
+
+    print("Formatting Django templates with djlint...")
+    helper.execute_cmd("uv run djlint . --reformat")
+
+
+def test(
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+):
+    """Run the test suite with pytest"""
+
+    helper = CommandHelper()
+
+    if not helper.check_compose_up():
+        sys.exit("Acceptance tests need dev containers running.")
+
+    cmd = (
+        f"{helper.build_compose_cmd()} exec "
+        f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest"
+    )
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
+
+    helper.execute_cmd(cmd)
+
+
+def shell(
+    container: Annotated[str, typer.Argument(help="Container name ('web' by default)")] = "web",
+):
+    """Open a Python shell in the specified container"""
+
+    helper = CommandHelper()
+
+    helper.execute_cmd(f"{helper.build_compose_cmd()} exec {container} python manage.py shell_plus")
+
+
+def show_outdated():
+    """Show outdated dependencies"""
+
+    helper = CommandHelper()
+
+    print("### Outdated Python dependencies ###")
+    helper.print_uv_outdated()
+
+    print("### Outdated NPM dependencies ###")
+    helper.execute_cmd("npm outdated || true", hidden=True)
+
+
+def db_backup():
+    """Backup database in running container stack"""
+
     helper = CommandHelper()
 
     settings = (
@@ -94,7 +283,9 @@ def db_backup(**kwargs):
     )
 
 
-def db_restore(**kwargs):
+def db_restore():
+    """Restore database in running container stack from the latest backup"""
+
     helper = CommandHelper()
 
     settings = (
@@ -114,25 +305,34 @@ def db_restore(**kwargs):
     )
 
 
-def format_code(**kwargs):
-    helper = CommandHelper()
+def generate_auth_token(
+    length: Annotated[int, typer.Argument(help="Length of the token (default: 20)")] = 20,
+):
+    """Generate a secure authentication token"""
 
-    print("Formatting Python code with ruff...")
-    helper.execute_cmd("uv run ruff format .")
-
-    print("Sorting Python imports with ruff...")
-    helper.execute_cmd("uv run ruff check . --fix --select I")
-
-    print("Formatting Django templates with djlint...")
-    helper.execute_cmd("uv run djlint . --reformat")
-
-
-def generate_auth_token(length: int, **kwargs):
     helper = CommandHelper()
     print(helper.generate_auth_token(length))
 
 
-def generate_certificate_chain(**kwargs):
+def generate_secure_password(
+    length: Annotated[int, typer.Argument(help="Length of the password (default: 20)")] = 20,
+):
+    """Generate a secure password"""
+
+    helper = CommandHelper()
+    print(helper.generate_secure_password(length))
+
+
+def generate_django_secret_key():
+    """Generate a Django secret key"""
+
+    helper = CommandHelper()
+    print(helper.generate_django_secret_key())
+
+
+def generate_certificate_chain():
+    """Generate a SSL certificate chain file for the provided signed leaf certificate"""
+
     helper = CommandHelper()
 
     config = helper.load_config_from_env_file()
@@ -187,7 +387,9 @@ def generate_certificate_chain(**kwargs):
         print(f"Generated chain file at {chain_path.absolute()}")
 
 
-def generate_certificate_files(**kwargs):
+def generate_certificate_files():
+    """Generate self-signed certificate files for local development"""
+
     helper = CommandHelper()
 
     config = helper.load_config_from_env_file()
@@ -244,161 +446,11 @@ def generate_certificate_files(**kwargs):
         print(f"Generated chain file at {chain_path.absolute()}")
 
 
-def generate_django_secret_key(**kwargs):
-    helper = CommandHelper()
-    print(helper.generate_django_secret_key())
+def upgrade_postgres_volume(
+    version: Annotated[str, typer.Option(help="PostgreSQL version to upgrade to")] = "latest",
+):
+    """Upgrade PostgreSQL volume data"""
 
-
-def generate_secure_password(length: int, **kwargs):
-    helper = CommandHelper()
-    print(helper.generate_secure_password(length))
-
-
-def init_workspace(**kwargs):
-    helper = CommandHelper()
-
-    env_file = helper.root_path / ".env"
-    if env_file.is_file():
-        print("Workspace already initialized (.env file exists). Skipping.")
-        sys.exit()
-
-    example_env_file = helper.root_path / "example.env"
-    if not example_env_file.is_file():
-        sys.exit("Missing example.env file!")
-
-    shutil.copy(helper.root_path / "example.env", env_file)
-
-    def modify_env_file(domain: str | None = None, uses_https: bool = False):
-        if domain:
-            hosts = f".localhost,127.0.0.1,[::1],{domain}"
-            set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
-            set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
-            set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
-
-            origin = f"{'https' if uses_https else 'http'}://{domain}"
-            set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", origin, quote_mode="never")
-
-        set_key(env_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
-
-    if os.environ.get("CODESPACE_NAME"):
-        # Inside GitHub Codespaces
-        domain = f"{os.environ['CODESPACE_NAME']}-8000.preview.app.github.dev"
-        modify_env_file(domain, uses_https=True)
-    elif os.environ.get("GITPOD_WORKSPACE_ID"):
-        # Inside Gitpod
-        result = subprocess.run(
-            "gp url 8000", shell=True, capture_output=True, text=True, check=True
-        )
-        domain = result.stdout.strip().removeprefix("https://")
-        modify_env_file(domain, uses_https=True)
-    else:
-        # Inside some local environment
-        modify_env_file()
-
-    print("Successfully initialized .env file.")
-
-
-def lint(**kwargs):
-    helper = CommandHelper()
-
-    print("Linting Python code with ruff...")
-    helper.execute_cmd("uv run ruff check .")
-
-    print("Linting Python code with pyright...")
-    helper.execute_cmd("uv run pyright")
-
-    print("Linting Django templates with djlint...")
-    helper.execute_cmd("uv run djlint . --lint")
-
-
-def randomize_env_secrets(**kwags):
-    helper = CommandHelper()
-
-    env_file = helper.root_path / ".env"
-    if not env_file.is_file():
-        sys.exit("Workspace not initialized (.env file does not exist).")
-
-    set_key(env_file, "DJANGO_SECRET_KEY", helper.generate_django_secret_key())
-    set_key(env_file, "POSTGRES_PASSWORD", helper.generate_secure_password())
-    set_key(env_file, "ADMIN_USER_PASSWORD", helper.generate_secure_password())
-    set_key(env_file, "ADMIN_AUTH_TOKEN", helper.generate_auth_token())
-
-
-def shell(container: str, **kwargs):
-    helper = CommandHelper()
-
-    helper.execute_cmd(f"{helper.build_compose_cmd()} exec {container} python manage.py shell_plus")
-
-
-def show_outdated(**kwargs):
-    helper = CommandHelper()
-
-    print("### Outdated Python dependencies ###")
-    helper.print_uv_outdated()
-
-    print("### Outdated NPM dependencies ###")
-    helper.execute_cmd("npm outdated || true", hidden=True)
-
-
-def stack_deploy(**kwargs):
-    helper = CommandHelper()
-    helper.prepare_environment()
-
-    if not helper.is_production():
-        sys.exit(
-            "stack-deploy task can only be used in production environment. "
-            "Check ENVIRONMENT setting in .env file."
-        )
-
-    # Docker Swarm Mode does not support .env files so we load the .env file manually
-    # and pass the content as an environment variables.
-    env = helper.load_config_from_env_file()
-
-    env["PROJECT_VERSION"] = helper.get_local_project_version()
-
-    cmd = "docker stack deploy --detach "
-    cmd += f" -c {helper.get_compose_base_file()}"
-    cmd += f" -c {helper.get_compose_env_file()}"
-    cmd += f" {helper.get_stack_name()}"
-    helper.execute_cmd(cmd, env=env)
-
-
-def stack_rm(**kwargs):
-    helper = CommandHelper()
-    helper.execute_cmd(f"docker stack rm {helper.get_stack_name()}")
-
-
-def test(extra_args: list[str], **kwargs):
-    helper = CommandHelper()
-
-    if not helper.check_compose_up():
-        sys.exit("Acceptance tests need dev containers running.")
-
-    cmd = (
-        f"{helper.build_compose_cmd()} exec "
-        f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest"
-    )
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
-
-    helper.execute_cmd(cmd)
-
-
-def try_github_actions(**kwargs):
-    helper = CommandHelper()
-
-    act_path = helper.root_path / "bin" / "act"
-    if not act_path.exists():
-        print("Installing act...")
-        helper.execute_cmd(
-            "curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash",
-            hidden=True,
-        )
-
-    helper.execute_cmd(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest")
-
-
-def upgrade_postgres_volume(version: str, **kwargs):
     helper = CommandHelper()
 
     volume = f"{helper.get_stack_name()}_postgres_data"
@@ -413,3 +465,19 @@ def upgrade_postgres_volume(version: str, **kwargs):
         )
     else:
         print("Cancelled")
+
+
+def try_github_actions():
+    """Try Github Actions locally using Act"""
+
+    helper = CommandHelper()
+
+    act_path = helper.root_path / "bin" / "act"
+    if not act_path.exists():
+        print("Installing act...")
+        helper.execute_cmd(
+            "curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash",
+            hidden=True,
+        )
+
+    helper.execute_cmd(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest")
