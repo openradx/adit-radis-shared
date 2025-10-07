@@ -73,10 +73,15 @@ def randomize_env_secrets():
 
 
 def compose_build(
-    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
-    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")]
+    | None = None,
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")]
+    | None = None,
 ):
     """Build the base images with docker compose"""
+
+    profile = profile or []
+    extra_args = extra_args or []
 
     helper = CommandHelper()
     helper.prepare_environment()
@@ -95,9 +100,12 @@ def compose_build(
 
 
 def compose_pull(
-    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")]
+    | None = None,
 ):
     """Pull images with docker compose"""
+
+    extra_args = extra_args or []
 
     helper = CommandHelper()
     cmd = f"{helper.build_compose_cmd()} pull"
@@ -114,10 +122,15 @@ def compose_pull(
 
 
 def compose_up(
-    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
-    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")]
+    | None = None,
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")]
+    | None = None,
 ):
     """Start stack with docker compose"""
+
+    profile = profile or []
+    extra_args = extra_args or []
 
     helper = CommandHelper()
     helper.prepare_environment()
@@ -142,10 +155,15 @@ def compose_up(
 
 
 def compose_down(
-    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")] = [],
-    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+    profile: Annotated[list[str], typer.Option(help="Docker compose profile(s) to use")]
+    | None = None,
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")]
+    | None = None,
 ):
     """Stop stack with docker compose"""
+
+    profile = profile or []
+    extra_args = extra_args or []
 
     helper = CommandHelper()
 
@@ -219,9 +237,12 @@ def format_code():
 
 
 def test(
-    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")] = [],
+    extra_args: Annotated[list[str], typer.Argument(help="Extra arguments (after '--')")]
+    | None = None,
 ):
     """Run the test suite with pytest"""
+
+    extra_args = extra_args or []
 
     helper = CommandHelper()
 
