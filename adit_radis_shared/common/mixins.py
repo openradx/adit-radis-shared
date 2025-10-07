@@ -101,7 +101,11 @@ class RelatedFilterMixin(FilterMixin):
             # object_list is consumed by SingleTableMixin of django_tables2
             self.object_list = self.filterset.qs
         else:
-            self.object_list = self.filterset.queryset.none()
+            queryset = self.filterset.queryset
+            if queryset is not None:
+                self.object_list = queryset.none()
+            else:
+                self.object_list = self.filterset.qs.none()
 
         context["filter"] = self.filterset
         context["object_list"] = self.object_list

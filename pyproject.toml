@@ -51,7 +51,7 @@ dev = [
     "Faker>=36.1.1",
     "ipykernel>=6.29.5",
     "ipython>=8.32.0",
-    "pyright>=1.1.402,<=1.1.402",
+    "pyright>=1.1.402",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.3",
     "pytest-cov>=6.0.0",
@@ -109,6 +109,9 @@ target-version = "py312"
 exclude = ["migrations"]
 line-length = 100
 lint.select = ["E", "F", "I", "DJ"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["adit_radis_shared", "example_project"]
 
 [tool.djlint]
 profile = "django"
