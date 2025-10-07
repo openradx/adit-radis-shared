@@ -27,29 +27,6 @@ def compose_build(profile: list[str], extra_args: list[str], **kwargs):
     print("Build finished.")
 
 
-def compose_watch(profile: list[str], extra_args: list[str], **kwargs):
-    helper = CommandHelper()
-    helper.prepare_environment()
-
-    if helper.is_production():
-        sys.exit(
-            "Starting containers with compose-watch can only be used in development. "
-            "Check ENVIRONMENT setting in .env file."
-        )
-
-    cmd = f"{helper.build_compose_cmd(profile, watch_mode=True)} up --watch"
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
-
-    helper.execute_cmd(
-        cmd,
-        env={
-            "COMPOSE_BAKE": "true",
-            "PROJECT_VERSION": helper.get_local_project_version(),
-        },
-    )
-
-
 def compose_up(profile: list[str], extra_args: list[str], **kwargs):
     helper = CommandHelper()
     helper.prepare_environment()

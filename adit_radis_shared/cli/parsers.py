@@ -13,15 +13,6 @@ def register_compose_build(subparsers: argparse._SubParsersAction, func: Callabl
     parser.set_defaults(func=func or commands.compose_build)
 
 
-def register_compose_watch(subparsers: argparse._SubParsersAction, func: Callable | None = None):
-    info = "Start stack with docker compose and watch for changes"
-    parser = subparsers.add_parser("compose-watch", help=info, description=info)
-    parser.add_argument(
-        "--profile", action="append", default=[], help="Docker compose profile(s) to use"
-    )
-    parser.set_defaults(func=func or commands.compose_watch)
-
-
 def register_compose_up(subparsers: argparse._SubParsersAction, func: Callable | None = None):
     info = "Start stack with docker compose"
     parser = subparsers.add_parser("compose-up", help=info, description=info)
