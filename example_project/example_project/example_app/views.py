@@ -18,6 +18,7 @@ from adit_radis_shared.common.site import THEME_PREFERENCE_KEY
 from adit_radis_shared.common.views import BaseHomeView, BaseUpdatePreferencesView
 
 from .filters import ExampleJobFilter
+from .forms import DateDemoForm
 from .models import ExampleJob
 from .tables import ExampleJobTable
 from .tasks import example_task
@@ -42,6 +43,22 @@ def example_messages(request: HttpRequest) -> HttpResponse:
     messages.add_message(request, messages.ERROR, "And this is another one if something failed!")
 
     return render(request, "example_app/example_messages.html", {})
+
+
+def example_date_input(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        form = DateDemoForm(request.POST)
+        if form.is_valid():
+            picked_date = form.cleaned_data["demo_date"]
+            messages.success(
+                request,
+                f"Parsed date: {picked_date.strftime('%A, %d %B %Y')} (ISO: {picked_date.isoformat()})",
+            )
+            return redirect("example_date_input")
+    else:
+        form = DateDemoForm()
+
+    return render(request, "example_app/example_date_input.html", {"form": form})
 
 
 def example_background_task_view(request: HttpRequest) -> HttpResponse:

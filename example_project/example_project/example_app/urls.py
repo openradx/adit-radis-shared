@@ -11,6 +11,7 @@ from .views import (
     UpdatePreferencesView,
     admin_section,
     example_background_task_view,
+    example_date_input,
     example_messages,
 )
 
@@ -28,6 +29,11 @@ urlpatterns = [
         "examples/messages/",
         example_messages,
         name="example_messages",
+    ),
+    path(
+        "examples/date-input/",
+        example_date_input,
+        name="example_date_input",
     ),
     path(
         "examples/toasts/",

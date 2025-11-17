@@ -1,0 +1,19 @@
+{% extends "example_app/example_app_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% block title %}Date Input Demo{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Date Input Demo" />
+{% endblock heading %}
+{% block content %}
+    <p class="text-muted">
+        Submit a date using the native browser picker. The server parses it and shows the result via the messages
+        framework—nothing is written to the database.
+    </p>
+    <form method="post" class="card p-3">
+        {% csrf_token %}
+        {% crispy form %}
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+{% endblock content %}
