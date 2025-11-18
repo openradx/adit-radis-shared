@@ -1,6 +1,7 @@
 {% extends "example_app/example_app_layout.html" %}
-{% load crispy from crispy_forms_tags %}
-{% block title %}Date Input Demo{% endblock title %}
+{% block title %}
+    Date Input Demo
+{% endblock title %}
 {% block heading %}
     <c-page-heading title="Date Input Demo" />
 {% endblock heading %}
@@ -8,12 +9,27 @@
     <p class="text-muted">
         Submit a date using the native browser picker. The server parses it and shows the result via the messages
         framework—nothing is written to the database.
+        Current server time: {{ current_time }}
     </p>
     <form method="post" class="card p-3">
         {% csrf_token %}
-        {% crispy form %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.demo_date.id_for_label }}">{{ form.demo_date.label }}</label>
+            {{ form.demo_date }}
+            {% if form.demo_date.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.demo_date.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
         <div class="mt-2">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
     </form>
+    {% if parsed_date %}
+        <div class="alert alert-info mt-3">
+            <strong>Server output:</strong>
+            {{ parsed_date }} (ISO: {{ parsed_date|date:"c" }})
+        </div>
+    {% endif %}
 {% endblock content %}

@@ -7,7 +7,9 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
@@ -45,20 +47,32 @@ def example_messages(request: HttpRequest) -> HttpResponse:
     return render(request, "example_app/example_messages.html", {})
 
 
+@csrf_exempt
 def example_date_input(request: HttpRequest) -> HttpResponse:
+    parsed_date = None
     if request.method == "POST":
         form = DateDemoForm(request.POST)
         if form.is_valid():
-            picked_date = form.cleaned_data["demo_date"]
+            parsed_date = form.cleaned_data["demo_date"]
             messages.success(
                 request,
-                f"Parsed date: {picked_date.strftime('%A, %d %B %Y')} (ISO: {picked_date.isoformat()})",
+                f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
             )
-            return redirect("example_date_input")
+            form = DateDemoForm()  # Reset so the date picker clears after a successful submit
     else:
         form = DateDemoForm()
 
-    return render(request, "example_app/example_date_input.html", {"form": form})
+    current_time2 = timezone.now()
+
+    return render(
+        request,
+        "example_app/example_date_input.html",
+        {
+            "form": form,
+            "parsed_date": parsed_date,
+            "current_time": current_time2,
+        },
+    )
 
 
 def example_background_task_view(request: HttpRequest) -> HttpResponse:
