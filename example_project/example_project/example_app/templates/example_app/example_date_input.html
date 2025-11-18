@@ -57,6 +57,18 @@
                 </div>
             {% endif %}
         </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.freeform_date.id_for_label }}">{{ form.freeform_date.label }}</label>
+            {{ form.freeform_date }}
+            {% if form.freeform_date.help_text %}
+                <div class="form-text">{{ form.freeform_date.help_text }}</div>
+            {% endif %}
+            {% if form.freeform_date.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.freeform_date.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
         <div class="mt-2">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
@@ -71,6 +83,12 @@
         <div class="alert alert-secondary mt-3">
             <strong>Raw browser datetime:</strong>
             <code>{{ raw_datetime_value }}</code>
+        </div>
+    {% endif %}
+    {% if raw_freeform_value %}
+        <div class="alert alert-secondary mt-3">
+            <strong>Raw free-form input:</strong>
+            <code>{{ raw_freeform_value }}</code>
         </div>
     {% endif %}
     {% if parsed_date %}
@@ -114,6 +132,31 @@
                 </ul>
             </div>
         {% endif %}
+    {% endif %}
+    {% if parsed_freeform_date %}
+        <div class="alert alert-info mt-3">
+            <strong>Free-form parse succeeded:</strong>
+            {{ parsed_freeform_date|date:"l, d F Y" }} (ISO: {{ parsed_freeform_date|date:"Y-m-d" }})
+        </div>
+        {% if formatted_freeform_examples %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    Free-form date format comparison
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for example in formatted_freeform_examples %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>{{ example.label }}</div>
+                            <code>{{ example.value }}</code>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% elif freeform_attempted %}
+        <div class="alert alert-warning mt-3">
+            Django rejected the free-form date using the default parser. Check the field errors above for details.
+        </div>
     {% endif %}
 {% endblock content %}
 {% block bottom %}

@@ -55,13 +55,19 @@ def example_messages(request: HttpRequest) -> HttpResponse:
 def example_date_input(request: HttpRequest) -> HttpResponse:
     parsed_date = None
     parsed_datetime = None
+    parsed_freeform_date = None
     formatted_date_examples: list[dict[str, str]] = []
     formatted_datetime_examples: list[dict[str, str]] = []
+    formatted_freeform_examples: list[dict[str, str]] = []
     raw_post_value = None
     raw_datetime_value = None
+    raw_freeform_value = None
+    freeform_attempted = False
     if request.method == "POST":
         raw_post_value = request.POST.get("demo_date") or None
         raw_datetime_value = request.POST.get("demo_datetime") or None
+        raw_freeform_value = request.POST.get("freeform_date")
+        freeform_attempted = bool(raw_freeform_value)
         form = DateDemoForm(request.POST)
         if form.is_valid():
             parsed_date = form.cleaned_data["demo_date"]
@@ -95,6 +101,17 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
                         "value": date_format(parsed_datetime, format="SHORT_DATETIME_FORMAT", use_l10n=True),
                     },
                 ]
+            parsed_freeform_date = form.cleaned_data["freeform_date"]
+            if parsed_freeform_date:
+                formatted_freeform_examples = [
+                    {"label": "Python isoformat()", "value": parsed_freeform_date.isoformat()},
+                    {"label": "ISO (YYYY-MM-DD)", "value": parsed_freeform_date.strftime("%Y-%m-%d")},
+                    {"label": "Custom DD/MM/YYYY", "value": parsed_freeform_date.strftime("%d/%m/%Y")},
+                    {
+                        "label": "Django DATE_FORMAT (l10n on)",
+                        "value": date_format(parsed_freeform_date, format="DATE_FORMAT", use_l10n=True),
+                    },
+                ]
             messages.success(
                 request,
                 f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
@@ -113,14 +130,18 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
             "form": form,
             "parsed_date": parsed_date,
             "parsed_datetime": parsed_datetime,
+            "parsed_freeform_date": parsed_freeform_date,
             "current_time": current_time_local,
             "current_time_utc": current_time_utc,
             "django_time_zone": settings.TIME_ZONE,
             "django_use_tz": settings.USE_TZ,
             "formatted_date_examples": formatted_date_examples,
             "formatted_datetime_examples": formatted_datetime_examples,
+            "formatted_freeform_examples": formatted_freeform_examples,
             "raw_post_value": raw_post_value,
             "raw_datetime_value": raw_datetime_value,
+            "raw_freeform_value": raw_freeform_value,
+            "freeform_attempted": freeform_attempted,
         },
     )
 

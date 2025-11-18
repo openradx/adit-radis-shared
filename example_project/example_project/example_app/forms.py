@@ -12,3 +12,8 @@ class DateDemoForm(forms.Form):
         widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
         help_text="Uses browser datetime-local widget; sends local time without timezone info.",
     )
+    freeform_date = forms.DateField(
+        required=False,
+        label="Free-form date",
+        help_text="Plain text field using Django's default DateField parsing.",
+    )
