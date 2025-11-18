@@ -7,6 +7,9 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from datetime import timezone as dt_timezone
+
+from django.conf import settings
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.views import View
@@ -51,10 +54,14 @@ def example_messages(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def example_date_input(request: HttpRequest) -> HttpResponse:
     parsed_date = None
+    parsed_datetime = None
     formatted_date_examples: list[dict[str, str]] = []
+    formatted_datetime_examples: list[dict[str, str]] = []
     raw_post_value = None
+    raw_datetime_value = None
     if request.method == "POST":
         raw_post_value = request.POST.get("demo_date") or None
+        raw_datetime_value = request.POST.get("demo_datetime") or None
         form = DateDemoForm(request.POST)
         if form.is_valid():
             parsed_date = form.cleaned_data["demo_date"]
@@ -69,6 +76,25 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
                 },
                 {"label": "Django SHORT_DATE_FORMAT", "value": date_format(parsed_date, format="SHORT_DATE_FORMAT", use_l10n=True)},
             ]
+            parsed_datetime = form.cleaned_data["demo_datetime"]
+            if parsed_datetime:
+                formatted_datetime_examples = [
+                    {"label": "Python isoformat()", "value": parsed_datetime.isoformat()},
+                    {"label": "ISO (YYYY-MM-DD HH:MM:SS)", "value": parsed_datetime.strftime("%Y-%m-%d %H:%M:%S")},
+                    {"label": "Custom DD/MM/YYYY HH:mm", "value": parsed_datetime.strftime("%d/%m/%Y %H:%M")},
+                    {
+                        "label": "Django DATETIME_FORMAT (l10n on)",
+                        "value": date_format(parsed_datetime, format="DATETIME_FORMAT", use_l10n=True),
+                    },
+                    {
+                        "label": "Django DATETIME_FORMAT (l10n off)",
+                        "value": date_format(parsed_datetime, format="DATETIME_FORMAT", use_l10n=False),
+                    },
+                    {
+                        "label": "Django SHORT_DATETIME_FORMAT",
+                        "value": date_format(parsed_datetime, format="SHORT_DATETIME_FORMAT", use_l10n=True),
+                    },
+                ]
             messages.success(
                 request,
                 f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
@@ -77,7 +103,8 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
     else:
         form = DateDemoForm()
 
-    current_time2 = timezone.now()
+    current_time_utc = timezone.now().astimezone(dt_timezone.utc)
+    current_time_local = timezone.localtime()  # respects settings.TIME_ZONE
 
     return render(
         request,
@@ -85,9 +112,15 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
         {
             "form": form,
             "parsed_date": parsed_date,
-            "current_time": current_time2,
+            "parsed_datetime": parsed_datetime,
+            "current_time": current_time_local,
+            "current_time_utc": current_time_utc,
+            "django_time_zone": settings.TIME_ZONE,
+            "django_use_tz": settings.USE_TZ,
             "formatted_date_examples": formatted_date_examples,
+            "formatted_datetime_examples": formatted_datetime_examples,
             "raw_post_value": raw_post_value,
+            "raw_datetime_value": raw_datetime_value,
         },
     )
 

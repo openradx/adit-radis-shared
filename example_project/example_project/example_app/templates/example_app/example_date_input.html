@@ -1,4 +1,5 @@
 {% extends "example_app/example_app_layout.html" %}
+{% load tz %}
 {% block title %}
     Date Input Demo
 {% endblock title %}
@@ -9,8 +10,30 @@
     <p class="text-muted">
         Submit a date using the native browser picker. The server parses it and shows the result via the messages
         framework—nothing is written to the database.
-        Current server time: {{ current_time }}
+        Current server time ({{ django_time_zone }}): {{ current_time }}
+        {% if django_use_tz %}
+            · UTC: {{ current_time_utc|timezone:"UTC" }}
+        {% endif %}
     </p>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Time zone context</h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Django TIME_ZONE</dt>
+                <dd class="col-sm-8"><code>{{ django_time_zone }}</code></dd>
+                <dt class="col-sm-4">USE_TZ</dt>
+                <dd class="col-sm-8"><code>{{ django_use_tz }}</code></dd>
+                <dt class="col-sm-4">Server local time</dt>
+                <dd class="col-sm-8"><code>{{ current_time }}</code></dd>
+                <dt class="col-sm-4">Server UTC time</dt>
+                <dd class="col-sm-8"><code>{{ current_time_utc|timezone:"UTC" }}</code></dd>
+                <dt class="col-sm-4">Browser local time</dt>
+                <dd class="col-sm-8"><code id="browser-time-display">Detecting…</code></dd>
+                <dt class="col-sm-4">Browser offset (minutes)</dt>
+                <dd class="col-sm-8"><code id="browser-offset-display">Detecting…</code></dd>
+            </dl>
+        </div>
+    </div>
     <form method="post" class="card p-3">
         {% csrf_token %}
         <div class="mb-3">
@@ -22,14 +45,32 @@
                 </div>
             {% endif %}
         </div>
+        <div class="mb-3">
+            <label class="form-label" for="{{ form.demo_datetime.id_for_label }}">{{ form.demo_datetime.label }}</label>
+            {{ form.demo_datetime }}
+            {% if form.demo_datetime.help_text %}
+                <div class="form-text">{{ form.demo_datetime.help_text }}</div>
+            {% endif %}
+            {% if form.demo_datetime.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.demo_datetime.errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+        </div>
         <div class="mt-2">
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
     </form>
     {% if raw_post_value %}
         <div class="alert alert-secondary mt-3">
-            <strong>Raw browser value:</strong>
+            <strong>Raw browser date:</strong>
             <code>{{ raw_post_value }}</code>
+        </div>
+    {% endif %}
+    {% if raw_datetime_value %}
+        <div class="alert alert-secondary mt-3">
+            <strong>Raw browser datetime:</strong>
+            <code>{{ raw_datetime_value }}</code>
         </div>
     {% endif %}
     {% if parsed_date %}
@@ -53,4 +94,43 @@
             </div>
         {% endif %}
     {% endif %}
+    {% if parsed_datetime %}
+        <div class="alert alert-info mt-3">
+            <strong>Server datetime output:</strong>
+            {{ parsed_datetime|date:"l, d F Y H:i" }} (ISO: {{ parsed_datetime|date:"c" }})
+        </div>
+        {% if formatted_datetime_examples %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    Datetime format comparison
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for example in formatted_datetime_examples %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>{{ example.label }}</div>
+                            <code>{{ example.value }}</code>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endif %}
 {% endblock content %}
+{% block bottom %}
+    {{ block.super }}
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const browserTimeEl = document.getElementById("browser-time-display");
+            const browserOffsetEl = document.getElementById("browser-offset-display");
+            const now = new Date();
+            if (browserTimeEl) {
+                browserTimeEl.textContent = now.toString();
+            }
+            if (browserOffsetEl) {
+                const offsetMinutes = -now.getTimezoneOffset();
+                const offsetHours = offsetMinutes / 60;
+                browserOffsetEl.textContent = `${offsetMinutes} min (${offsetHours >= 0 ? "+" : ""}${offsetHours}h)`;
+            }
+        });
+    </script>
+{% endblock bottom %}
