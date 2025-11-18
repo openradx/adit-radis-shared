@@ -70,19 +70,20 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
         freeform_attempted = bool(raw_freeform_value)
         form = DateDemoForm(request.POST)
         if form.is_valid():
-            parsed_date = form.cleaned_data["demo_date"]
-            formatted_date_examples = [
-                {"label": "Python isoformat()", "value": parsed_date.isoformat()},
-                {"label": "ISO (YYYY-MM-DD)", "value": parsed_date.strftime("%Y-%m-%d")},
-                {"label": "Custom DD/MM/YYYY", "value": parsed_date.strftime("%d/%m/%Y")},
-                {"label": "Django DATE_FORMAT (l10n on)", "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=True)},
-                {
-                    "label": "Django DATE_FORMAT (l10n off)",
-                    "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=False),
-                },
-                {"label": "Django SHORT_DATE_FORMAT", "value": date_format(parsed_date, format="SHORT_DATE_FORMAT", use_l10n=True)},
-            ]
-            parsed_datetime = form.cleaned_data["demo_datetime"]
+            parsed_date = form.cleaned_data.get("demo_date")
+            if parsed_date:
+                formatted_date_examples = [
+                    {"label": "Python isoformat()", "value": parsed_date.isoformat()},
+                    {"label": "ISO (YYYY-MM-DD)", "value": parsed_date.strftime("%Y-%m-%d")},
+                    {"label": "Custom DD/MM/YYYY", "value": parsed_date.strftime("%d/%m/%Y")},
+                    {"label": "Django DATE_FORMAT (l10n on)", "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=True)},
+                    {
+                        "label": "Django DATE_FORMAT (l10n off)",
+                        "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=False),
+                    },
+                    {"label": "Django SHORT_DATE_FORMAT", "value": date_format(parsed_date, format="SHORT_DATE_FORMAT", use_l10n=True)},
+                ]
+            parsed_datetime = form.cleaned_data.get("demo_datetime")
             if parsed_datetime:
                 formatted_datetime_examples = [
                     {"label": "Python isoformat()", "value": parsed_datetime.isoformat()},
@@ -101,7 +102,7 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
                         "value": date_format(parsed_datetime, format="SHORT_DATETIME_FORMAT", use_l10n=True),
                     },
                 ]
-            parsed_freeform_date = form.cleaned_data["freeform_date"]
+            parsed_freeform_date = form.cleaned_data.get("freeform_date")
             if parsed_freeform_date:
                 formatted_freeform_examples = [
                     {"label": "Python isoformat()", "value": parsed_freeform_date.isoformat()},
@@ -112,10 +113,21 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
                         "value": date_format(parsed_freeform_date, format="DATE_FORMAT", use_l10n=True),
                     },
                 ]
-            messages.success(
-                request,
-                f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
-            )
+            if parsed_date:
+                messages.success(
+                    request,
+                    f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
+                )
+            elif parsed_freeform_date:
+                messages.success(
+                    request,
+                    f"Parsed free-form date: {parsed_freeform_date.strftime('%A, %d %B %Y')} (ISO: {parsed_freeform_date.isoformat()})",
+                )
+            elif parsed_datetime:
+                messages.success(
+                    request,
+                    f"Parsed datetime: {parsed_datetime.strftime('%A, %d %B %Y %H:%M')} (ISO: {parsed_datetime.isoformat()})",
+                )
             form = DateDemoForm()  # Reset so the date picker clears after a successful submit
     else:
         form = DateDemoForm()

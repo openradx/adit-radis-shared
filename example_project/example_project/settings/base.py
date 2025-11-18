@@ -202,7 +202,7 @@ REST_FRAMEWORK = {
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-gb"
+LANGUAGE_CODE = "en-us"
 
 # TODO: We don't want use translations yet, but everything is hardcoded in English
 USE_I18N = True
