@@ -8,6 +8,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
@@ -50,10 +51,24 @@ def example_messages(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def example_date_input(request: HttpRequest) -> HttpResponse:
     parsed_date = None
+    formatted_date_examples: list[dict[str, str]] = []
+    raw_post_value = None
     if request.method == "POST":
+        raw_post_value = request.POST.get("demo_date") or None
         form = DateDemoForm(request.POST)
         if form.is_valid():
             parsed_date = form.cleaned_data["demo_date"]
+            formatted_date_examples = [
+                {"label": "Python isoformat()", "value": parsed_date.isoformat()},
+                {"label": "ISO (YYYY-MM-DD)", "value": parsed_date.strftime("%Y-%m-%d")},
+                {"label": "Custom DD/MM/YYYY", "value": parsed_date.strftime("%d/%m/%Y")},
+                {"label": "Django DATE_FORMAT (l10n on)", "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=True)},
+                {
+                    "label": "Django DATE_FORMAT (l10n off)",
+                    "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=False),
+                },
+                {"label": "Django SHORT_DATE_FORMAT", "value": date_format(parsed_date, format="SHORT_DATE_FORMAT", use_l10n=True)},
+            ]
             messages.success(
                 request,
                 f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
@@ -71,6 +86,8 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
             "form": form,
             "parsed_date": parsed_date,
             "current_time": current_time2,
+            "formatted_date_examples": formatted_date_examples,
+            "raw_post_value": raw_post_value,
         },
     )
 

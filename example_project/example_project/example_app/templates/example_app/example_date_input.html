@@ -26,10 +26,31 @@
             <button type="submit" class="btn btn-primary">Submit</button>
         </div>
     </form>
+    {% if raw_post_value %}
+        <div class="alert alert-secondary mt-3">
+            <strong>Raw browser value:</strong>
+            <code>{{ raw_post_value }}</code>
+        </div>
+    {% endif %}
     {% if parsed_date %}
         <div class="alert alert-info mt-3">
             <strong>Server output:</strong>
-            {{ parsed_date }} (ISO: {{ parsed_date|date:"c" }})
+            {{ parsed_date|date:"l, d F Y" }} (ISO: {{ parsed_date|date:"c" }})
         </div>
+        {% if formatted_date_examples %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    Format comparison
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for example in formatted_date_examples %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>{{ example.label }}</div>
+                            <code>{{ example.value }}</code>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock content %}
