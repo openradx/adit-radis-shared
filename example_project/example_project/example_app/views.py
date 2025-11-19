@@ -1,19 +1,17 @@
+from datetime import timezone as dt_timezone
 from typing import cast
 
 from asgiref.sync import sync_to_async
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from datetime import timezone as dt_timezone
-
-from django.conf import settings
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
@@ -51,7 +49,6 @@ def example_messages(request: HttpRequest) -> HttpResponse:
     return render(request, "example_app/example_messages.html", {})
 
 
-@csrf_exempt
 def example_date_input(request: HttpRequest) -> HttpResponse:
     parsed_date = None
     parsed_datetime = None
@@ -73,60 +70,123 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
             parsed_date = form.cleaned_data.get("demo_date")
             if parsed_date:
                 formatted_date_examples = [
-                    {"label": "Python isoformat()", "value": parsed_date.isoformat()},
-                    {"label": "ISO (YYYY-MM-DD)", "value": parsed_date.strftime("%Y-%m-%d")},
-                    {"label": "Custom DD/MM/YYYY", "value": parsed_date.strftime("%d/%m/%Y")},
-                    {"label": "Django DATE_FORMAT (l10n on)", "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=True)},
+                    {
+                        "label": "Python isoformat()",
+                        "value": parsed_date.isoformat(),
+                    },
+                    {
+                        "label": "ISO (YYYY-MM-DD)",
+                        "value": parsed_date.strftime("%Y-%m-%d"),
+                    },
+                    {
+                        "label": "Custom DD/MM/YYYY",
+                        "value": parsed_date.strftime("%d/%m/%Y"),
+                    },
+                    {
+                        "label": "Django DATE_FORMAT (l10n on)",
+                        "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=True),
+                    },
                     {
                         "label": "Django DATE_FORMAT (l10n off)",
                         "value": date_format(parsed_date, format="DATE_FORMAT", use_l10n=False),
                     },
-                    {"label": "Django SHORT_DATE_FORMAT", "value": date_format(parsed_date, format="SHORT_DATE_FORMAT", use_l10n=True)},
+                    {
+                        "label": "Django SHORT_DATE_FORMAT",
+                        "value": date_format(
+                            parsed_date,
+                            format="SHORT_DATE_FORMAT",
+                            use_l10n=True,
+                        ),
+                    },
                 ]
             parsed_datetime = form.cleaned_data.get("demo_datetime")
             if parsed_datetime:
                 formatted_datetime_examples = [
-                    {"label": "Python isoformat()", "value": parsed_datetime.isoformat()},
-                    {"label": "ISO (YYYY-MM-DD HH:MM:SS)", "value": parsed_datetime.strftime("%Y-%m-%d %H:%M:%S")},
-                    {"label": "Custom DD/MM/YYYY HH:mm", "value": parsed_datetime.strftime("%d/%m/%Y %H:%M")},
+                    {
+                        "label": "Python isoformat()",
+                        "value": parsed_datetime.isoformat(),
+                    },
+                    {
+                        "label": "ISO (YYYY-MM-DD HH:MM:SS)",
+                        "value": parsed_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                    },
+                    {
+                        "label": "Custom DD/MM/YYYY HH:mm",
+                        "value": parsed_datetime.strftime("%d/%m/%Y %H:%M"),
+                    },
                     {
                         "label": "Django DATETIME_FORMAT (l10n on)",
-                        "value": date_format(parsed_datetime, format="DATETIME_FORMAT", use_l10n=True),
+                        "value": date_format(
+                            parsed_datetime,
+                            format="DATETIME_FORMAT",
+                            use_l10n=True,
+                        ),
                     },
                     {
                         "label": "Django DATETIME_FORMAT (l10n off)",
-                        "value": date_format(parsed_datetime, format="DATETIME_FORMAT", use_l10n=False),
+                        "value": date_format(
+                            parsed_datetime,
+                            format="DATETIME_FORMAT",
+                            use_l10n=False,
+                        ),
                     },
                     {
                         "label": "Django SHORT_DATETIME_FORMAT",
-                        "value": date_format(parsed_datetime, format="SHORT_DATETIME_FORMAT", use_l10n=True),
+                        "value": date_format(
+                            parsed_datetime,
+                            format="SHORT_DATETIME_FORMAT",
+                            use_l10n=True,
+                        ),
                     },
                 ]
             parsed_freeform_date = form.cleaned_data.get("freeform_date")
             if parsed_freeform_date:
                 formatted_freeform_examples = [
-                    {"label": "Python isoformat()", "value": parsed_freeform_date.isoformat()},
-                    {"label": "ISO (YYYY-MM-DD)", "value": parsed_freeform_date.strftime("%Y-%m-%d")},
-                    {"label": "Custom DD/MM/YYYY", "value": parsed_freeform_date.strftime("%d/%m/%Y")},
+                    {
+                        "label": "Python isoformat()",
+                        "value": parsed_freeform_date.isoformat(),
+                    },
+                    {
+                        "label": "ISO (YYYY-MM-DD)",
+                        "value": parsed_freeform_date.strftime("%Y-%m-%d"),
+                    },
+                    {
+                        "label": "Custom DD/MM/YYYY",
+                        "value": parsed_freeform_date.strftime("%d/%m/%Y"),
+                    },
                     {
                         "label": "Django DATE_FORMAT (l10n on)",
-                        "value": date_format(parsed_freeform_date, format="DATE_FORMAT", use_l10n=True),
+                        "value": date_format(
+                            parsed_freeform_date,
+                            format="DATE_FORMAT",
+                            use_l10n=True,
+                        ),
                     },
                 ]
             if parsed_date:
                 messages.success(
                     request,
-                    f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} (ISO: {parsed_date.isoformat()})",
+                    (
+                        f"Parsed date: {parsed_date.strftime('%A, %d %B %Y')} "
+                        f"(ISO: {parsed_date.isoformat()})"
+                    ),
                 )
             elif parsed_freeform_date:
                 messages.success(
                     request,
-                    f"Parsed free-form date: {parsed_freeform_date.strftime('%A, %d %B %Y')} (ISO: {parsed_freeform_date.isoformat()})",
+                    (
+                        "Parsed free-form date: "
+                        f"{parsed_freeform_date.strftime('%A, %d %B %Y')} "
+                        f"(ISO: {parsed_freeform_date.isoformat()})"
+                    ),
                 )
             elif parsed_datetime:
                 messages.success(
                     request,
-                    f"Parsed datetime: {parsed_datetime.strftime('%A, %d %B %Y %H:%M')} (ISO: {parsed_datetime.isoformat()})",
+                    (
+                        f"Parsed datetime: {parsed_datetime.strftime('%A, %d %B %Y %H:%M')} "
+                        f"(ISO: {parsed_datetime.isoformat()})"
+                    ),
                 )
             form = DateDemoForm()  # Reset so the date picker clears after a successful submit
     else:
