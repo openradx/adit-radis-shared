@@ -145,6 +145,3 @@ pyvenv.cfg
 
 # Certificate files
 *.pem
-
-# AI
-AGENTS.md
