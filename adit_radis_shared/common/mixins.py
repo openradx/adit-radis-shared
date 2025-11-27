@@ -9,7 +9,7 @@ from django_filters.filterset import FilterSet
 from django_filters.views import FilterMixin
 
 from .models import AppSettings
-from .types import HtmxHttpRequest
+from .types import AuthenticatedHttpRequest, HtmxHttpRequest
 from .utils.auth_utils import is_logged_in_user
 
 
@@ -78,7 +78,7 @@ class RelatedFilterMixin(FilterMixin):
     It must be placed behind SingleTableMixin.
     """
 
-    request: HttpRequest
+    request: HttpRequest | AuthenticatedHttpRequest
 
     def get_filter_queryset(self):
         raise NotImplementedError("Must be implemented by the derived view.")
@@ -166,7 +166,7 @@ class RelatedPaginationMixin:
     If used in combination with `RelatedFilterMixin`, the `RelatedPaginationMixin` must be
     inherited first."""
 
-    request: HttpRequest
+    request: HttpRequest | AuthenticatedHttpRequest
 
     def get_related_queryset(self: RelatedPaginationMixinProtocol) -> QuerySet:
         raise NotImplementedError("You must implement this method")
