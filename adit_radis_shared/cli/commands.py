@@ -1,6 +1,5 @@
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -11,7 +10,13 @@ from dotenv import set_key
 from .helper import CommandHelper
 
 
-def init_workspace():
+def init_workspace(
+    web_dev_port: Annotated[int | None, typer.Option(help="Web dev port to use")] = None,
+    postgres_dev_port: Annotated[int | None, typer.Option(help="Postgres dev port to use")] = None,
+    remote_debugging_port: Annotated[
+        int | None, typer.Option(help="Remote debugging port to use")
+    ] = None,
+):
     """Initialize workspace for Github Codespaces or local development"""
 
     helper = CommandHelper()
@@ -27,32 +32,26 @@ def init_workspace():
 
     shutil.copy(helper.root_path / "example.env", env_file)
 
-    def modify_env_file(domain: str | None = None, uses_https: bool = False):
-        if domain:
-            hosts = f".localhost,127.0.0.1,[::1],{domain}"
-            set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
-            set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
-            set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
-
-            origin = f"{'https' if uses_https else 'http'}://{domain}"
-            set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", origin, quote_mode="never")
-
-        set_key(env_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
-
     if os.environ.get("CODESPACE_NAME"):
         # Inside GitHub Codespaces
         domain = f"{os.environ['CODESPACE_NAME']}-8000.preview.app.github.dev"
-        modify_env_file(domain, uses_https=True)
-    elif os.environ.get("GITPOD_WORKSPACE_ID"):
-        # Inside Gitpod
-        result = subprocess.run(
-            "gp url 8000", shell=True, capture_output=True, text=True, check=True
-        )
-        domain = result.stdout.strip().removeprefix("https://")
-        modify_env_file(domain, uses_https=True)
-    else:
-        # Inside some local environment
-        modify_env_file()
+        hosts = f".localhost,127.0.0.1,[::1],{domain}"
+        set_key(env_file, "DJANGO_ALLOWED_HOSTS", hosts, quote_mode="never")
+        set_key(env_file, "DJANGO_INTERNAL_IPS", hosts, quote_mode="never")
+        set_key(env_file, "SITE_DOMAIN", domain, quote_mode="never")
+        origin = f"https://{domain}"
+        set_key(env_file, "DJANGO_CSRF_TRUSTED_ORIGINS", origin, quote_mode="never")
+
+    if web_dev_port is not None:
+        set_key(env_file, "WEB_DEV_PORT", str(web_dev_port), quote_mode="never")
+
+    if postgres_dev_port is not None:
+        set_key(env_file, "POSTGRES_DEV_PORT", str(postgres_dev_port), quote_mode="never")
+
+    if remote_debugging_port is not None:
+        set_key(env_file, "REMOTE_DEBUGGING_PORT", str(remote_debugging_port), quote_mode="never")
+
+    set_key(env_file, "FORCE_DEBUG_TOOLBAR", "true", quote_mode="never")
 
     print("Successfully initialized .env file.")
 
