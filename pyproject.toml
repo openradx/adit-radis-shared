@@ -71,6 +71,9 @@ dev = [
 [project.scripts]
 cli = "cli:app"
 
+[tool.uv]
+constraint-dependencies = ["autobahn<25.11.1"]
+
 [tool.pyright]
 ignore = ["**/migrations", "**/*.ipynb"]
 typeCheckingMode = "basic"
