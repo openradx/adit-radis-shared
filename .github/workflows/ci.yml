@@ -33,7 +33,9 @@ jobs:
           context: .
           target: development
           load: true
-          tags: example_project_dev:latest
+          tags: |
+            example_project_dev-web:latest
+            example_project_dev-worker:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Start Docker containers

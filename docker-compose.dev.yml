@@ -27,6 +27,7 @@ services:
 
   web:
     <<: *default-app
+    image: example_project_dev-web:latest
     ports:
       - ${WEB_DEV_PORT:-8000}:8000
       - ${REMOTE_DEBUGGING_PORT:-5678}:5678
@@ -45,6 +46,7 @@ services:
 
   worker:
     <<: *default-app
+    image: example_project_dev-worker:latest
     command: >
       bash -c "
         cd example_project;
