@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -15,10 +16,16 @@ class Command(BaseCommand):
 
         stalled_jobs_num = 0
         for job in stalled_jobs:
-            self.stdout.write(f"Retrying stalled job {job.id}...", ending="")
-            self.stdout.write(f"Job has status {job.status}. ", ending="")
-            await app.job_manager.retry_job(job, priority=priority)
-            self.stdout.write(f"Job was retried and now has status {job.status}. ", ending="")
+            self.stdout.write(f"Retrying stalled job {job.id}...")
+            self.stdout.write(f"Job has status {job.status}. ")
+            await app.job_manager.retry_job(
+                job, priority=priority, retry_at=datetime.datetime(1990, 5, 17)
+            )
+            self.stdout.write(f"Job was retried and now has status {job.status}. ")
+            import time
+
+            time.sleep(70)
+            self.stdout.write(f"After one heartbeat time the status is not {job.status}. ")
             stalled_jobs_num += 1
 
         return stalled_jobs_num
