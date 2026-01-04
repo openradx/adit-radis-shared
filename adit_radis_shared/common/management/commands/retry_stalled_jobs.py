@@ -24,6 +24,7 @@ class Command(BaseCommand):
         return stalled_jobs_num
 
     def handle(self, *args, **options):
+        self.stdout.write("TEST... ", ending="")
         self.stdout.write("Retrying stalled jobs... ", ending="")
         self.stdout.flush()
 
