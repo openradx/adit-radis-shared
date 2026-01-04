@@ -15,7 +15,10 @@ class Command(BaseCommand):
 
         stalled_jobs_num = 0
         for job in stalled_jobs:
+            self.stdout.write(f"Retrying stalled job {job.id}...", ending="")
+            self.stdout.write(f"Job has status {job.status}. ", ending="")
             await app.job_manager.retry_job(job, priority=priority)
+            self.stdout.write(f"Job was retried and now has status {job.status}. ", ending="")
             stalled_jobs_num += 1
 
         return stalled_jobs_num
