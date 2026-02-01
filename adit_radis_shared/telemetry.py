@@ -117,13 +117,18 @@ def setup_opentelemetry() -> None:
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
         set_logger_provider(logger_provider)
 
+        # Mark telemetry as active BEFORE instrumenting Django, because
+        # DjangoInstrumentor().instrument() triggers Django settings to load,
+        # which checks is_telemetry_active() to decide whether to add the
+        # OTel logging handler.
+        _telemetry_active = True
+
         # Instrument Django
         DjangoInstrumentor().instrument()
 
         # Instrument psycopg (PostgreSQL)
         PsycopgInstrumentor().instrument()
 
-        _telemetry_active = True
         logger.info("OpenTelemetry initialized for service: %s", service_name)
     except Exception:
         logger.warning(
