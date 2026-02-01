@@ -24,14 +24,25 @@ def add_otel_logging_handler(logging_config: dict) -> None:
     """Add OpenTelemetry logging handler to a Django LOGGING dict.
 
     Call this after defining LOGGING in settings, only when is_telemetry_active() is True.
+    This function is idempotent and safe to call on any valid Django logging config.
     """
-    logging_config["handlers"]["otel"] = {
-        "level": "DEBUG",
-        "class": "opentelemetry.sdk._logs.LoggingHandler",
-    }
-    for logger_config in logging_config["loggers"].values():
-        logger_config["handlers"].append("otel")
-    logging_config["root"]["handlers"].append("otel")
+    handlers = logging_config.setdefault("handlers", {})
+    handlers.setdefault(
+        "otel",
+        {
+            "level": "DEBUG",
+            "class": "opentelemetry.sdk._logs.LoggingHandler",
+        },
+    )
+
+    for logger_config in logging_config.get("loggers", {}).values():
+        logger_handlers = logger_config.setdefault("handlers", [])
+        if "otel" not in logger_handlers:
+            logger_handlers.append("otel")
+
+    root_handlers = logging_config.setdefault("root", {}).setdefault("handlers", [])
+    if "otel" not in root_handlers:
+        root_handlers.append("otel")
 
 
 def setup_opentelemetry() -> None:
@@ -44,6 +55,10 @@ def setup_opentelemetry() -> None:
     If OTEL_EXPORTER_OTLP_ENDPOINT is not set, telemetry is disabled.
     """
     global _telemetry_active
+
+    if _telemetry_active:
+        logger.debug("OpenTelemetry already initialized; skipping")
+        return
 
     endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
     if not endpoint:
@@ -75,24 +90,22 @@ def setup_opentelemetry() -> None:
         # Create resource with service name
         resource = Resource.create({"service.name": service_name})
 
-        # Setup tracing - otel-collector handles authentication to OpenObserve
-        trace_exporter = OTLPSpanExporter(
-            endpoint=f"{endpoint}/v1/traces",
-        )
+        # Setup tracing - otel-collector handles authentication to OpenObserve.
+        # The OTLP HTTP exporters automatically append signal-specific paths
+        # (e.g. /v1/traces) to the base endpoint.
+        trace_exporter = OTLPSpanExporter(endpoint=endpoint)
         tracer_provider = TracerProvider(resource=resource)
         tracer_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
         trace.set_tracer_provider(tracer_provider)
 
         # Setup metrics
-        metric_exporter = OTLPMetricExporter(
-            endpoint=f"{endpoint}/v1/metrics",
-        )
+        metric_exporter = OTLPMetricExporter(endpoint=endpoint)
         metric_reader = PeriodicExportingMetricReader(metric_exporter, export_interval_millis=60000)
         meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
         metrics.set_meter_provider(meter_provider)
 
         # Setup logging - export structured logs via OTLP
-        log_exporter = OTLPLogExporter(endpoint=f"{endpoint}/v1/logs")
+        log_exporter = OTLPLogExporter(endpoint=endpoint)
         logger_provider = LoggerProvider(resource=resource)
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
         set_logger_provider(logger_provider)
