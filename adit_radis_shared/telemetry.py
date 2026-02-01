@@ -97,21 +97,23 @@ def setup_opentelemetry() -> None:
         resource = Resource.create({"service.name": service_name})
 
         # Setup tracing - otel-collector handles authentication to OpenObserve.
-        # The OTLP HTTP exporters automatically append signal-specific paths
-        # (e.g. /v1/traces) to the base endpoint.
-        trace_exporter = OTLPSpanExporter(endpoint=endpoint)
+        # Don't pass endpoint to constructors; the exporters read
+        # OTEL_EXPORTER_OTLP_ENDPOINT from the environment and automatically
+        # append signal-specific paths (/v1/traces, /v1/metrics, /v1/logs).
+        # Passing endpoint explicitly bypasses this path-appending logic.
+        trace_exporter = OTLPSpanExporter()
         tracer_provider = TracerProvider(resource=resource)
         tracer_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
         trace.set_tracer_provider(tracer_provider)
 
         # Setup metrics
-        metric_exporter = OTLPMetricExporter(endpoint=endpoint)
+        metric_exporter = OTLPMetricExporter()
         metric_reader = PeriodicExportingMetricReader(metric_exporter, export_interval_millis=60000)
         meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
         metrics.set_meter_provider(meter_provider)
 
         # Setup logging - export structured logs via OTLP
-        log_exporter = OTLPLogExporter(endpoint=endpoint)
+        log_exporter = OTLPLogExporter()
         logger_provider = LoggerProvider(resource=resource)
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
         set_logger_provider(logger_provider)
