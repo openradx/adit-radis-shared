@@ -85,7 +85,13 @@ def setup_opentelemetry() -> None:
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-        service_name = os.environ.get("OTEL_SERVICE_NAME") or socket.gethostname()
+        service_name = os.environ.get("OTEL_SERVICE_NAME")
+        if not service_name:
+            site_name = os.environ.get("SITE_NAME", "unknown")
+            hostname = socket.gethostname()
+            # Docker hostnames are like "web.local", "worker.local"
+            role = hostname.split(".")[0] if "." in hostname else hostname
+            service_name = f"{site_name}-{role}".lower().replace(" ", "-")
 
         # Create resource with service name
         resource = Resource.create({"service.name": service_name})
