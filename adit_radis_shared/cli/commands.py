@@ -201,6 +201,11 @@ def stack_deploy():
     cmd = "docker stack deploy --detach "
     cmd += f" -c {helper.get_compose_base_file()}"
     cmd += f" -c {helper.get_compose_env_file()}"
+
+    override_file = helper.get_compose_override_file()
+    if override_file:
+        cmd += f" -c {override_file}"
+
     cmd += f" {helper.get_stack_name()}"
     helper.execute_cmd(cmd, env=env)
 
