@@ -147,10 +147,10 @@ class CommandHelper:
             return f"{self.project_id}_prod"
         return f"{self.project_id}_dev"
 
-    def get_compose_observability_file(self) -> Path | None:
-        obs_file = self.root_path / "docker-compose.observability.yml"
-        if obs_file.is_file():
-            return obs_file
+    def get_compose_override_file(self) -> Path | None:
+        override_file = self.root_path / "docker-compose.override.yml"
+        if override_file.is_file():
+            return override_file
         return None
 
     def build_compose_cmd(self, profiles: list[str] | None = None) -> str:
@@ -158,9 +158,9 @@ class CommandHelper:
         cmd += f" -f {self.get_compose_base_file()}"
         cmd += f" -f {self.get_compose_env_file()}"
 
-        obs_file = self.get_compose_observability_file()
-        if obs_file:
-            cmd += f" -f {obs_file}"
+        override_file = self.get_compose_override_file()
+        if override_file:
+            cmd += f" -f {override_file}"
 
         cmd += f" -p {self.get_stack_name()}"
 
