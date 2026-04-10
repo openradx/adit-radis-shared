@@ -34,7 +34,7 @@ services:
     command: >
       bash -c "
         cd example_project;
-        wait-for-it -s postgres.local:5432 -t 60 && 
+        wait-for-it -s postgres.local:5432 -t ${WAIT_POSTGRES_TIMEOUT:-180} &&
         ./manage.py migrate &&
         ./manage.py create_superuser &&
         ./manage.py create_example_users &&
@@ -50,7 +50,7 @@ services:
     command: >
       bash -c "
         cd example_project;
-        wait-for-it -s postgres.local:5432 -t 60 &&
+        wait-for-it -s postgres.local:5432 -t ${WAIT_POSTGRES_TIMEOUT:-180} &&
         ./manage.py bg_worker -l debug --autoreload
       "
 
