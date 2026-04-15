@@ -96,6 +96,7 @@ def compose_build(
         env={
             "COMPOSE_BAKE": "true",
             "PROJECT_VERSION": helper.get_local_project_version(),
+            "STACK_NAME": helper.get_stack_name(),
         },
     )
 
@@ -154,6 +155,7 @@ def compose_up(
         env={
             "COMPOSE_BAKE": "true",
             "PROJECT_VERSION": helper.get_local_project_version(),
+            "STACK_NAME": helper.get_stack_name(),
         },
     )
 
@@ -197,6 +199,7 @@ def stack_deploy():
     env = helper.load_config_from_env_file()
 
     env["PROJECT_VERSION"] = helper.get_local_project_version()
+    env["STACK_NAME"] = helper.get_stack_name()
 
     cmd = "docker stack deploy --detach "
     cmd += f" -c {helper.get_compose_base_file()}"
