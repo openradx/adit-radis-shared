@@ -24,7 +24,8 @@ class MaintenanceMiddleware:
     def __call__(self, request: HtmxHttpRequest):
         login_request = request.path == reverse("auth_login")
         logout_request = request.path == reverse("auth_logout")
-        if login_request or logout_request:
+        health_request = request.path == reverse("health")
+        if login_request or logout_request or health_request:
             return self.get_response(request)
 
         project_settings = ProjectSettings.get()
