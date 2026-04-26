@@ -2,7 +2,7 @@ import re
 
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 
 from adit_radis_shared.common.models import ProjectSettings
 from adit_radis_shared.common.types import HtmxHttpRequest
@@ -24,7 +24,10 @@ class MaintenanceMiddleware:
     def __call__(self, request: HtmxHttpRequest):
         login_request = request.path == reverse("auth_login")
         logout_request = request.path == reverse("auth_logout")
-        health_request = request.path == reverse("health")
+        try:
+            health_request = request.path == reverse("health")
+        except NoReverseMatch:
+            health_request = False
         if login_request or logout_request or health_request:
             return self.get_response(request)
 
