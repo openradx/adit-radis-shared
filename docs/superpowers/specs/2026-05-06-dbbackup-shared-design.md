@@ -26,7 +26,7 @@ PR #329 is superseded by this work and will be closed.
 - No abstraction over the per-project `STORAGES` dict beyond what already exists. Each consumer continues to write the dict in its own `settings/base.py` with its own backup location default.
 - No automated regression test for the legacy-settings trap. The new dbbackup raises at import time, so the failure surfaces immediately on app startup if anyone reintroduces the legacy keys.
 - No change to `dbbackup --clean -v 2` flags. Hardcoded in shared; matches existing behavior in both projects.
-- No opt-in/opt-out gating for the shared task. Both consumers want backups; future opt-out can be added if a consumer ever needs it.
+- ~~No opt-in/opt-out gating for the shared task.~~ **Revised during PR review:** added a `DBBACKUP_ENABLED` setting (default `True`) that gates the task body. The default preserves current behavior for adit/radis/example; consumers (or test/CI environments) can no-op the periodic task by setting `DBBACKUP_ENABLED=false` in env. Doesn't change the docker-compose contract — `BACKUP_DIR` is still required for the stack to come up, since true compose-level opt-out (conditional volume mounts) isn't worth the complexity for hypothetical consumers.
 
 ## Architecture
 
@@ -107,12 +107,21 @@ from django.conf import settings as django_settings
 @app.periodic(cron=getattr(django_settings, "DBBACKUP_CRON", "0 3 * * *"))
 @app.task(queueing_lock="backup_db")
 def backup_db(timestamp: int):
+    if not getattr(django_settings, "DBBACKUP_ENABLED", True):
+        return
     call_command("dbbackup", "--clean", "-v", "2")
+```
+
+Each consumer's `base.py` adds:
+
+```python
+DBBACKUP_ENABLED = env.bool("DBBACKUP_ENABLED", default=True)
 ```
 
 Choices:
 
 - **Cron via settings**, default `"0 3 * * *"`. Consumers override by setting `DBBACKUP_CRON` in their Django settings.
+- **`DBBACKUP_ENABLED` flag**, default `True`. Lets a consumer (or test/CI environment) no-op the task body via env without touching code. Procrastinate still wakes the task at the cron interval; the body returns early. Inexpensive at scale.
 - **`queueing_lock="backup_db"`** prevents pile-ups if a backup ever runs longer than the cron interval.
 - **`timestamp: int` signature** matches procrastinate's periodic-task convention used by the existing `retry_stalled_jobs` in this same file.
 - **Flags `--clean -v 2` hardcoded** — matches existing behavior; not a parameter today.

@@ -103,11 +103,13 @@ STORAGES = {
     },
 }
 DBBACKUP_CLEANUP_KEEP = 30
+DBBACKUP_ENABLED = env.bool("DBBACKUP_ENABLED", default=True)
 ```
 
-Two things change:
+Three things change:
 1. The legacy `DBBACKUP_STORAGE` / `DBBACKUP_STORAGE_OPTIONS` keys are replaced by a `STORAGES` dict that defines all three named storages (`default`, `staticfiles`, `dbbackup`).
 2. The default location string changes from `"/tmp/backups-radis"` (copy-paste leftover) to `"/tmp/backups-example"`.
+3. A new `DBBACKUP_ENABLED` setting (default `True`) is added so the shared periodic task can be no-op'd via env.
 
 - [ ] **Step 2: Sanity-check that no `DBBACKUP_STORAGE` references remain**
 
@@ -187,10 +189,12 @@ In `adit_radis_shared/common/tasks.py`, append at the bottom (after `retry_stall
 @app.periodic(cron=getattr(settings, "DBBACKUP_CRON", "0 3 * * *"))
 @app.task(queueing_lock="backup_db")
 def backup_db(timestamp: int):
+    if not getattr(settings, "DBBACKUP_ENABLED", True):
+        return
     call_command("dbbackup", "--clean", "-v", "2")
 ```
 
-`settings`, `call_command`, and `app` are already imported at the top of the file — no new imports needed. The signature `(timestamp: int)` matches procrastinate's periodic-task convention used by `retry_stalled_jobs` directly above. The `queueing_lock` prevents pile-ups if a backup ever runs longer than the cron interval.
+`settings`, `call_command`, and `app` are already imported at the top of the file — no new imports needed. The signature `(timestamp: int)` matches procrastinate's periodic-task convention used by `retry_stalled_jobs` directly above. The `queueing_lock` prevents pile-ups if a backup ever runs longer than the cron interval. The `DBBACKUP_ENABLED` gate (default `True` via `getattr`) lets a consumer opt out of running the actual backup without disabling the periodic task itself.
 
 - [ ] **Step 2: Verify the file imports cleanly**
 

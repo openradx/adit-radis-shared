@@ -243,6 +243,7 @@ STORAGES = {
     },
 }
 DBBACKUP_CLEANUP_KEEP = 30
+DBBACKUP_ENABLED = env.bool("DBBACKUP_ENABLED", default=True)
 
 # The priority for stalled jobs that are retried.
 STALLED_JOBS_RETRY_PRIORITY = 10
