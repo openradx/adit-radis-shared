@@ -131,10 +131,10 @@ STORAGES = {
     },
 }
 DBBACKUP_CLEANUP_KEEP = 30
-DBBACKUP_ENABLED = env.bool("DBBACKUP_ENABLED", default=True)
+BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=True)
 ```
 
-The `default` and `staticfiles` entries restate Django's built-in defaults so that `development.py` and `test.py` (which don't override `STORAGES`) keep working unchanged. The `DBBACKUP_ENABLED` line gives operators a runtime opt-out (e.g. for a test environment); the shared `backup_db` task no-ops when this is `False`.
+The `default` and `staticfiles` entries restate Django's built-in defaults so that `development.py` and `test.py` (which don't override `STORAGES`) keep working unchanged. The `BACKUP_ENABLED` line gives operators a runtime opt-out (e.g. for a test environment); the shared `backup_db` task no-ops when this is `False`.
 
 - [ ] **Step 2: Sanity-check that no `DBBACKUP_STORAGE` references remain**
 
