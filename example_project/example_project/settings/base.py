@@ -227,10 +227,20 @@ DJANGO_TABLES2_TEMPLATE = "common/_django_tables2.html"
 # Cave, changing the salt after some tokens were already generated makes them all invalid!
 TOKEN_AUTHENTICATION_SALT = env.str("TOKEN_AUTHENTICATION_SALT")
 
-# django-dbbackup
-DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
-DBBACKUP_STORAGE_OPTIONS = {
-    "location": env.str("DBBACKUP_STORAGE_LOCATION", default="/tmp/backups-radis")
+# Django default storage and django-dbbackup
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+    "dbbackup": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": env.str("DBBACKUP_STORAGE_LOCATION", default="/tmp/backups-example")
+        },
+    },
 }
 DBBACKUP_CLEANUP_KEEP = 30
 
