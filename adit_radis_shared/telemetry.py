@@ -45,6 +45,19 @@ def add_otel_logging_handler(logging_config: dict) -> None:
         root_handlers.append("otel")
 
 
+def _build_resource_attributes(service_name: str) -> dict[str, str]:
+    """Build the OTel resource attribute dict for the current process.
+
+    `service.component` is added when the SERVICE_COMPONENT env var is set,
+    letting the observability overlay tag each container without needing to
+    splice substrings into OTEL_RESOURCE_ATTRIBUTES per service.
+    """
+    attrs: dict[str, str] = {"service.name": service_name}
+    if component := os.environ.get("SERVICE_COMPONENT"):
+        attrs["service.component"] = component
+    return attrs
+
+
 def setup_opentelemetry() -> None:
     """Initialize OpenTelemetry instrumentation for traces, metrics, and logs.
 
@@ -93,8 +106,8 @@ def setup_opentelemetry() -> None:
             role = hostname.split(".")[0] if "." in hostname else hostname
             service_name = f"{site_name}-{role}".lower().replace(" ", "-")
 
-        # Create resource with service name
-        resource = Resource.create({"service.name": service_name})
+        # Create resource with service name and (optionally) component
+        resource = Resource.create(_build_resource_attributes(service_name))
 
         # Setup tracing - otel-collector handles authentication to OpenObserve.
         # Construct full signal-specific URLs because passing endpoint to
