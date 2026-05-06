@@ -104,7 +104,7 @@ Lives in `adit_radis_shared/common/tasks.py` next to the existing periodic tasks
 ```python
 from django.conf import settings as django_settings
 
-@app.periodic(cron=getattr(django_settings, "DBBACKUP_CRON", "0 3 * * *"))
+@app.periodic(cron=getattr(django_settings, "BACKUP_CRON", "0 3 * * *"))
 @app.task(queueing_lock="backup_db")
 def backup_db(timestamp: int):
     if not getattr(django_settings, "BACKUP_ENABLED", True):
@@ -120,7 +120,7 @@ BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=True)
 
 Choices:
 
-- **Cron via settings**, default `"0 3 * * *"`. Consumers override by setting `DBBACKUP_CRON` in their Django settings.
+- **Cron via settings**, default `"0 3 * * *"`. Consumers override by setting `BACKUP_CRON` in their Django settings.
 - **`BACKUP_ENABLED` flag**, default `True`. Lets a consumer (or test/CI environment) no-op the task body via env without touching code. Procrastinate still wakes the task at the cron interval; the body returns early. Inexpensive at scale.
 - **`queueing_lock="backup_db"`** prevents pile-ups if a backup ever runs longer than the cron interval.
 - **`timestamp: int` signature** matches procrastinate's periodic-task convention used by the existing `retry_stalled_jobs` in this same file.

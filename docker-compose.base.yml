@@ -4,6 +4,7 @@ x-app: &default-app
   depends_on:
     - postgres
   environment:
+    BACKUP_CRON: ${BACKUP_CRON:-0 3 * * *}
     BACKUP_ENABLED: ${BACKUP_ENABLED:-true}
     DATABASE_URL: postgres://postgres:postgres@postgres.local:5432/postgres
     DBBACKUP_STORAGE_LOCATION: /backups

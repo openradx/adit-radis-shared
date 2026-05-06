@@ -20,7 +20,7 @@ def retry_stalled_jobs(timestamp: int):
     call_command("retry_stalled_jobs")
 
 
-@app.periodic(cron=getattr(settings, "DBBACKUP_CRON", "0 3 * * *"))
+@app.periodic(cron=getattr(settings, "BACKUP_CRON", "0 3 * * *"))
 @app.task(queueing_lock="backup_db")
 def backup_db(timestamp: int):
     if not getattr(settings, "BACKUP_ENABLED", True):

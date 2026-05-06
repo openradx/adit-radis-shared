@@ -104,12 +104,14 @@ STORAGES = {
 }
 DBBACKUP_CLEANUP_KEEP = 30
 BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=True)
+BACKUP_CRON = env.str("BACKUP_CRON", default="0 3 * * *")
 ```
 
-Three things change:
+Four things change:
 1. The legacy `DBBACKUP_STORAGE` / `DBBACKUP_STORAGE_OPTIONS` keys are replaced by a `STORAGES` dict that defines all three named storages (`default`, `staticfiles`, `dbbackup`).
 2. The default location string changes from `"/tmp/backups-radis"` (copy-paste leftover) to `"/tmp/backups-example"`.
 3. A new `BACKUP_ENABLED` setting (default `True`) is added so the shared periodic task can be no-op'd via env.
+4. A new `BACKUP_CRON` setting (default `"0 3 * * *"`) is added so the schedule can be overridden via env.
 
 - [ ] **Step 2: Sanity-check that no `DBBACKUP_STORAGE` references remain**
 
@@ -186,7 +188,7 @@ In `adit_radis_shared/common/tasks.py`, append at the bottom (after `retry_stall
 ```python
 
 
-@app.periodic(cron=getattr(settings, "DBBACKUP_CRON", "0 3 * * *"))
+@app.periodic(cron=getattr(settings, "BACKUP_CRON", "0 3 * * *"))
 @app.task(queueing_lock="backup_db")
 def backup_db(timestamp: int):
     if not getattr(settings, "BACKUP_ENABLED", True):
@@ -279,7 +281,7 @@ gh pr create --title "feat: add shared backup_db task and migrate to django-dbba
 ## Summary
 - Bump `django-dbbackup` to ≥5.3.0 (legacy `DBBACKUP_STORAGE`/`DBBACKUP_STORAGE_OPTIONS` settings now raise at import time).
 - Migrate `example_project` settings to the new `STORAGES["dbbackup"]` format (with the `default`/`staticfiles` entries restated in `base.py` so dev and test inherit them cleanly).
-- Add a shared `backup_db` periodic task in `adit_radis_shared/common/tasks.py`. Cron is configurable via `settings.DBBACKUP_CRON`, defaulting to `"0 3 * * *"`. Procrastinate auto-discovers it in any consumer that already has `adit_radis_shared.common` in `INSTALLED_APPS`.
+- Add a shared `backup_db` periodic task in `adit_radis_shared/common/tasks.py`. Cron is configurable via `settings.BACKUP_CRON`, defaulting to `"0 3 * * *"`. Procrastinate auto-discovers it in any consumer that already has `adit_radis_shared.common` in `INSTALLED_APPS`.
 - Fix copy-paste leftover in example_project's default backup location: `/tmp/backups-radis` → `/tmp/backups-example`.
 
 Once merged and tagged as `0.22.0`, adit and radis will bump their pin and drop their local `backup_db` copies. Supersedes openradx/adit#329.

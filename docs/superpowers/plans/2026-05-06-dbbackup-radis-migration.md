@@ -132,9 +132,10 @@ STORAGES = {
 }
 DBBACKUP_CLEANUP_KEEP = 30
 BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=True)
+BACKUP_CRON = env.str("BACKUP_CRON", default="0 3 * * *")
 ```
 
-The default location string remains `/tmp/backups-radis` — same as before. The `default`/`staticfiles` entries restate Django's built-in defaults so dev and test inherit them unchanged. The `BACKUP_ENABLED` line gives operators a runtime opt-out (e.g. for a test environment); the shared `backup_db` task no-ops when this is `False`.
+The default location string remains `/tmp/backups-radis` — same as before. The `default`/`staticfiles` entries restate Django's built-in defaults so dev and test inherit them unchanged. The `BACKUP_ENABLED` line gives operators a runtime opt-out (e.g. for a test environment); the shared `backup_db` task no-ops when this is `False`. The `BACKUP_CRON` line lets the cron schedule be overridden via env without touching code.
 
 - [ ] **Step 2: Sanity-check that no `DBBACKUP_STORAGE` references remain**
 

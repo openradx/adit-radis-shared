@@ -244,6 +244,7 @@ STORAGES = {
 }
 DBBACKUP_CLEANUP_KEEP = 30
 BACKUP_ENABLED = env.bool("BACKUP_ENABLED", default=True)
+BACKUP_CRON = env.str("BACKUP_CRON", default="0 3 * * *")
 
 # The priority for stalled jobs that are retried.
 STALLED_JOBS_RETRY_PRIORITY = 10
