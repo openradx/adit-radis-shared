@@ -145,3 +145,6 @@ pyvenv.cfg
 
 # Certificate files
 *.pem
+
+# Project specific
+.docker-data/
