@@ -18,3 +18,11 @@ def broadcast_mail(recipients: list[str], subject: str, message: str):
 @app.task(queueing_lock="retry_stalled_jobs")
 def retry_stalled_jobs(timestamp: int):
     call_command("retry_stalled_jobs")
+
+
+@app.periodic(cron=getattr(settings, "BACKUP_CRON", "0 3 * * *"))
+@app.task(queueing_lock="backup_db")
+def backup_db(timestamp: int):
+    if not getattr(settings, "BACKUP_ENABLED", True):
+        return
+    call_command("dbbackup", "--clean", "-v", "2")
