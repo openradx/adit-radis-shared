@@ -50,10 +50,17 @@ def _build_resource_attributes(service_name: str) -> dict[str, str]:
 
     `service.component` is added when the SERVICE_COMPONENT env var is set,
     letting the observability overlay tag each container without needing to
-    splice substrings into OTEL_RESOURCE_ATTRIBUTES per service.
+    splice substrings into OTEL_RESOURCE_ATTRIBUTES per service. When TASK_SLOT
+    holds a digit (Swarm interpolates `{{.Task.Slot}}` to the replica ordinal),
+    it is appended as `-N` so replicas of the same service are distinguishable.
+    Outside Swarm the literal template passes through unprocessed; the digit
+    check drops it so dev signals stay clean.
     """
     attrs: dict[str, str] = {"service.name": service_name}
     if component := os.environ.get("SERVICE_COMPONENT"):
+        slot = os.environ.get("TASK_SLOT", "")
+        if slot.isdigit():
+            component = f"{component}-{slot}"
         attrs["service.component"] = component
     return attrs
 
