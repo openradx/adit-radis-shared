@@ -35,8 +35,6 @@ dependencies = [
     { name = "environs", extra = ["django"] },
     { name = "opentelemetry-api" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
-    { name = "opentelemetry-instrumentation-django" },
-    { name = "opentelemetry-instrumentation-psycopg" },
     { name = "opentelemetry-sdk" },
     { name = "procrastinate", extra = ["django"] },
     { name = "psycopg", extra = ["binary"] },
@@ -46,6 +44,12 @@ dependencies = [
     { name = "wait-for-it" },
     { name = "watchfiles" },
     { name = "whitenoise" },
+]
+
+[package.optional-dependencies]
+django = [
+    { name = "opentelemetry-instrumentation-django" },
+    { name = "opentelemetry-instrumentation-psycopg" },
 ]
 
 [package.dev-dependencies]
@@ -103,8 +107,8 @@ requires-dist = [
     { name = "environs", extras = ["django"], specifier = ">=14.1.1" },
     { name = "opentelemetry-api", specifier = ">=1.32.0" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.32.0" },
-    { name = "opentelemetry-instrumentation-django", specifier = ">=0.60b0" },
-    { name = "opentelemetry-instrumentation-psycopg", specifier = ">=0.60b0" },
+    { name = "opentelemetry-instrumentation-django", marker = "extra == 'django'", specifier = ">=0.60b0" },
+    { name = "opentelemetry-instrumentation-psycopg", marker = "extra == 'django'", specifier = ">=0.60b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.32.0" },
     { name = "procrastinate", extras = ["django"], specifier = ">=3.0.2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.5" },
@@ -115,6 +119,7 @@ requires-dist = [
     { name = "watchfiles", specifier = ">=1.0.4" },
     { name = "whitenoise", specifier = ">=6.9.0" },
 ]
+provides-extras = ["django"]
 
 [package.metadata.requires-dev]
 dev = [

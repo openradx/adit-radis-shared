@@ -37,6 +37,15 @@ dependencies = [
     "opentelemetry-api>=1.32.0",
     "opentelemetry-sdk>=1.32.0",
     "opentelemetry-exporter-otlp-proto-http>=1.32.0",
+]
+
+[project.optional-dependencies]
+# Framework-specific auto-instrumentors. Django consumers (ADIT, RADIS) install
+# `adit-radis-shared[django]` to get the Django and Psycopg instrumentors, which
+# are then passed to `setup_opentelemetry(instrumentors=[...])`. Non-Django
+# consumers (e.g. radis-etl-ukb) install the plain package and add whichever
+# instrumentors they need (e.g. opentelemetry-instrumentation-requests) directly.
+django = [
     "opentelemetry-instrumentation-django>=0.60b0",
     "opentelemetry-instrumentation-psycopg>=0.60b0",
 ]
