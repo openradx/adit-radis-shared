@@ -1,7 +1,11 @@
-"""OpenTelemetry configuration for ADIT and RADIS.
+"""OpenTelemetry configuration for ADIT, RADIS, and other openradx services.
 
 This module sets up OpenTelemetry instrumentation for traces, metrics, and logs,
 exporting to an OTLP-compatible backend (e.g., otel-collector -> OpenObserve).
+
+Framework-specific auto-instrumentors (Django, Psycopg, requests, ...) are passed
+in by the caller via `setup_opentelemetry(instrumentors=[...])` so this helper is
+usable from non-Django consumers such as the radis-etl-ukb Dagster pipeline.
 
 Telemetry is disabled if OTEL_EXPORTER_OTLP_ENDPOINT is not set.
 """
@@ -9,6 +13,7 @@ Telemetry is disabled if OTEL_EXPORTER_OTLP_ENDPOINT is not set.
 import logging
 import os
 import socket
+from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +70,21 @@ def _build_resource_attributes(service_name: str) -> dict[str, str]:
     return attrs
 
 
-def setup_opentelemetry() -> None:
+def setup_opentelemetry(instrumentors: Iterable[type] | None = None) -> None:
     """Initialize OpenTelemetry instrumentation for traces, metrics, and logs.
 
-    This function should be called once at application startup, before Django loads.
-    It configures trace, metric, and log exporters to send data to the OTLP endpoint
-    (typically otel-collector).
+    Call once at application startup, before the host framework loads (e.g. before
+    Django settings are imported, or before Dagster's code location is loaded).
+    Configures trace, metric, and log exporters to send data to the OTLP endpoint
+    (typically the openradx-observability otel-collector).
+
+    Pass `instrumentors` as a sequence of OTel instrumentor classes (each providing
+    a no-arg constructor and an `.instrument()` method) to enable framework-specific
+    auto-instrumentation. For Django consumers (ADIT, RADIS) that is
+    `[DjangoInstrumentor, PsycopgInstrumentor]`. For non-Django consumers (e.g. the
+    radis-etl-ukb Dagster pipeline) pass `None` and optionally add HTTP-client
+    instrumentors like `RequestsInstrumentor` so outbound calls propagate trace
+    context to downstream services.
 
     If OTEL_EXPORTER_OTLP_ENDPOINT is not set, telemetry is disabled.
     """
@@ -95,8 +109,6 @@ def setup_opentelemetry() -> None:
         from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
         from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-        from opentelemetry.instrumentation.django import DjangoInstrumentor
-        from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
         from opentelemetry.sdk._logs import LoggerProvider
         from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
         from opentelemetry.sdk.metrics import MeterProvider
@@ -137,17 +149,20 @@ def setup_opentelemetry() -> None:
         logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
         set_logger_provider(logger_provider)
 
-        # Mark telemetry as active BEFORE instrumenting Django, because
-        # DjangoInstrumentor().instrument() triggers Django settings to load,
-        # which checks is_telemetry_active() to decide whether to add the
-        # OTel logging handler.
+        # Mark telemetry as active BEFORE running caller-provided instrumentors,
+        # because some of them (notably DjangoInstrumentor) trigger framework
+        # settings to load, which check is_telemetry_active() to decide whether
+        # to add the OTel logging handler.
         _telemetry_active = True
 
-        # Instrument Django
-        DjangoInstrumentor().instrument()
-
-        # Instrument psycopg (PostgreSQL)
-        PsycopgInstrumentor().instrument()
+        # Run caller-provided instrumentors. Each class is expected to expose a
+        # no-arg constructor and an `.instrument()` method (the OTel
+        # BaseInstrumentor contract). Imports of the instrumentor packages
+        # therefore live with the caller, not here, so the package needs to
+        # depend on `opentelemetry-instrumentation-django` etc. only when the
+        # consumer is actually a Django app.
+        for instrumentor_cls in instrumentors or ():
+            instrumentor_cls().instrument()
 
         logger.info("OpenTelemetry initialized for service: %s", service_name)
     except Exception:
