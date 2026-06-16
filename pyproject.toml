@@ -125,7 +125,7 @@ show_missing = true
 target-version = "py312"
 exclude = ["migrations"]
 line-length = 100
-lint.select = ["E", "F", "I", "DJ", "UP"]
+lint.select = ["E", "F", "I", "DJ"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["adit_radis_shared", "example_project"]
