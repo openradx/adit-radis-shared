@@ -14,8 +14,8 @@ def procrastinate_on_delete_sql(app_name: str, model_name: str, reverse=False):
         ALTER TABLE ${app_name}_${model_name}
         DROP CONSTRAINT ${app_name}_${model_name}_queued_job_id_key,
         ADD CONSTRAINT ${app_name}_${model_name}_queued_job_id_key
-        FOREIGN KEY (queued_job_id) 
-        REFERENCES procrastinate_jobs(id) 
+        FOREIGN KEY (queued_job_id)
+        REFERENCES procrastinate_jobs(id)
         """
 
     if not reverse:
