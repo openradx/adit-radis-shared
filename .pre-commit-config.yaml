@@ -2,6 +2,9 @@ ci:
   autoupdate_schedule: quarterly
   skip: [pyright, djlint-format, djlint-lint]  # language: system hooks can't run on pre-commit.ci
 
+# Vendored/generated third-party assets (synced via copy-statics) must not be reformatted.
+exclude: '^adit_radis_shared/common/static/vendor/'
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -45,12 +48,6 @@ repos:
       - id: ruff
         args: [--fix, --unsafe-fixes, --show-fixes]
       - id: ruff-format
-
-  - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.30.0
-    hooks:
-      - id: django-upgrade
-        args: [--target-version, "5.1"]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.11.12
