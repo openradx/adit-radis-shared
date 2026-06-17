@@ -201,9 +201,7 @@ def test_instrumentor_exception_does_not_break_app(
     with caplog.at_level("WARNING", logger="adit_radis_shared.telemetry"):
         telemetry.setup_opentelemetry(instrumentors=[_Boom])
 
-    assert any(
-        "Failed to initialize OpenTelemetry" in record.message for record in caplog.records
-    )
+    assert any("Failed to initialize OpenTelemetry" in record.message for record in caplog.records)
 
 
 def test_idempotent_second_call_is_noop(_otel_endpoint: str) -> None:

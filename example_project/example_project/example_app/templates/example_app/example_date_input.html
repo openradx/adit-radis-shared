@@ -11,28 +11,40 @@
         Submit a date using the native browser picker. The server parses it and shows the result via the messages
         framework—nothing is written to the database.
         Current server time ({{ django_time_zone }}): {{ current_time }}
-        {% if django_use_tz %}
-            · UTC: {{ current_time_utc|timezone:"UTC" }}
-        {% endif %}
+        {% if django_use_tz %}· UTC: {{ current_time_utc|timezone:"UTC" }}{% endif %}
     </p>
     <div class="card mb-3">
         <div class="card-body">
             <h5 class="card-title">Time zone context</h5>
             <dl class="row mb-0">
                 <dt class="col-sm-4">Django TIME_ZONE</dt>
-                <dd class="col-sm-8"><code>{{ django_time_zone }}</code></dd>
+                <dd class="col-sm-8">
+                    <code>{{ django_time_zone }}</code>
+                </dd>
                 <dt class="col-sm-4">USE_TZ</dt>
-                <dd class="col-sm-8"><code>{{ django_use_tz }}</code></dd>
+                <dd class="col-sm-8">
+                    <code>{{ django_use_tz }}</code>
+                </dd>
                 <dt class="col-sm-4">Request language code</dt>
-                <dd class="col-sm-8"><code>{{ request.LANGUAGE_CODE }}</code></dd>
+                <dd class="col-sm-8">
+                    <code>{{ request.LANGUAGE_CODE }}</code>
+                </dd>
                 <dt class="col-sm-4">Server local time</dt>
-                <dd class="col-sm-8"><code>{{ current_time }}</code></dd>
+                <dd class="col-sm-8">
+                    <code>{{ current_time }}</code>
+                </dd>
                 <dt class="col-sm-4">Server UTC time</dt>
-                <dd class="col-sm-8"><code>{{ current_time_utc|timezone:"UTC" }}</code></dd>
+                <dd class="col-sm-8">
+                    <code>{{ current_time_utc|timezone:"UTC" }}</code>
+                </dd>
                 <dt class="col-sm-4">Browser local time</dt>
-                <dd class="col-sm-8"><code id="browser-time-display">Detecting…</code></dd>
+                <dd class="col-sm-8">
+                    <code id="browser-time-display">Detecting…</code>
+                </dd>
                 <dt class="col-sm-4">Browser offset (minutes)</dt>
-                <dd class="col-sm-8"><code id="browser-offset-display">Detecting…</code></dd>
+                <dd class="col-sm-8">
+                    <code id="browser-offset-display">Detecting…</code>
+                </dd>
             </dl>
         </div>
     </div>
@@ -42,33 +54,23 @@
             <label class="form-label" for="{{ form.demo_date.id_for_label }}">{{ form.demo_date.label }}</label>
             {{ form.demo_date }}
             {% if form.demo_date.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.demo_date.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.demo_date.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mb-3">
             <label class="form-label" for="{{ form.demo_datetime.id_for_label }}">{{ form.demo_datetime.label }}</label>
             {{ form.demo_datetime }}
-            {% if form.demo_datetime.help_text %}
-                <div class="form-text">{{ form.demo_datetime.help_text }}</div>
-            {% endif %}
+            {% if form.demo_datetime.help_text %}<div class="form-text">{{ form.demo_datetime.help_text }}</div>{% endif %}
             {% if form.demo_datetime.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.demo_datetime.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.demo_datetime.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mb-3">
             <label class="form-label" for="{{ form.freeform_date.id_for_label }}">{{ form.freeform_date.label }}</label>
             {{ form.freeform_date }}
-            {% if form.freeform_date.help_text %}
-                <div class="form-text">{{ form.freeform_date.help_text }}</div>
-            {% endif %}
+            {% if form.freeform_date.help_text %}<div class="form-text">{{ form.freeform_date.help_text }}</div>{% endif %}
             {% if form.freeform_date.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.freeform_date.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.freeform_date.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mt-2">
@@ -100,9 +102,7 @@
         </div>
         {% if formatted_date_examples %}
             <div class="card mt-3">
-                <div class="card-header">
-                    Format comparison
-                </div>
+                <div class="card-header">Format comparison</div>
                 <ul class="list-group list-group-flush">
                     {% for example in formatted_date_examples %}
                         <li class="list-group-item d-flex justify-content-between align-items-start">
@@ -121,9 +121,7 @@
         </div>
         {% if formatted_datetime_examples %}
             <div class="card mt-3">
-                <div class="card-header">
-                    Datetime format comparison
-                </div>
+                <div class="card-header">Datetime format comparison</div>
                 <ul class="list-group list-group-flush">
                     {% for example in formatted_datetime_examples %}
                         <li class="list-group-item d-flex justify-content-between align-items-start">
@@ -142,9 +140,7 @@
         </div>
         {% if formatted_freeform_examples %}
             <div class="card mt-3">
-                <div class="card-header">
-                    Free-form date format comparison
-                </div>
+                <div class="card-header">Free-form date format comparison</div>
                 <ul class="list-group list-group-flush">
                     {% for example in formatted_freeform_examples %}
                         <li class="list-group-item d-flex justify-content-between align-items-start">

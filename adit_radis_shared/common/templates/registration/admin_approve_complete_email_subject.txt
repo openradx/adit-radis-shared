@@ -2,7 +2,7 @@ Account activation on {{ site.name }}
 {% comment %}
 **registration/admin_approve_complete_email_subject.txt**
 
-Used to generate the subject line of the admin approval complete email. Because 
+Used to generate the subject line of the admin approval complete email. Because
 the subject line of an email must be a single line of text, any output
 from this template will be forcibly condensed to a single line before
 being used. This template has the following context:

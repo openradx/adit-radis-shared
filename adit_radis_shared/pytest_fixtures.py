@@ -29,7 +29,7 @@ def migrator_ext(migrator: Migrator) -> Migrator:
     # See https://github.com/procrastinate-org/procrastinate/issues/1090
     with connection.cursor() as cursor:
         cursor.execute("""
-        DO $$ 
+        DO $$
         DECLARE
             prefix text := 'procrastinate';
         BEGIN
