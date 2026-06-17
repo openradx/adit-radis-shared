@@ -1,4 +1,4 @@
-from datetime import timezone as dt_timezone
+from datetime import UTC
 from typing import cast
 
 from asgiref.sync import sync_to_async
@@ -192,7 +192,7 @@ def example_date_input(request: HttpRequest) -> HttpResponse:
     else:
         form = DateDemoForm()
 
-    current_time_utc = timezone.now().astimezone(dt_timezone.utc)
+    current_time_utc = timezone.now().astimezone(UTC)
     current_time_local = timezone.localtime()  # respects settings.TIME_ZONE
 
     return render(

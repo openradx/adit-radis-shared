@@ -1,7 +1,7 @@
 import asyncio
 import time
+from collections.abc import Callable
 from functools import partial
-from typing import Callable
 
 from channels.routing import get_default_application
 from daphne.testing import DaphneProcess

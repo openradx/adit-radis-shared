@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 
 def iter_over_async(ait: AsyncIterator, loop: asyncio.AbstractEventLoop):

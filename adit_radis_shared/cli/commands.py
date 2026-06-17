@@ -312,10 +312,8 @@ def db_backup():
         sys.exit("Web container is not running.")
 
     helper.execute_cmd(
-        (
-            f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-            f"{web_container_id} ./manage.py dbbackup --clean -v 2"
-        )
+        f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+        f"{web_container_id} ./manage.py dbbackup --clean -v 2"
     )
 
 
@@ -334,10 +332,8 @@ def db_restore():
         sys.exit("Web container is not running. Run 'uv run ./manage.py compose-up' first.")
 
     helper.execute_cmd(
-        (
-            f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
-            f"{web_container_id} ./manage.py dbrestore"
-        )
+        f"docker exec --env DJANGO_SETTINGS_MODULE={settings} "
+        f"{web_container_id} ./manage.py dbrestore"
     )
 
 

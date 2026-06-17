@@ -25,5 +25,5 @@ class ActiveGroupModelBackend(ModelBackend):
                     return set()
                 perms = Permission.objects.filter(group=user_obj.active_group)
             perms = perms.values_list("content_type__app_label", "codename").order_by()
-            setattr(self, perm_cache_name, {"%s.%s" % (ct, name) for ct, name in perms})
+            setattr(self, perm_cache_name, {f"{ct}.{name}" for ct, name in perms})
         return getattr(self, perm_cache_name)
