@@ -1,7 +1,3 @@
-ci:
-  autoupdate_schedule: quarterly
-  skip: [pyright, djlint-format, djlint-lint]  # language: system hooks can't run on pre-commit.ci
-
 # Vendored/generated third-party assets (synced via copy-statics) must not be reformatted.
 exclude: '^adit_radis_shared/common/static/vendor/'
 
@@ -24,8 +20,21 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
 
+  # Local `uv run` hooks so tool versions come from pyproject.toml/uv.lock (single source of truth).
   - repo: local
     hooks:
+      # --force-exclude so ruff honors `exclude` (e.g. migrations); pre-commit passes
+      # explicit filenames, which otherwise bypass it. The upstream ruff hook adds this too.
+      - id: ruff
+        name: ruff check
+        entry: uv run ruff check --force-exclude --fix --show-fixes
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types: [python]
       - id: djlint-format
         name: djlint format
         entry: uv run djlint --reformat
@@ -42,15 +51,9 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.12
-    hooks:
-      - id: ruff
-        args: [--fix, --unsafe-fixes, --show-fixes]
-      - id: ruff-format
-
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.12
-    hooks:
       - id: uv-lock
+        name: uv lock check
+        entry: uv lock --check
+        language: system
+        files: ^(pyproject\.toml|uv\.lock)$
+        pass_filenames: false
