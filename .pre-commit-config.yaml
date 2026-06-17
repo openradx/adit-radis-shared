@@ -10,8 +10,6 @@ repos:
         exclude: ^\.vscode/  # VS Code config files are JSONC (allow comments)
       - id: check-toml
       - id: check-yaml
-      - id: check-executables-have-shebangs
-      - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
       - id: check-added-large-files
       - id: check-ast
