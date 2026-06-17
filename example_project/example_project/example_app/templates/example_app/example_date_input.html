@@ -54,9 +54,7 @@
             <label class="form-label" for="{{ form.demo_date.id_for_label }}">{{ form.demo_date.label }}</label>
             {{ form.demo_date }}
             {% if form.demo_date.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.demo_date.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.demo_date.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mb-3">
@@ -64,9 +62,7 @@
             {{ form.demo_datetime }}
             {% if form.demo_datetime.help_text %}<div class="form-text">{{ form.demo_datetime.help_text }}</div>{% endif %}
             {% if form.demo_datetime.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.demo_datetime.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.demo_datetime.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mb-3">
@@ -74,9 +70,7 @@
             {{ form.freeform_date }}
             {% if form.freeform_date.help_text %}<div class="form-text">{{ form.freeform_date.help_text }}</div>{% endif %}
             {% if form.freeform_date.errors %}
-                <div class="invalid-feedback d-block">
-                    {% for error in form.freeform_date.errors %}{{ error }}{% endfor %}
-                </div>
+                <div class="invalid-feedback d-block">{% for error in form.freeform_date.errors %}{{ error }}{% endfor %}</div>
             {% endif %}
         </div>
         <div class="mt-2">
