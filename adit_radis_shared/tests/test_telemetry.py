@@ -1,6 +1,8 @@
 """Unit tests for the telemetry module: the resource-attribute helper and the
 pluggable-instrumentor contract used by setup_opentelemetry()."""
 
+from __future__ import annotations
+
 import importlib
 from typing import Any
 

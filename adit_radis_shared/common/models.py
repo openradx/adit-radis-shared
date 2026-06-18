@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.db import models
 
 
@@ -12,7 +14,7 @@ class ProjectSettings(models.Model):
         return f"{self.__class__.__name__} [{self.pk}]"
 
     @classmethod
-    def get(cls) -> "ProjectSettings":
+    def get(cls) -> ProjectSettings:
         project_settings = cls.objects.first()
         # We made sure during startup that there is always a ProjectSettings
         # (see common/apps.py)
@@ -27,7 +29,7 @@ class AppSettings(models.Model):
         abstract = True
 
     @classmethod
-    def get(cls) -> "AppSettings":
+    def get(cls) -> AppSettings:
         app_settings = cls.objects.first()
         # We made sure during startup that there is always a AppSettings
         # (see apps.py of the specific app)

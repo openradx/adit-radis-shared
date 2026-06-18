@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Protocol, cast
 
 from crispy_forms.helper import FormHelper

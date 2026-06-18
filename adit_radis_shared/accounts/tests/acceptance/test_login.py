@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from playwright.sync_api import Page, expect
 from pytest_django.live_server_helper import LiveServer

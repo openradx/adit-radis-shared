@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 # Workaround to make playwright work with Django

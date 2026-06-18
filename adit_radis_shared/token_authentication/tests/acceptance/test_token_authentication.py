@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 import requests
 from playwright.sync_api import Page, expect

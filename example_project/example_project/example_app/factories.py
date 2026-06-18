@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import factory
 
 from adit_radis_shared.common.factories import BaseDjangoModelFactory

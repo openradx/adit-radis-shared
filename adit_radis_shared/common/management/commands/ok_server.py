@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from argparse import ArgumentParser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any

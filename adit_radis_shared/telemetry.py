@@ -10,6 +10,8 @@ usable from non-Django consumers such as the radis-etl-ukb Dagster pipeline.
 Telemetry is disabled if OTEL_EXPORTER_OTLP_ENDPOINT is not set.
 """
 
+from __future__ import annotations
+
 import logging
 import os
 import socket

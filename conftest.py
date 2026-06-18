@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import nest_asyncio
 
 pytest_plugins = ["adit_radis_shared.pytest_fixtures"]

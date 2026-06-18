@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.conf import settings
 
 from adit_radis_shared.common.management.base.procrastinate_worker import ProcrastinateServerCommand

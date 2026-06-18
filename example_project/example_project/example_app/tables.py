@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django_tables2 import tables
 
 from .models import ExampleJob

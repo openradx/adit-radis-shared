@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.views import View

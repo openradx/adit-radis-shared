@@ -129,6 +129,7 @@ lint.select = ["E", "F", "I", "DJ", "UP"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["adit_radis_shared", "example_project"]
+required-imports = ["from __future__ import annotations"]
 
 [tool.djlint]
 profile = "django"

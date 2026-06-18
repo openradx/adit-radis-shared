@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import procrastinate
 from procrastinate.contrib.django import app
 

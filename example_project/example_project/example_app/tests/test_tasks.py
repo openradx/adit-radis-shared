@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time_machine
 from procrastinate.app import App
 from pytest import CaptureFixture

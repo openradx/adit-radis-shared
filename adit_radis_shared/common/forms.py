@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from crispy_forms.bootstrap import FieldWithButtons
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Field, Hidden, Layout, Submit

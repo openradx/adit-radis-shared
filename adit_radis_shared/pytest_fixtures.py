@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 from django.db import connection
 from django_test_migrations.migrator import Migrator

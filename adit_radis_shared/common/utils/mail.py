@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.conf import settings
 from django.core.mail import mail_admins, send_mail
 from django.utils.html import strip_tags

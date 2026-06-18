@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.apps import AppConfig
 
 from adit_radis_shared.common.site import MainMenuItem, register_main_menu_item
