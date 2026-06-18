@@ -7,7 +7,7 @@ import string
 import subprocess
 import sys
 import tomllib
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from os import urandom
 from pathlib import Path
 from typing import Any
@@ -279,7 +279,7 @@ class CommandHelper:
         san = x509.SubjectAlternativeName(alt_names)
 
         # path_len=0 means this cert can only sign itself, not other certs.
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         basic_constraints = x509.BasicConstraints(ca=True, path_length=0)
         cert = (
             x509.CertificateBuilder()
