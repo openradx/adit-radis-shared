@@ -122,7 +122,7 @@ def test_base_url_uses_request_scheme_when_available():
     secure_request.META["HTTP_X_FORWARDED_PROTO"] = "https"
     secure_request.META["SERVER_PORT"] = "443"
     # is_secure() reads from the request; force it deterministically.
-    secure_request.is_secure = lambda: True  # type: ignore[method-assign]
+    secure_request.is_secure = lambda: True
 
     result = base_url({"request": secure_request})
     assert result.startswith("https://")

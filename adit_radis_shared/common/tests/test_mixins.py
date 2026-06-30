@@ -43,7 +43,7 @@ class _FakeSettings:
 
 class _LockedView(LockedMixin, ListView):
     model = ExampleJob
-    settings_model = _FakeSettings  # type: ignore[assignment]
+    settings_model = _FakeSettings
     section_name = "Example"
     template_name = "example_app/example_list.html"
 
@@ -73,8 +73,10 @@ def test_locked_mixin_blocks_anonymous_get_with_locked_section():
         # section_locked.html extends "core/core_layout.html", a base template
         # only provided by the downstream apps (not example_project).
         assert response.status_code == 200
-        assert "common/section_locked.html" in response.template_name
-        assert response.context_data["section_name"] == "Example"
+        # The locked branch returns a TemplateResponse, but as_view() is typed
+        # as returning the base HttpResponseBase which lacks these attributes.
+        assert "common/section_locked.html" in response.template_name  # type: ignore[attr-defined]
+        assert response.context_data["section_name"] == "Example"  # type: ignore[attr-defined]
     finally:
         _FakeSettings.locked = False
 
@@ -144,7 +146,7 @@ class _PageSizeView(PageSizeSelectMixin, ListView):
     ordering = "id"  # avoids UnorderedObjectListWarning during pagination
 
 
-def _context_after_get(view_cls, query="") -> dict[str, Any]:
+def _context_after_get(view_cls, query="") -> tuple[Any, dict[str, Any]]:
     request = RequestFactory().get(f"/?{query}")
     request.user = AnonymousUser()
     view = view_cls()
@@ -198,7 +200,7 @@ class _RelatedPaginationView(RelatedPaginationMixin, DetailView):
         return ExampleJob.objects.all().order_by("id")
 
 
-def _make_paginated_view(query=""):
+def _make_paginated_view(query="") -> Any:
     request = RequestFactory().get(f"/?{query}")
     request.user = AnonymousUser()
     view = _RelatedPaginationView()
@@ -251,9 +253,11 @@ def test_related_pagination_default_get_related_queryset_raises():
     request = RequestFactory().get("/")
     request.user = AnonymousUser()
     view = RelatedPaginationMixin()
-    view.request = request  # type: ignore[attr-defined]
+    view.request = request
     with pytest.raises(NotImplementedError):
-        view.get_related_queryset()
+        # get_related_queryset() is typed with a protocol self the bare mixin
+        # (without the concrete view) does not structurally satisfy.
+        view.get_related_queryset()  # type: ignore[arg-type]
 
 
 # --- RelatedFilterMixin -----------------------------------------------------
@@ -272,7 +276,7 @@ class _RelatedFilterView(
         return ExampleJob.objects.all().order_by("id")
 
 
-def _make_filter_view(query=""):
+def _make_filter_view(query="") -> Any:
     request = RequestFactory().get(f"/?{query}")
     request.user = AnonymousUser()
     view = _RelatedFilterView()
@@ -309,7 +313,7 @@ def test_related_filter_default_get_filter_queryset_raises():
     request = RequestFactory().get("/")
     request.user = AnonymousUser()
     view = RelatedFilterMixin()
-    view.request = request  # type: ignore[attr-defined]
+    view.request = request
     with pytest.raises(NotImplementedError):
         view.get_filter_queryset()
 

@@ -258,6 +258,7 @@ class TestAbsentStateMachineFeatures:
     def test_job_aggregates_state_from_tasks(self):
         from adit_radis_shared.common import models as common_models  # noqa: PLC0415
 
-        assert hasattr(common_models, "Job") and hasattr(
-            common_models.Job, "update_job_state"
-        )
+        # ``Job`` does not exist on this module (only ProjectSettings/AppSettings),
+        # so resolve it dynamically rather than via a static attribute access.
+        job_model = getattr(common_models, "Job", None)
+        assert job_model is not None and hasattr(job_model, "update_job_state")
