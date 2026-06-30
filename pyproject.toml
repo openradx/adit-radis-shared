@@ -92,6 +92,9 @@ constraint-dependencies = ["autobahn<25.11.1"]
 
 [tool.pyright]
 ignore = ["**/migrations", "**/*.ipynb"]
+# Mirror the pytest ``pythonpath`` so the ``example_project`` package resolves
+# when imported from tests living outside it (e.g. adit_radis_shared/**/tests).
+extraPaths = ["example_project"]
 typeCheckingMode = "basic"
 reportUnnecessaryTypeIgnoreComment = true
 
