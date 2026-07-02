@@ -22,7 +22,7 @@ from adit_radis_shared.common.utils.mail import send_mail_to_admins, send_mail_t
 
 
 def test_send_mail_to_admins_requires_some_content():
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         send_mail_to_admins("Subject")
 
 
@@ -56,7 +56,7 @@ def test_send_mail_to_user_prefixes_subject_and_targets_user(settings):
 @pytest.mark.django_db
 def test_send_mail_to_user_requires_some_content():
     user = UserFactory.create()
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         send_mail_to_user(user, "Hi")
 
 

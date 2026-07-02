@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import SuspiciousOperation
+from django.template.response import TemplateResponse
 from django.test import RequestFactory
 from django.views.generic import DetailView, ListView
 from django_filters.views import FilterView
@@ -73,10 +74,12 @@ def test_locked_mixin_blocks_anonymous_get_with_locked_section():
         # section_locked.html extends "core/core_layout.html", a base template
         # only provided by the downstream apps (not example_project).
         assert response.status_code == 200
-        # The locked branch returns a TemplateResponse, but as_view() is typed
-        # as returning the base HttpResponseBase which lacks these attributes.
-        assert "common/section_locked.html" in response.template_name  # type: ignore[attr-defined]
-        assert response.context_data["section_name"] == "Example"  # type: ignore[attr-defined]
+        # The locked branch returns a TemplateResponse; asserting the concrete
+        # type narrows it so template_name/context_data resolve without a cast.
+        assert isinstance(response, TemplateResponse)
+        assert response.template_name == ["common/section_locked.html"]
+        assert response.context_data is not None
+        assert response.context_data["section_name"] == "Example"
     finally:
         _FakeSettings.locked = False
 

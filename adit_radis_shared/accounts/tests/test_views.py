@@ -3,6 +3,7 @@
 import json
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.test import Client
 from django.urls import reverse
 
@@ -74,7 +75,7 @@ def test_active_group_invalid_id_raises_validation_error(client: Client):
     client.force_login(user)
 
     # A non-integer group id triggers a ValidationError inside the view.
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         client.post(
             reverse("active_group"),
             {"group": "not-an-int"},
