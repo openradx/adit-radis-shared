@@ -9,7 +9,7 @@ def send_mail_to_admins(
     subject: str, text_content: str | None = None, html_content: str | None = None
 ):
     if text_content is None and html_content is None:
-        raise Exception("Email must at have html_content or text_content.")
+        raise ValueError("Email must at least have html_content or text_content.")
 
     if text_content is None:
         assert html_content is not None
@@ -23,7 +23,7 @@ def send_mail_to_user(
     user: User, subject: str, text_content: str | None = None, html_content: str | None = None
 ):
     if text_content is None and html_content is None:
-        raise Exception("Email must at least have html_content or text_content.")
+        raise ValueError("Email must at least have html_content or text_content.")
 
     subject = settings.EMAIL_SUBJECT_PREFIX + subject
     if text_content is None:
