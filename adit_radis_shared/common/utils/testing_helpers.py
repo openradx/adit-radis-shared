@@ -1,8 +1,11 @@
 import asyncio
+import threading
 import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
+from asgiref.sync import SyncToAsync
 from channels.routing import get_default_application
 from daphne.testing import DaphneProcess
 from django.contrib.auth.models import Group, Permission
@@ -18,9 +21,32 @@ from adit_radis_shared.accounts.factories import GroupFactory, UserFactory
 from adit_radis_shared.accounts.models import User
 
 
+class ForkSafeDaphneProcess(DaphneProcess):
+    """DaphneProcess that resets state inherited through fork.
+
+    The test process may fork while:
+
+    - An event loop is marked as "running" in the forking thread (Playwright's
+      sync API keeps one suspended in a greenlet for the whole session). The
+      child inherits that marker and Daphne's reactor would refuse to start its
+      own loop with "Cannot run the event loop while another loop is running".
+    - asgiref's process-wide single-thread executor has a started worker
+      thread (any earlier async test using ``sync_to_async`` starts it).
+      Worker threads don't survive the fork, but the executor's bookkeeping
+      does, so anything the child submits to it (e.g. ``database_sync_to_async``
+      in a consumer) would queue up for a thread that doesn't exist and block
+      forever.
+    """
+
+    def run(self) -> None:
+        asyncio.events._set_running_loop(None)
+        SyncToAsync.single_thread_executor = ThreadPoolExecutor(max_workers=1)
+        super().run()
+
+
 class ChannelsLiveServer:
     host = "localhost"
-    ProtocolServerProcess = DaphneProcess
+    ProtocolServerProcess = ForkSafeDaphneProcess
     static_wrapper = ASGIStaticFilesHandler
     serve_static = True
 
@@ -86,34 +112,34 @@ def add_user_to_group(user: User, group: Group, force_activate_group: bool = Fal
 
 
 def run_worker_once() -> None:
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
+    """Process all queued Procrastinate jobs, then return.
 
-    def _run_worker_once_sync() -> None:
-        with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
-            app.run_worker(
-                wait=False,
-                install_signal_handlers=False,
-                listen_notify=False,
-                delete_jobs="always",
-            )
+    The worker always runs in a dedicated thread so it never depends on (or
+    tries to re-enter) an event loop of the calling thread. Playwright's sync
+    API keeps an event loop marked as "running" in the test thread for the
+    whole session, so neither asyncio.run() nor loop.run_until_complete()
+    could be used here directly.
+    """
+    errors: list[BaseException] = []
 
-    async def _run_worker_once_async() -> None:
-        with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
-            async with app.open_async():
-                await app.run_worker_async(
+    def _run_worker() -> None:
+        try:
+            with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
+                app.run_worker(
                     wait=False,
                     install_signal_handlers=False,
                     listen_notify=False,
                     delete_jobs="always",
                 )
+        except BaseException as err:  # re-raised in the calling thread below
+            errors.append(err)
 
-    if loop is None:
-        _run_worker_once_sync()
-    else:
-        loop.run_until_complete(_run_worker_once_async())
+    worker_thread = threading.Thread(target=_run_worker, name="procrastinate-test-worker")
+    worker_thread.start()
+    worker_thread.join()
+
+    if errors:
+        raise errors[0]
 
 
 def login_user(page: Page, server_url: str, username: str, password: str):

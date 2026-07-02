@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = "Send a test mail using the provided Email settings."
 
     def add_arguments(self, parser):
-        parser.add_argument("to_address", nargs="?", type=str, default=settings.ADMINS[0][1])
+        parser.add_argument("to_address", nargs="?", type=str, default=settings.ADMINS[0])
 
     def handle(self, *args, **options):
         from_address = settings.SERVER_EMAIL
