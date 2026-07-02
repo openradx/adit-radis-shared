@@ -185,8 +185,11 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
 
 # The Django server admins that will receive critical error notifications.
-# Also used by django-registration-redux to send account approval emails to.
-ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
+ADMINS = [env.str("DJANGO_ADMIN_EMAIL")]
+
+# Used by django-registration-redux to send account approval emails to.
+# It expects (name, address) pairs.
+REGISTRATION_ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {
