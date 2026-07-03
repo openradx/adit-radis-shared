@@ -68,6 +68,24 @@ class CommandHelper:
 
         return dotenv_values(env_file)
 
+    def find_quoted_env_file_keys(self) -> list[str]:
+        """Find keys in the .env file whose values are wrapped in quotes.
+
+        The .env file is passed to the containers with the env_file option in the
+        compose files. 'docker stack deploy' passes those values on verbatim
+        (quotes included), so quoted values are almost certainly a mistake.
+        """
+        env_file = self.root_path / ".env"
+        if not env_file.exists():
+            sys.exit("Missing .env file!")
+
+        quoted_keys: list[str] = []
+        for line in env_file.read_text().splitlines():
+            match = re.match(r"""^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(['"]).*\2\s*$""", line)
+            if match:
+                quoted_keys.append(match.group(1))
+        return quoted_keys
+
     def capture_cmd(self, cmd: str) -> str:
         """Capture the output of a shell command.
 
