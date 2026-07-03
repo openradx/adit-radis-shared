@@ -16,7 +16,9 @@ import pytest
 from adit_radis_shared.common.tasks import backup_db
 
 
-def test_backup_db_invokes_dbbackup_with_expected_arguments():
+def test_backup_db_invokes_dbbackup_with_expected_arguments(settings):
+    settings.BACKUP_ENABLED = True
+
     with patch("adit_radis_shared.common.tasks.call_command") as call_command:
         backup_db(timestamp=0)
 
@@ -54,9 +56,11 @@ def test_backup_db_noops_when_disabled(settings):
     call_command.assert_not_called()
 
 
-def test_backup_db_propagates_command_errors():
+def test_backup_db_propagates_command_errors(settings):
     # If the backup command fails, the task must not swallow the error
     # (so the failure surfaces to the worker / monitoring).
+    settings.BACKUP_ENABLED = True
+
     with patch(
         "adit_radis_shared.common.tasks.call_command",
         side_effect=RuntimeError("backup failed"),
