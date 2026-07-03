@@ -17,12 +17,17 @@ def test_find_quoted_env_file_keys_reports_quoted_values(tmp_path: Path):
             "FOO=unquoted value\n"
             'DOUBLE_QUOTED="some value"\n'
             "SINGLE_QUOTED='some value'\n"
+            'TRAILING_COMMENT="some value" # a comment\n'
             "EMPTY=\n"
             "# COMMENTED=\"some value\"\n"
         ),
     )
 
-    assert helper.find_quoted_env_file_keys() == ["DOUBLE_QUOTED", "SINGLE_QUOTED"]
+    assert helper.find_quoted_env_file_keys() == [
+        "DOUBLE_QUOTED",
+        "SINGLE_QUOTED",
+        "TRAILING_COMMENT",
+    ]
 
 
 def test_find_quoted_env_file_keys_passes_unquoted_values(tmp_path: Path):
