@@ -61,12 +61,15 @@ class CommandHelper:
 
         return project_id
 
-    def load_config_from_env_file(self) -> dict[str, str | None]:
+    def _get_env_file(self) -> Path:
         env_file = self.root_path / ".env"
         if not env_file.exists():
             sys.exit("Missing .env file!")
 
-        return dotenv_values(env_file)
+        return env_file
+
+    def load_config_from_env_file(self) -> dict[str, str | None]:
+        return dotenv_values(self._get_env_file())
 
     def find_quoted_env_file_keys(self) -> list[str]:
         """Find keys in the .env file whose values are wrapped in quotes.
@@ -75,13 +78,11 @@ class CommandHelper:
         compose files. 'docker stack deploy' passes those values on verbatim
         (quotes included), so quoted values are almost certainly a mistake.
         """
-        env_file = self.root_path / ".env"
-        if not env_file.exists():
-            sys.exit("Missing .env file!")
-
         quoted_keys: list[str] = []
-        for line in env_file.read_text().splitlines():
-            match = re.match(r"""^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(['"]).*\2\s*$""", line)
+        for line in self._get_env_file().read_text(encoding="utf-8").splitlines():
+            match = re.match(
+                r"""^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(['"]).*\2(?:\s*#.*)?\s*$""", line
+            )
             if match:
                 quoted_keys.append(match.group(1))
         return quoted_keys
