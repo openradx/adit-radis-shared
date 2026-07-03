@@ -194,8 +194,17 @@ def stack_deploy():
             "Check ENVIRONMENT setting in .env file."
         )
 
-    # Docker Swarm Mode does not support .env files so we load the .env file manually
-    # and pass the content as an environment variables.
+    quoted_keys = helper.find_quoted_env_file_keys()
+    if quoted_keys:
+        sys.exit(
+            "Found quoted values in the .env file for the following keys: "
+            f"{', '.join(quoted_keys)}. Docker Swarm passes env file values to the "
+            "containers verbatim (including the quotes). Please remove the quotes."
+        )
+
+    # Docker Swarm Mode does not interpolate variables from a .env file, so we load it
+    # manually and pass the content as environment variables to the deploy command
+    # (the containers themselves get the .env file via the env_file compose option).
     env = helper.load_config_from_env_file()
 
     env["PROJECT_VERSION"] = helper.get_local_project_version()
