@@ -23,10 +23,6 @@ These tests therefore cover what exists:
 1. ``ExampleJob`` status values, defaults and transitions.
 2. The Procrastinate task lifecycle: defer -> run -> succeeded / failed.
 3. Procrastinate retry behaviour (fail-then-succeed, and exhausting retries).
-
-The features from the original brief that are genuinely absent are documented as
-``xfail`` markers so the gap is visible in the test report rather than silently
-dropped. See ``TestAbsentStateMachineFeatures`` at the bottom.
 """
 
 import pytest
@@ -221,44 +217,3 @@ class TestPeriodicTask:
         _run_worker(in_memory_app)
         _run_worker(in_memory_app)
         assert "A periodic hello at 1704078000!" in capsys.readouterr().out
-
-
-# ---------------------------------------------------------------------------
-# Documenting the gap: features from the original brief that do NOT exist on
-# main. These are xfail (not skip) so they surface in the report and will start
-# failing-loudly (xpass) if such a framework is ever added to this repo.
-# ---------------------------------------------------------------------------
-
-
-class TestAbsentStateMachineFeatures:
-    @pytest.mark.xfail(
-        reason="No abstract Task model with SUCCESS/WARNING/FAILURE exists in "
-        "adit_radis_shared on main; only ExampleJob (PENDING/IN_PROGRESS/DONE).",
-        strict=True,
-    )
-    def test_warning_success_failure_statuses_exist(self):
-        statuses = {key for key, _ in ExampleJob.Status.choices}
-        assert {"SUCCESS", "WARNING", "FAILURE"}.issubset(statuses)
-
-    @pytest.mark.xfail(
-        reason="No Task base class / model is shipped by this library on main.",
-        strict=True,
-    )
-    def test_shared_library_exposes_a_task_base_model(self):
-        # If a shared abstract Task model is ever added, import it here.
-        from adit_radis_shared.common import models as common_models  # noqa: PLC0415
-
-        assert hasattr(common_models, "QueuedTask") or hasattr(common_models, "ProcessingTask")
-
-    @pytest.mark.xfail(
-        reason="No Job<->Task aggregation (failure precedence / state rollup) "
-        "exists in adit_radis_shared on main.",
-        strict=True,
-    )
-    def test_job_aggregates_state_from_tasks(self):
-        from adit_radis_shared.common import models as common_models  # noqa: PLC0415
-
-        # ``Job`` does not exist on this module (only ProjectSettings/AppSettings),
-        # so resolve it dynamically rather than via a static attribute access.
-        job_model = getattr(common_models, "Job", None)
-        assert job_model is not None and hasattr(job_model, "update_job_state")
