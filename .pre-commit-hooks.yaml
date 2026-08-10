@@ -1,0 +1,52 @@
+# Hook definitions consumed by ADIT and RADIS via:
+#
+#   - repo: https://github.com/openradx/adit-radis-shared
+#     rev: <tag>
+#
+# All hooks use `language: system` so the tool versions come from the *consuming*
+# project's pyproject.toml/uv.lock rather than from an environment pre-commit builds.
+# That means the consumer needs uv available on PATH, which it already does.
+#
+# This file mirrors the `repo: local` block in our own .pre-commit-config.yaml. We keep
+# both because a repo cannot reference its own hooks without an already-published rev,
+# which would mean tagging a release before a hook change could be tested here.
+
+- id: ruff
+  name: ruff check
+  # --force-exclude so ruff honors `exclude` (e.g. migrations); pre-commit passes
+  # explicit filenames, which otherwise bypass it. The upstream ruff hook adds this too.
+  entry: uv run ruff check --force-exclude --fix --show-fixes
+  language: system
+  types: [python]
+
+- id: ruff-format
+  name: ruff format
+  entry: uv run ruff format --force-exclude
+  language: system
+  types: [python]
+
+- id: djlint-format
+  name: djlint format
+  entry: uv run djlint --reformat
+  language: system
+  types_or: [html, jinja]
+
+- id: djlint-lint
+  name: djlint lint
+  entry: uv run djlint --lint
+  language: system
+  types_or: [html, jinja]
+
+- id: pyright
+  name: pyright
+  entry: uv run pyright
+  language: system
+  types: [python]
+  pass_filenames: false
+
+- id: uv-lock
+  name: uv lock check
+  entry: uv lock --check
+  language: system
+  files: ^(pyproject\.toml|uv\.lock)$
+  pass_filenames: false

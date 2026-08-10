@@ -19,6 +19,8 @@ repos:
       - id: mixed-line-ending
 
   # Local `uv run` hooks so tool versions come from pyproject.toml/uv.lock (single source of truth).
+  # Kept local rather than referencing our own published rev, so hook changes can be tested here
+  # before being tagged. Mirror any change into .pre-commit-hooks.yaml, which ADIT and RADIS consume.
   - repo: local
     hooks:
       # --force-exclude so ruff honors `exclude` (e.g. migrations); pre-commit passes

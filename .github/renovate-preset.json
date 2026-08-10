@@ -1,0 +1,56 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate configuration for the ADIT / RADIS / adit-radis-shared Django projects.",
+  "extends": [
+    "config:best-practices",
+    "security:minimumReleaseAgePypi",
+    "group:allNonMajor",
+    "schedule:weekly"
+  ],
+  "pre-commit": { "enabled": true },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 5am on Monday"]
+  },
+  "automerge": true,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Track the adit-radis-shared git tag pinned in pyproject.toml (pep621 cannot resolve direct git URLs).",
+      "managerFilePatterns": ["/(^|/)pyproject\\.toml$/"],
+      "matchStrings": [
+        "adit-radis-shared\\s*@\\s*git\\+https://github\\.com/openradx/adit-radis-shared\\.git@(?<currentValue>[^\"'\\s]+)"
+      ],
+      "depNameTemplate": "openradx/adit-radis-shared",
+      "datasourceTemplate": "github-tags"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Opt out of Docker digest pinning from config:best-practices; GitHub Action digests stay pinned.",
+      "matchDatasources": ["docker"],
+      "pinDigests": false
+    },
+    {
+      "matchManagers": ["docker-compose"],
+      "matchPackageNames": ["postgres"],
+      "allowedVersions": "<=17"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["python"],
+      "allowedVersions": "<=3.13"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchPackageNames": ["factory-boy"],
+      "allowedVersions": "<=3.3.2"
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchPackageNames": ["autobahn"],
+      "allowedVersions": "<25.11.1"
+    }
+  ]
+}
