@@ -189,7 +189,18 @@ def compose_down(
     helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
 
-def stack_deploy():
+def stack_deploy(
+    prune: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Remove services that are no longer defined in the compose files. "
+                "Only pass this when deploying the complete set of compose files, as "
+                "Swarm removes every service the deployment does not declare."
+            )
+        ),
+    ] = False,
+):
     """Deploy stack with Docker Swarm"""
 
     helper = CommandHelper()
@@ -218,6 +229,11 @@ def stack_deploy():
     env["STACK_NAME"] = helper.get_stack_name()
 
     cmd = "docker stack deploy --detach "
+    # Off by default: Swarm keeps a service that has left the compose files, which leaves
+    # a stale one running, but pruning removes every service the deployment does not
+    # declare, which a partial set of compose files would take down with it.
+    if prune:
+        cmd += " --prune"
     cmd += f" -c {helper.get_compose_base_file()}"
     cmd += f" -c {helper.get_compose_env_file()}"
 
