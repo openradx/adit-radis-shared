@@ -1,5 +1,4 @@
 import os
-import shlex
 import shutil
 import sys
 from pathlib import Path
@@ -9,18 +8,6 @@ import typer
 from dotenv import set_key
 
 from .helper import CommandHelper
-
-
-def _with_extra_args(cmd: str, extra_args: list[str]) -> str:
-    """Append caller-supplied arguments as one shell word each.
-
-    The command is run through a shell, so an argument holding a space would
-    otherwise arrive as two.
-    """
-    if not extra_args:
-        return cmd
-
-    return cmd + " " + " ".join(shlex.quote(arg) for arg in extra_args)
 
 
 def init_workspace(
@@ -102,7 +89,7 @@ def compose_build(
     helper.prepare_environment()
 
     cmd = f"{helper.build_compose_cmd(profile)} build"
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -126,7 +113,7 @@ def compose_pull(
 
     helper = CommandHelper()
     cmd = f"{helper.build_compose_cmd()} pull"
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -161,7 +148,7 @@ def compose_up(
         )
 
     cmd = f"{helper.build_compose_cmd(profile)} up"
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -195,7 +182,7 @@ def compose_down(
     helper = CommandHelper()
 
     cmd = f"{helper.build_compose_cmd(profile)} down"
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
@@ -242,7 +229,7 @@ def stack_deploy(
     env["STACK_NAME"] = helper.get_stack_name()
 
     cmd = "docker stack deploy --detach "
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
     cmd += f" -c {helper.get_compose_base_file()}"
     cmd += f" -c {helper.get_compose_env_file()}"
 
@@ -310,7 +297,7 @@ def test(
         f"{helper.build_compose_cmd()} exec "
         f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest"
     )
-    cmd = _with_extra_args(cmd, extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(cmd)
 
