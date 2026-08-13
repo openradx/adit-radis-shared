@@ -17,9 +17,18 @@ jobs:
   ci:
     runs-on: "ubuntu-latest"
     timeout-minutes: 25
+    # The job only reads the repository: it builds images, lints and tests. Narrowing the
+    # token here covers the callers too, since a called workflow cannot exceed what it asks
+    # for and the repository default is write.
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          # Otherwise the token is left in .git/config, readable by everything this job
+          # then runs on the checked-out code.
+          persist-credentials: false
       - name: Install uv
         uses: astral-sh/setup-uv@v9.0.0
         with:
