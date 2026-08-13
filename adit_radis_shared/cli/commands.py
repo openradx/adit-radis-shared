@@ -172,7 +172,12 @@ def compose_down(
         typer.Argument(help="Extra arguments passed to 'docker compose down' (after '--')"),
     ] = None,
 ):
-    """Stop stack with docker compose"""
+    """Stop stack with docker compose
+
+    Extra arguments are passed through to 'docker compose down', so for instance
+    '-- --remove-orphans' also removes containers that belong to the project but are
+    absent from the compose files, which Compose otherwise only warns about.
+    """
 
     profile = profile or []
     extra_args = extra_args or []
@@ -180,13 +185,6 @@ def compose_down(
     helper = CommandHelper()
 
     cmd = f"{helper.build_compose_cmd(profile)} down"
-
-    # Compose only warns about containers that belong to this project but are absent from
-    # the compose files, and leaves them running. Removing them keeps a stack whose
-    # services have changed from being stopped merely halfway.
-    if "--remove-orphans" not in extra_args:
-        cmd += " --remove-orphans"
-
     if extra_args:
         cmd += " " + " ".join(extra_args)
 
