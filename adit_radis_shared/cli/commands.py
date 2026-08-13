@@ -77,7 +77,7 @@ def compose_build(
     ] = None,
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'docker compose build' (after '--')"),
     ] = None,
 ):
     """Build the base images with docker compose"""
@@ -105,7 +105,7 @@ def compose_build(
 def compose_pull(
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'docker compose pull' (after '--')"),
     ] = None,
 ):
     """Pull images with docker compose"""
@@ -132,7 +132,7 @@ def compose_up(
     ] = None,
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'docker compose up' (after '--')"),
     ] = None,
 ):
     """Start stack with docker compose"""
@@ -169,7 +169,7 @@ def compose_down(
     ] = None,
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'docker compose down' (after '--')"),
     ] = None,
 ):
     """Stop stack with docker compose"""
@@ -196,7 +196,7 @@ def compose_down(
 def stack_deploy(
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'docker stack deploy' (after '--')"),
     ] = None,
 ):
     """Deploy stack with Docker Swarm
@@ -288,7 +288,7 @@ def format_code():
 def test(
     extra_args: Annotated[
         list[str] | None,
-        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+        typer.Argument(help="Extra arguments passed to 'pytest' (after '--')"),
     ] = None,
 ):
     """Run the test suite with pytest"""
