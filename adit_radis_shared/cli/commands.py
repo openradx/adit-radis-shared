@@ -76,7 +76,8 @@ def compose_build(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'docker compose build' (after '--')"),
     ] = None,
 ):
     """Build the base images with docker compose"""
@@ -88,8 +89,7 @@ def compose_build(
     helper.prepare_environment()
 
     cmd = f"{helper.build_compose_cmd(profile)} build"
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -103,7 +103,8 @@ def compose_build(
 
 def compose_pull(
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'docker compose pull' (after '--')"),
     ] = None,
 ):
     """Pull images with docker compose"""
@@ -112,8 +113,7 @@ def compose_pull(
 
     helper = CommandHelper()
     cmd = f"{helper.build_compose_cmd()} pull"
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -129,7 +129,8 @@ def compose_up(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'docker compose up' (after '--')"),
     ] = None,
 ):
     """Start stack with docker compose"""
@@ -147,8 +148,7 @@ def compose_up(
         )
 
     cmd = f"{helper.build_compose_cmd(profile)} up"
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(
         cmd,
@@ -165,10 +165,16 @@ def compose_down(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'docker compose down' (after '--')"),
     ] = None,
 ):
-    """Stop stack with docker compose"""
+    """Stop stack with docker compose
+
+    Extra arguments are passed through to 'docker compose down', so for instance
+    '-- --remove-orphans' also removes containers that belong to the project but are
+    absent from the compose files, which Compose otherwise only warns about.
+    """
 
     profile = profile or []
     extra_args = extra_args or []
@@ -176,21 +182,26 @@ def compose_down(
     helper = CommandHelper()
 
     cmd = f"{helper.build_compose_cmd(profile)} down"
-
-    # Compose only warns about containers that belong to this project but are absent from
-    # the compose files, and leaves them running. Removing them keeps a stack whose
-    # services have changed from being stopped merely halfway.
-    if "--remove-orphans" not in extra_args:
-        cmd += " --remove-orphans"
-
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(cmd, env={"PROJECT_VERSION": helper.get_local_project_version()})
 
 
-def stack_deploy():
-    """Deploy stack with Docker Swarm"""
+def stack_deploy(
+    extra_args: Annotated[
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'docker stack deploy' (after '--')"),
+    ] = None,
+):
+    """Deploy stack with Docker Swarm
+
+    Extra arguments are passed through to 'docker stack deploy', so for instance
+    '-- --prune' removes services that are no longer defined in the compose files.
+    Swarm prunes every service the deployment does not declare, so pass that only
+    when deploying the complete set of compose files.
+    """
+
+    extra_args = extra_args or []
 
     helper = CommandHelper()
     helper.prepare_environment()
@@ -218,6 +229,7 @@ def stack_deploy():
     env["STACK_NAME"] = helper.get_stack_name()
 
     cmd = "docker stack deploy --detach "
+    cmd = helper.append_extra_args(cmd, extra_args)
     cmd += f" -c {helper.get_compose_base_file()}"
     cmd += f" -c {helper.get_compose_env_file()}"
 
@@ -268,7 +280,8 @@ def format_code():
 
 def test(
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to 'pytest' (after '--')"),
     ] = None,
 ):
     """Run the test suite with pytest"""
@@ -284,8 +297,7 @@ def test(
         f"{helper.build_compose_cmd()} exec "
         f"--env DJANGO_SETTINGS_MODULE={helper.project_id}.settings.test web pytest"
     )
-    if extra_args:
-        cmd += " " + " ".join(extra_args)
+    cmd = helper.append_extra_args(cmd, extra_args)
 
     helper.execute_cmd(cmd)
 

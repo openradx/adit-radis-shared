@@ -3,6 +3,7 @@ import ipaddress
 import os
 import re
 import secrets
+import shlex
 import string
 import subprocess
 import sys
@@ -188,6 +189,17 @@ class CommandHelper:
                 cmd += f" --profile {profile}"
 
         return cmd
+
+    def append_extra_args(self, cmd: str, extra_args: list[str]) -> str:
+        """Append caller-supplied arguments as one shell word each.
+
+        execute_cmd runs the command through a shell, so an argument holding a space
+        would otherwise arrive as two.
+        """
+        if not extra_args:
+            return cmd
+
+        return cmd + " " + " ".join(shlex.quote(arg) for arg in extra_args)
 
     def check_compose_up(self):
         result = self.capture_cmd("docker compose ls")
