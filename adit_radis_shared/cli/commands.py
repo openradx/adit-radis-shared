@@ -76,7 +76,8 @@ def compose_build(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
     ] = None,
 ):
     """Build the base images with docker compose"""
@@ -103,7 +104,8 @@ def compose_build(
 
 def compose_pull(
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
     ] = None,
 ):
     """Pull images with docker compose"""
@@ -129,7 +131,8 @@ def compose_up(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
     ] = None,
 ):
     """Start stack with docker compose"""
@@ -165,7 +168,8 @@ def compose_down(
         list[str] | None, typer.Option(help="Docker compose profile(s) to use")
     ] = None,
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
     ] = None,
 ):
     """Stop stack with docker compose"""
@@ -190,18 +194,20 @@ def compose_down(
 
 
 def stack_deploy(
-    prune: Annotated[
-        bool,
-        typer.Option(
-            help=(
-                "Remove services that are no longer defined in the compose files. "
-                "Only pass this when deploying the complete set of compose files, as "
-                "Swarm removes every service the deployment does not declare."
-            )
-        ),
-    ] = False,
+    extra_args: Annotated[
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
+    ] = None,
 ):
-    """Deploy stack with Docker Swarm"""
+    """Deploy stack with Docker Swarm
+
+    Extra arguments are passed through to 'docker stack deploy', so for instance
+    '-- --prune' removes services that are no longer defined in the compose files.
+    Swarm prunes every service the deployment does not declare, so pass that only
+    when deploying the complete set of compose files.
+    """
+
+    extra_args = extra_args or []
 
     helper = CommandHelper()
     helper.prepare_environment()
@@ -229,11 +235,8 @@ def stack_deploy(
     env["STACK_NAME"] = helper.get_stack_name()
 
     cmd = "docker stack deploy --detach "
-    # Off by default: Swarm keeps a service that has left the compose files, which leaves
-    # a stale one running, but pruning removes every service the deployment does not
-    # declare, which a partial set of compose files would take down with it.
-    if prune:
-        cmd += " --prune"
+    if extra_args:
+        cmd += " " + " ".join(extra_args)
     cmd += f" -c {helper.get_compose_base_file()}"
     cmd += f" -c {helper.get_compose_env_file()}"
 
@@ -284,7 +287,8 @@ def format_code():
 
 def test(
     extra_args: Annotated[
-        list[str] | None, typer.Argument(help="Extra arguments (after '--')")
+        list[str] | None,
+        typer.Argument(help="Extra arguments passed to the underlying command (after '--')"),
     ] = None,
 ):
     """Run the test suite with pytest"""
