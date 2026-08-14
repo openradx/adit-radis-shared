@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "group:allNonMajor", "schedule:weekly"],
+  "extends": ["config:best-practices", "group:allNonMajor", "schedule:weekly"],
   "pre-commit": { "enabled": true },
   "lockFileMaintenance": {
     "enabled": true,
@@ -9,6 +9,11 @@
   },
   "automerge": true,
   "packageRules": [
+    {
+      "description": "Opt out of Docker digest pinning from config:best-practices; GitHub Action digests stay pinned.",
+      "matchDatasources": ["docker"],
+      "pinDigests": false
+    },
     {
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch",
@@ -21,22 +26,22 @@
       "matchUpdateTypes": ["minor", "patch"]
     },
     {
-      "managers": ["docker-compose"],
+      "matchManagers": ["docker-compose"],
       "matchPackageNames": ["postgres"],
       "allowedVersions": "<=17"
     },
     {
-      "managers": ["dockerfile"],
+      "matchManagers": ["dockerfile"],
       "matchPackageNames": ["python"],
       "allowedVersions": "<=3.13"
     },
     {
-      "managers": ["pep621"],
+      "matchManagers": ["pep621"],
       "matchPackageNames": ["factory-boy"],
       "allowedVersions": "<=3.3.2"
     },
     {
-      "managers": ["pep621"],
+      "matchManagers": ["pep621"],
       "matchPackageNames": ["autobahn"],
       "allowedVersions": "<25.11.1"
     }
