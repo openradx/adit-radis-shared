@@ -126,6 +126,9 @@ Key variables in `.env` (see `example.env`):
 - **Type Checking**: pyright in basic mode
 - **Linting**: Ruff with E, F, I, DJ rules
 - **Import Order**: isort with first-party: `["adit_radis_shared", "example_project"]`
+- **Comments**: only where the code cannot speak for itself; explain *why*, not *what*
+- **No history in comments**: describe the code as it is, not how it changed — that
+  belongs in the commit message (docstrings too)
 
 ## Key Dependencies
 
