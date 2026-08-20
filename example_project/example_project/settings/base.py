@@ -68,6 +68,10 @@ INSTALLED_APPS = [
     "django_htmx",
     "django_tables2",
     "rest_framework",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
@@ -80,6 +84,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.contrib.sites.middleware.CurrentSiteMiddleware",
@@ -163,10 +168,40 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # A custom authentication backend that supports a single currently active group.
-AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
+# The allauth backend is only used for the OIDC login, the group handling of the
+# users stays the same, no matter how they were authenticated.
+AUTHENTICATION_BACKENDS = [
+    "adit_radis_shared.accounts.backends.ActiveGroupModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 # Where to redirect to after login
 LOGIN_REDIRECT_URL = "home"
+
+# Settings for the OIDC login provided by django-allauth. The provider is only
+# configured when a server URL is set, so that the app also runs without an
+# identity provider being available.
+OIDC_SERVER_URL = env.str("OIDC_SERVER_URL", default="")
+OIDC_CLIENT_ID = env.str("OIDC_CLIENT_ID", default="")
+OIDC_CLIENT_SECRET = env.str("OIDC_CLIENT_SECRET", default="")
+OIDC_PROVIDER_NAME = env.str("OIDC_PROVIDER_NAME", default="Identity Provider")
+
+SOCIALACCOUNT_PROVIDERS = {}
+if OIDC_SERVER_URL:
+    SOCIALACCOUNT_PROVIDERS["openid_connect"] = {
+        "APPS": [
+            {
+                "provider_id": "oidc",
+                "name": OIDC_PROVIDER_NAME,
+                "client_id": OIDC_CLIENT_ID,
+                "secret": OIDC_CLIENT_SECRET,
+                "settings": {"server_url": OIDC_SERVER_URL},
+            }
+        ]
+    }
+
+# The identity provider is responsible for verifying the email address.
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 # Settings for django-registration-redux
 REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"

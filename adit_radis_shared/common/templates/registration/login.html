@@ -1,5 +1,6 @@
 {% extends "registration/registration_base.html" %}
 {% load crispy from crispy_forms_tags %}
+{% load socialaccount %}
 {% block title %}
     Login
 {% endblock title %}
@@ -26,6 +27,16 @@
             <input type="hidden" name="next" value="{{ next }}" />
         </form>
     </p>
+    {% get_providers as socialaccount_providers %}
+    {% if socialaccount_providers %}
+        <hr />
+        {% for provider in socialaccount_providers %}
+            <p>
+                <a class="btn btn-outline-primary"
+                   href="{% provider_login_url provider process='login' %}">Log in with {{ provider.name }}</a>
+            </p>
+        {% endfor %}
+    {% endif %}
     <hr />
     <p>
         Forgot your password?
