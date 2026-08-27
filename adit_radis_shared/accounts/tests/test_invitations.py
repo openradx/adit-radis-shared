@@ -97,6 +97,17 @@ def test_invitation_link_opens_signup_with_locked_email(client: Client):
 
 
 @pytest.mark.django_db
+def test_invitation_link_logs_out_a_logged_in_user(client: Client):
+    client.force_login(UserFactory.create())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+
+    client.get(accept_url(invitation))
+
+    assert "_auth_user_id" not in client.session
+    assert client.get(reverse("account_signup")).status_code == 200
+
+
+@pytest.mark.django_db
 def test_expired_invitation_is_rejected(client: Client):
     invitation = Invitation.objects.create(
         email="late@example.org", expires=timezone.now() - timedelta(minutes=1)

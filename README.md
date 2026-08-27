@@ -31,6 +31,14 @@ of the host:
 
 The OIDC login is only offered when `OIDC_SERVER_URL` is set in the `.env` file.
 
+## Invitations
+
+New users with a username and password can only sign up with an invitation. Users with the
+`accounts.add_invitation` permission find the invitations page in the user menu, where they
+enter an email address. The invitee gets a mail with a link to the sign-up page that is valid
+for `INVITATION_VALID_DAYS`. After the sign up (and also after the first OIDC login) the admins
+get a mail, as only they can put the new user into a group.
+
 ## Available apps
 
 ### adit_radis_shared.common

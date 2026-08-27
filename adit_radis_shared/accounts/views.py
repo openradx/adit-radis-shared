@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.http import HttpRequest
@@ -69,5 +70,9 @@ class InvitationAcceptView(View):
         if invitation is None or not invitation.is_valid:
             return render(request, "accounts/invitation_invalid.html", status=410)
 
+        # The sign up page redirects logged in users away, and the invitee wants
+        # a new account anyway, e.g. when opening the link on a shared computer.
+        if request.user.is_authenticated:
+            logout(request)
         remember_invitation(request, invitation)
         return redirect("account_signup")
