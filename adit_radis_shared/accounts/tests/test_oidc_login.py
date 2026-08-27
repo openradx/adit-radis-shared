@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 import responses
+from django.core import mail
 from django.test import Client
 from django.urls import reverse
 
@@ -107,11 +108,16 @@ def test_first_oidc_login_creates_user_without_group(client: Client, settings):
     assert client.session["_auth_user_id"] == str(user.pk)
 
     # The identity provider only authenticates. Authorization happens through
-    # the app groups, and nothing provisions those yet, so a fresh OIDC user
-    # has no permissions at all.
+    # the app groups, which only an admin can assign, so the admin is informed
+    # and the user is told to wait.
     assert user.groups.count() == 0
     assert user.active_group is None
     assert user.get_group_permissions() == set()
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == list(settings.ADMINS)
+    assert user.username in mail.outbox[0].body
+    response = client.get(reverse("home"))
+    assert "not assigned to any group yet" in response.text
 
 
 @responses.activate
@@ -128,3 +134,5 @@ def test_second_oidc_login_reuses_user(client: Client, settings):
     user = User.objects.get(username="idp-user")
     assert client.session["_auth_user_id"] == str(user.pk)
     assert User.objects.count() == 1
+    # The admin was only informed on the first login.
+    assert len(mail.outbox) == 1
