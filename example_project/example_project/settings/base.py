@@ -211,6 +211,10 @@ ACCOUNT_LOGIN_METHODS = {"username"}
 ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_FORMS = {"signup": "adit_radis_shared.accounts.forms.InvitationSignupForm"}
+
+# How long the link in an invitation email stays valid.
+INVITATION_VALID_DAYS = 14
 
 EMAIL_SUBJECT_PREFIX = "[ADIT-RADIS-Shared] "
 

@@ -16,6 +16,15 @@
                     Profile
                 </a>
             </li>
+            {% if perms.accounts.add_invitation %}
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2"
+                       href="{% url 'invitations' %}">
+                        {% bootstrap_icon "envelope" %}
+                        Invitations
+                    </a>
+                </li>
+            {% endif %}
             <li>
                 <hr class="dropdown-divider" />
             </li>

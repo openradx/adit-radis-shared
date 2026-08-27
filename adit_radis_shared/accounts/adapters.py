@@ -2,10 +2,12 @@ from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.http import HttpRequest
 
+from .invitations import get_invitation
+
 
 class AccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, request: HttpRequest) -> bool:
-        return False
+        return get_invitation(request) is not None
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
