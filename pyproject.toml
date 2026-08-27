@@ -84,6 +84,7 @@ dev = [
     "time-machine>=2.16.0",
     "typer>=0.19.2",
     "vermin>=1.6.0",
+    "zizmor>=1.29.0",
 ]
 
 [tool.uv]
