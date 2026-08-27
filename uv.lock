@@ -28,7 +28,6 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-htmx" },
     { name = "django-loginas" },
-    { name = "django-registration-redux" },
     { name = "django-revproxy" },
     { name = "django-tables2" },
     { name = "djangorestframework" },
@@ -103,7 +102,6 @@ requires-dist = [
     { name = "django-filter", specifier = ">=25.1" },
     { name = "django-htmx", specifier = ">=1.22.0" },
     { name = "django-loginas", specifier = ">=0.3.11" },
-    { name = "django-registration-redux", specifier = ">=2.13" },
     { name = "django-revproxy", specifier = ">=0.13.0" },
     { name = "django-tables2", specifier = ">=2.7.5" },
     { name = "djangorestframework", specifier = ">=3.15.2" },
@@ -865,15 +863,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8c/a4/3912075965bb1f3792d7ef2003608155d25401d84aa18beb4db577bb6cd0/django_loginas-0.3.14.tar.gz", hash = "sha256:080bb6b714cee854739cc7242f2faf9e23f098691bd42ef3fd62e9bc9c5492ad", size = 17316, upload-time = "2026-01-06T17:37:06.688Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/74/d1/613b339a4a45035cf4c7edceae9f1661e22fddbd710d34d0ef2668cd22a1/django_loginas-0.3.14-py2.py3-none-any.whl", hash = "sha256:f682ad64420e5c32a5ae7051d203a82c10cf32353d5d29ff36947b2639840668", size = 25131, upload-time = "2026-01-06T17:37:05.465Z" },
-]
-
-[[package]]
-name = "django-registration-redux"
-version = "2.13"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f6/47/960fb3f88d0080a94fffb6fc98ff986012d3a968c030036cf79abdd40242/django-registration-redux-2.13.tar.gz", hash = "sha256:9793a05b32b1d7342c6ef3e0140b2951b7dbde058b3ba6e8a232b534928279f9", size = 125883, upload-time = "2023-10-27T02:41:46.863Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/7f/715af6a1322a1bc8fc84befa469a048dd5983eeac49f464ffa01bff33f00/django_registration_redux-2.13-py2.py3-none-any.whl", hash = "sha256:547c86ad9b951cf743075b5486f304e51e450b45d04e5ef04392838a9cff3da8", size = 218441, upload-time = "2023-10-27T02:41:44.565Z" },
 ]
 
 [[package]]

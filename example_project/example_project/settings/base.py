@@ -47,8 +47,7 @@ CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
     "daphne",
-    "adit_radis_shared.common.apps.CommonConfig",  # must be before "registration"
-    "registration",  # should be immediately above "django.contrib.admin"
+    "adit_radis_shared.common.apps.CommonConfig",  # before "allauth" to override its templates
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -202,11 +201,16 @@ if OIDC_SERVER_URL:
 
 # The identity provider is responsible for verifying the email address.
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.SocialAccountAdapter"
 
-# Settings for django-registration-redux
-REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
-ACCOUNT_ACTIVATION_DAYS = 14
-REGISTRATION_OPEN = True
+# Settings for the username/password login of django-allauth. Signing up is only
+# possible with an invitation (see accounts.adapters), which already proves that
+# the user owns the email address, so allauth does not verify it again.
+ACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.AccountAdapter"
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_SESSION_REMEMBER = True
 
 EMAIL_SUBJECT_PREFIX = "[ADIT-RADIS-Shared] "
 
@@ -219,12 +223,9 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 # A support Email address that is presented to the users where they can get support.
 SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
 
-# The Django server admins that will receive critical error notifications.
+# The Django server admins that will receive critical error notifications and
+# are informed about new users.
 ADMINS = [env.str("DJANGO_ADMIN_EMAIL")]
-
-# Used by django-registration-redux to send account approval emails to.
-# It expects (name, address) pairs.
-REGISTRATION_ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {

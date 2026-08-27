@@ -1,0 +1,32 @@
+{% extends "accounts/accounts_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% load socialaccount %}
+{% block title %}
+    Login
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Login" />
+{% endblock heading %}
+{% block content %}
+    <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ redirect_field }}
+        <input type="submit" class="btn btn-primary" value="Log In" />
+    </form>
+    {% get_providers as socialaccount_providers %}
+    {% if socialaccount_providers %}
+        <hr />
+        {% for provider in socialaccount_providers %}
+            <p>
+                <a class="btn btn-outline-primary"
+                   href="{% provider_login_url provider process='login' %}">Log in with {{ provider.name }}</a>
+            </p>
+        {% endfor %}
+    {% endif %}
+    <hr />
+    <p>
+        Forgot your password?
+        <a href="{% url 'account_reset_password' %}">Reset</a>
+    </p>
+{% endblock content %}

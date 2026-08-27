@@ -78,14 +78,14 @@ def login_via_oidc(client: Client):
 @pytest.mark.django_db
 def test_login_page_offers_oidc_login(client: Client, settings):
     settings.SOCIALACCOUNT_PROVIDERS = SOCIALACCOUNT_PROVIDERS
-    response = client.get(reverse("auth_login"))
+    response = client.get(reverse("account_login"))
     assert "Log in with Example IdP" in response.text
 
 
 @pytest.mark.django_db
 def test_login_page_without_identity_provider(client: Client, settings):
     settings.SOCIALACCOUNT_PROVIDERS = {}
-    response = client.get(reverse("auth_login"))
+    response = client.get(reverse("account_login"))
     assert "Log in with" not in response.text
 
 

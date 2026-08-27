@@ -35,8 +35,8 @@ The OIDC login is only offered when `OIDC_SERVER_URL` is set in the `.env` file.
 
 ### adit_radis_shared.common
 
-Contains common stuff as well as the vendor statics and overwritten templates of the registration app.
-Therefore it must be added directly before `registration` in `INSTALLED_APPS`.
+Contains common stuff as well as the vendor statics and overwritten templates of django-allauth.
+Therefore it must be added before `allauth` in `INSTALLED_APPS`.
 
 ### adit_radis_shared.accounts
 

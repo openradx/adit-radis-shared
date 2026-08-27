@@ -21,7 +21,6 @@ dependencies = [
     "django-filter>=25.1",
     "django-htmx>=1.22.0",
     "django-loginas>=0.3.11",
-    "django-registration-redux>=2.13",
     "django-revproxy>=0.13.0",
     "django-tables2>=2.7.5",
     "djangorestframework>=3.15.2",
