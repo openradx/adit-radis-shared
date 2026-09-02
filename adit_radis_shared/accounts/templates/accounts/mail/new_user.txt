@@ -1,0 +1,5 @@
+{{ user.get_full_name|default:user.username }} ({{ user.username }}, {{ user.email }}) has just created an account on {{ site_name }}.
+
+The user is not a member of any group yet and can't do anything until you add them to one:
+
+{{ url }}

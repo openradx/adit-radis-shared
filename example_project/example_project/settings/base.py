@@ -47,8 +47,7 @@ CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
     "daphne",
-    "adit_radis_shared.common.apps.CommonConfig",  # must be before "registration"
-    "registration",  # should be immediately above "django.contrib.admin"
+    "adit_radis_shared.common.apps.CommonConfig",  # before "allauth" to override its templates
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -68,6 +67,10 @@ INSTALLED_APPS = [
     "django_htmx",
     "django_tables2",
     "rest_framework",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
@@ -80,6 +83,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.contrib.sites.middleware.CurrentSiteMiddleware",
@@ -163,15 +167,54 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # A custom authentication backend that supports a single currently active group.
-AUTHENTICATION_BACKENDS = ["adit_radis_shared.accounts.backends.ActiveGroupModelBackend"]
+# The allauth backend is only used for the OIDC login, the group handling of the
+# users stays the same, no matter how they were authenticated.
+AUTHENTICATION_BACKENDS = [
+    "adit_radis_shared.accounts.backends.ActiveGroupModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 # Where to redirect to after login
 LOGIN_REDIRECT_URL = "home"
 
-# Settings for django-registration-redux
-REGISTRATION_FORM = "adit_radis_shared.accounts.forms.RegistrationForm"
-ACCOUNT_ACTIVATION_DAYS = 14
-REGISTRATION_OPEN = True
+# Settings for the OIDC login provided by django-allauth. The provider is only
+# configured when a server URL is set, so that the app also runs without an
+# identity provider being available.
+OIDC_SERVER_URL = env.str("OIDC_SERVER_URL", default="")
+OIDC_CLIENT_ID = env.str("OIDC_CLIENT_ID", default="")
+OIDC_CLIENT_SECRET = env.str("OIDC_CLIENT_SECRET", default="")
+OIDC_PROVIDER_NAME = env.str("OIDC_PROVIDER_NAME", default="Identity Provider")
+
+SOCIALACCOUNT_PROVIDERS = {}
+if OIDC_SERVER_URL:
+    SOCIALACCOUNT_PROVIDERS["openid_connect"] = {
+        "APPS": [
+            {
+                "provider_id": "oidc",
+                "name": OIDC_PROVIDER_NAME,
+                "client_id": OIDC_CLIENT_ID,
+                "secret": OIDC_CLIENT_SECRET,
+                "settings": {"server_url": OIDC_SERVER_URL},
+            }
+        ]
+    }
+
+# The identity provider is responsible for verifying the email address.
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.SocialAccountAdapter"
+
+# Settings for the username/password login of django-allauth. Signing up is only
+# possible with an invitation (see accounts.adapters), which already proves that
+# the user owns the email address, so allauth does not verify it again.
+ACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.AccountAdapter"
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_FORMS = {"signup": "adit_radis_shared.accounts.forms.InvitationSignupForm"}
+
+# How long the link in an invitation email stays valid.
+INVITATION_VALID_DAYS = 14
 
 EMAIL_SUBJECT_PREFIX = "[ADIT-RADIS-Shared] "
 
@@ -184,12 +227,9 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL
 # A support Email address that is presented to the users where they can get support.
 SUPPORT_EMAIL = env.str("SUPPORT_EMAIL")
 
-# The Django server admins that will receive critical error notifications.
+# The Django server admins that will receive critical error notifications and
+# are informed about new users.
 ADMINS = [env.str("DJANGO_ADMIN_EMAIL")]
-
-# Used by django-registration-redux to send account approval emails to.
-# It expects (name, address) pairs.
-REGISTRATION_ADMINS = [(env.str("DJANGO_ADMIN_FULL_NAME"), env.str("DJANGO_ADMIN_EMAIL"))]
 
 # All REST API requests must come from authenticated clients
 REST_FRAMEWORK = {

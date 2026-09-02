@@ -146,7 +146,7 @@ def login_user(page: Page, server_url: str, username: str, password: str):
     page.goto(server_url + "/accounts/login")
     page.get_by_label("Username").fill(username)
     page.get_by_label("Password").fill(password)
-    page.get_by_text("Log in").click()
+    page.get_by_role("button", name="Log In").click()
 
 
 def create_and_login_example_user(page: Page, server_url: str):

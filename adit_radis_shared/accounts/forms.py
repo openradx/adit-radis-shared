@@ -1,53 +1,73 @@
-from typing import Any
+from typing import cast
 
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from allauth.account.forms import SignupForm
+from allauth.account.models import EmailAddress
+from allauth.core import context
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import AbstractBaseUser
+from django.http import HttpRequest
 
-from .models import User
+from .invitations import forget_invitation, get_invitation, send_new_user_mail_to_admins
+from .models import Invitation, User
 
 
-class RegistrationForm(UserCreationForm):
-    usable_password = None
-
+class InvitationForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = (
-            "username",
-            "password1",
-            "password2",
-            "email",
-            "first_name",
-            "last_name",
-            "phone_number",
-            "department",
+        model = Invitation
+        fields = ("email",)
+
+    def clean_email(self) -> str:
+        email: str = self.cleaned_data["email"]
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email address already exists.")
+        return email
+
+
+class InvitationSignupForm(SignupForm):
+    first_name = forms.CharField(max_length=150)
+    last_name = forms.CharField(max_length=150)
+    phone_number = forms.CharField(max_length=64)
+    department = forms.CharField(max_length=128)
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # The signup page is only reachable with an invitation (see AccountAdapter),
+        # whose email address the user must keep.
+        assert context.request
+        invitation = get_invitation(context.request)
+        assert invitation
+        self.invitation: Invitation = invitation
+        email_field = self.fields["email"]
+        email_field.disabled = True
+        email_field.initial = self.invitation.email
+        self.order_fields(
+            [
+                "email",
+                "username",
+                "first_name",
+                "last_name",
+                "phone_number",
+                "department",
+                "password1",
+                "password2",
+            ]
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def custom_signup(self, request: HttpRequest, user: AbstractBaseUser) -> None:
+        user = cast(User, user)
+        user.phone_number = self.cleaned_data["phone_number"]
+        user.department = self.cleaned_data["department"]
+        user.save()
 
-        # In Django's AbstractUser (which django-registration-redux uses internally) and also
-        # in our model some fields are not required, but we want them to be required when
-        # the user registers himself.
-        self.fields["email"].required = True
-        self.fields["first_name"].required = True
-        self.fields["last_name"].required = True
-        self.fields["phone_number"].required = True
-        self.fields["department"].required = True
-
-        self.helper = FormHelper(self)
-        self.helper.add_input(Submit("register", "Register"))
-
-    def clean_email(self):
-        # Django's AbstractUser Email model field is not unique. We fix this here programmatically
-        # at the form level.
-        email: str = self.cleaned_data["email"]
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("An account with this Email address is already registered.")
-
-        return email
+    def save(self, request: HttpRequest) -> User:
+        user = cast(User, super().save(request))
+        # Opening the invitation link already proved that the user owns the address.
+        EmailAddress.objects.filter(user=user).update(verified=True)
+        self.invitation.accept(user)
+        forget_invitation(request)
+        send_new_user_mail_to_admins(request, user)
+        return user
 
 
 class GroupAdminForm(forms.ModelForm):

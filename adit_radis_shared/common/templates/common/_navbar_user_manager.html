@@ -16,11 +16,20 @@
                     Profile
                 </a>
             </li>
+            {% if perms.accounts.add_invitation %}
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2"
+                       href="{% url 'invitations' %}">
+                        {% bootstrap_icon "envelope" %}
+                        Invitations
+                    </a>
+                </li>
+            {% endif %}
             <li>
                 <hr class="dropdown-divider" />
             </li>
             <li>
-                <form action="{% url 'auth_logout' %}" method="post">
+                <form action="{% url 'account_logout' %}" method="post">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
                         {% bootstrap_icon "box-arrow-right" %}
@@ -32,7 +41,7 @@
     </li>
 {% else %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'auth_login' %}">
+        <a class="nav-link" href="{% url 'account_login' %}">
             {% bootstrap_icon "box-arrow-in-right" %}
             Login
         </a>

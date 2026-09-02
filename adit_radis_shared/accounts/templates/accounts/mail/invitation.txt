@@ -1,0 +1,7 @@
+Hello,
+
+{% if invitation.invited_by %}{{ invitation.invited_by.get_full_name|default:invitation.invited_by.username }} has invited you{% else %}You have been invited{% endif %} to {{ site_name }}. Please open the following link to create your account:
+
+{{ url }}
+
+The link is valid until {{ invitation.expires|date:"DATETIME_FORMAT" }}.

@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group
 
 from .forms import GroupAdminForm
-from .models import User
+from .models import Invitation, User
 
 
 class MyUserChangeForm(UserChangeForm):
@@ -42,3 +42,9 @@ class MyGroupAdmin(GroupAdmin):
 
 admin.site.unregister(Group)
 admin.site.register(Group, MyGroupAdmin)
+
+
+@admin.register(Invitation)
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ("email", "invited_by", "created", "expires", "accepted", "user")
+    exclude = ("token",)

@@ -1,0 +1,45 @@
+{% extends "accounts/accounts_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% block title %}
+    Invitations
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Invitations" />
+{% endblock heading %}
+{% block content %}
+    <p>
+        Invited users receive an email with a link to the sign-up page. After they signed up
+        an administrator still has to add them to a group.
+    </p>
+    <form method="post" action="{% url 'invitations' %}" class="mb-4">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input type="submit" class="btn btn-primary" value="Invite" />
+    </form>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Invited by</th>
+                <th>Sent</th>
+                <th>Expires</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invitation in invitations %}
+                <tr>
+                    <td>{{ invitation.email }}</td>
+                    <td>{{ invitation.invited_by|default:"—" }}</td>
+                    <td>{{ invitation.created|date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td>{{ invitation.expires|date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td>{{ invitation.status }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No invitations sent yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

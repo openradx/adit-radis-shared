@@ -19,6 +19,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "daphne" },
     { name = "django" },
+    { name = "django-allauth", extra = ["socialaccount"] },
     { name = "django-block-fragments" },
     { name = "django-cotton" },
     { name = "django-crispy-forms" },
@@ -27,7 +28,6 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-htmx" },
     { name = "django-loginas" },
-    { name = "django-registration-redux" },
     { name = "django-revproxy" },
     { name = "django-tables2" },
     { name = "djangorestframework" },
@@ -79,6 +79,7 @@ dev = [
     { name = "pytest-timeout" },
     { name = "pytest-watch" },
     { name = "pywatchman" },
+    { name = "responses" },
     { name = "ruff" },
     { name = "time-machine" },
     { name = "typer" },
@@ -93,6 +94,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=44.0.1" },
     { name = "daphne", specifier = ">=4.1.2" },
     { name = "django", specifier = ">=5.1.6" },
+    { name = "django-allauth", extras = ["socialaccount"], specifier = ">=65.19.1" },
     { name = "django-block-fragments", specifier = ">=0.1.1" },
     { name = "django-cotton", specifier = ">=1.6.0" },
     { name = "django-crispy-forms", specifier = ">=2.3" },
@@ -101,7 +103,6 @@ requires-dist = [
     { name = "django-filter", specifier = ">=25.1" },
     { name = "django-htmx", specifier = ">=1.22.0" },
     { name = "django-loginas", specifier = ">=0.3.11" },
-    { name = "django-registration-redux", specifier = ">=2.13" },
     { name = "django-revproxy", specifier = ">=0.13.0" },
     { name = "django-tables2", specifier = ">=2.7.5" },
     { name = "djangorestframework", specifier = ">=3.15.2" },
@@ -150,6 +151,7 @@ dev = [
     { name = "pytest-timeout", specifier = ">=2.3.1" },
     { name = "pytest-watch", specifier = ">=4.2.0" },
     { name = "pywatchman", specifier = ">=2.0.0" },
+    { name = "responses", specifier = ">=0.26.2" },
     { name = "ruff", specifier = ">=0.9.7" },
     { name = "time-machine", specifier = ">=2.16.0" },
     { name = "typer", specifier = ">=0.19.2" },
@@ -708,6 +710,26 @@ wheels = [
 ]
 
 [[package]]
+name = "django-allauth"
+version = "65.19.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asgiref" },
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cf/93/776a61df6ce71f82e98afa1938c6e540ec239a8f80b2747c3c33cb9581cc/django_allauth-65.19.1.tar.gz", hash = "sha256:999d01d5c422a82734cf5804df9f5a0d1d4ddd6acbb2f807db976ed7d49f9cb3", size = 2286662, upload-time = "2026-08-13T10:02:17.956Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/f6/3c5f838f2e66903b422ae45f8f44b9e5da6457a4d4da125d426b339d86c8/django_allauth-65.19.1-py3-none-any.whl", hash = "sha256:5c507b53c45d2b7cbfcac7643d0123d5f0a7df7d43a882edcdbedb5f6b396421", size = 2074420, upload-time = "2026-08-13T10:02:26.339Z" },
+]
+
+[package.optional-dependencies]
+socialaccount = [
+    { name = "oauthlib" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "requests" },
+]
+
+[[package]]
 name = "django-block-fragments"
 version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -843,15 +865,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8c/a4/3912075965bb1f3792d7ef2003608155d25401d84aa18beb4db577bb6cd0/django_loginas-0.3.14.tar.gz", hash = "sha256:080bb6b714cee854739cc7242f2faf9e23f098691bd42ef3fd62e9bc9c5492ad", size = 17316, upload-time = "2026-01-06T17:37:06.688Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/74/d1/613b339a4a45035cf4c7edceae9f1661e22fddbd710d34d0ef2668cd22a1/django_loginas-0.3.14-py2.py3-none-any.whl", hash = "sha256:f682ad64420e5c32a5ae7051d203a82c10cf32353d5d29ff36947b2639840668", size = 25131, upload-time = "2026-01-06T17:37:05.465Z" },
-]
-
-[[package]]
-name = "django-registration-redux"
-version = "2.13"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f6/47/960fb3f88d0080a94fffb6fc98ff986012d3a968c030036cf79abdd40242/django-registration-redux-2.13.tar.gz", hash = "sha256:9793a05b32b1d7342c6ef3e0140b2951b7dbde058b3ba6e8a232b534928279f9", size = 125883, upload-time = "2023-10-27T02:41:46.863Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/7f/715af6a1322a1bc8fc84befa469a048dd5983eeac49f464ffa01bff33f00/django_registration_redux-2.13-py2.py3-none-any.whl", hash = "sha256:547c86ad9b951cf743075b5486f304e51e450b45d04e5ef04392838a9cff3da8", size = 218441, upload-time = "2023-10-27T02:41:44.565Z" },
 ]
 
 [[package]]
@@ -1430,6 +1443,15 @@ wheels = [
 ]
 
 [[package]]
+name = "oauthlib"
+version = "3.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/5f/19930f824ffeb0ad4372da4812c50edbd1434f678c90c2733e1188edfc63/oauthlib-3.3.1.tar.gz", hash = "sha256:0f0f8aa759826a193cf66c12ea1af1637f87b9b4622d46e866952bb022e538c9", size = 185918, upload-time = "2025-06-19T22:48:08.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/9c/92789c596b8df838baa98fa71844d84283302f7604ed565dafe5a6b5041a/oauthlib-3.3.1-py3-none-any.whl", hash = "sha256:88119c938d2b8fb88561af5f6ee0eec8cc8d552b7bb1f712743136eb7523b7a1", size = 160065, upload-time = "2025-06-19T22:48:06.508Z" },
+]
+
+[[package]]
 name = "opentelemetry-api"
 version = "1.43.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1895,6 +1917,20 @@ wheels = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.13.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/81/58d0ac84e1ef3a3843791d6954d94c0b33d526c75eeb1efbce9d0a4c4077/pyjwt-2.13.0.tar.gz", hash = "sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423", size = 107515, upload-time = "2026-05-21T19:54:36.618Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/5e/ecf12fdb62546d64385c158514e9b2b671f7832108ef2ecd2020ce0af2d1/pyjwt-2.13.0-py3-none-any.whl", hash = "sha256:66adcc2aff09b3f1bbd95fc1e1577df8ac8723c978552fd43304c8a290ac5728", size = 31274, upload-time = "2026-05-21T19:54:35.362Z" },
+]
+
+[package.optional-dependencies]
+crypto = [
+    { name = "cryptography" },
+]
+
+[[package]]
 name = "pyopenssl"
 version = "26.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2310,6 +2346,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed", size = 142856, upload-time = "2026-05-14T19:25:27.735Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0", size = 73075, upload-time = "2026-05-14T19:25:26.443Z" },
+]
+
+[[package]]
+name = "responses"
+version = "0.26.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f0/1a/4af3e6d659394b809838490b144e4ab8d7ed3b9fecc7ca78f5d2f79b1a3d/responses-0.26.2.tar.gz", hash = "sha256:9c9259b46a8349197edebf43cfa68a87e1a2802ef503ff8b2fecbabc0b45afd8", size = 84030, upload-time = "2026-07-03T16:44:50.325Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7c/28/693e1d9ebf72baa062ded80d837a035b86ce75eda5a269379e9e2b1008a8/responses-0.26.2-py3-none-any.whl", hash = "sha256:6fdfeabd58e5ec473b98dfe02e6d46d3173bd8dd573eff2ccccf1a05a5135364", size = 35609, upload-time = "2026-07-03T16:44:49.1Z" },
 ]
 
 [[package]]
