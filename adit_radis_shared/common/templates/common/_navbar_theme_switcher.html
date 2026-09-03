@@ -1,7 +1,7 @@
 <li id="theme-switcher" class="nav-item dropdown">
     {% include "common/_theme_icons.html" %}
-    <button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center my-1"
-            role="button"
+    <button type="button"
+            class="btn btn-link nav-link dropdown-toggle d-flex align-items-center my-1"
             data-bs-toggle="dropdown"
             aria-label="Toggle theme"
             aria-expanded="false">
@@ -21,7 +21,8 @@
     </button>
     <ul class="dropdown-menu dropdown-menu-end">
         <li>
-            <button class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'light' %}active{% endif %}"
+            <button type="button"
+                    class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'light' %}active{% endif %}"
                     aria-pressed="{% if theme == 'light' %}true{% else %}false{% endif %}"
                     data-bs-theme-value="light">
                 <svg width="16" height="16">
@@ -31,7 +32,8 @@
             </button>
         </li>
         <li>
-            <button class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'dark' %}active{% endif %}"
+            <button type="button"
+                    class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'dark' %}active{% endif %}"
                     aria-pressed="{% if theme == 'dark' %}true{% else %}false{% endif %}"
                     data-bs-theme-value="dark">
                 <svg width="16" height="16">
@@ -41,7 +43,8 @@
             </button>
         </li>
         <li>
-            <button class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'auto' %}active{% endif %}"
+            <button type="button"
+                    class="dropdown-item d-flex align-items-center gap-2 {% if theme == 'auto' %}active{% endif %}"
                     aria-pressed="{% if theme == 'auto' %}true{% else %}false{% endif %}"
                     data-bs-theme-value="auto">
                 <svg width="16" height="16">
