@@ -39,7 +39,7 @@ uv run cli generate-auth-token       # Generate API authentication token
 
 ### Tech Stack
 
-- **Backend**: Python 3.12+, Django 5.1.6+, PostgreSQL 17
+- **Backend**: Python 3.12+, Django 6.1+, PostgreSQL 17
 - **Async**: Django Channels 4.2.0+, Daphne 4.1.2+ (ASGI server)
 - **Task Queue**: Procrastinate 3.0.2+ (PostgreSQL-backed)
 - **Frontend**: Bootstrap 5, HTMX 2.0.0, Alpine.js 3.14.0, Cotton components
@@ -117,7 +117,7 @@ Key variables in `.env` (see `example.env`):
 - `DJANGO_ALLOWED_HOSTS`: Comma-separated allowed hosts
 - `DJANGO_CSRF_TRUSTED_ORIGINS`: Trusted origins for CSRF
 - `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`: Initial superuser
-- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`: SMTP configuration
+- `DJANGO_SERVER_EMAIL`, `DJANGO_EMAIL_URL`, `DJANGO_ADMIN_EMAIL`, `SUPPORT_EMAIL`: Sender, SMTP URL (production only; dev logs mails to the console), error recipient, support contact
 
 ## Code Standards
 
