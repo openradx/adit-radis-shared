@@ -10,15 +10,15 @@
 {% endblock heading %}
 {% block content %}
     <c-table-heading title="Example Table">
-    <c-slot name="left">
-    <a href="" class="btn btn-sm btn-primary">
-        {% bootstrap_icon "eye" %}
-        View Results
-    </a>
-    </c-slot>
-    <c-slot name="right">
-    {% crispy filter.form %}
-    </c-slot>
+        <c-slot name="left">
+            <a href="" class="btn btn-sm btn-primary">
+                {% bootstrap_icon "eye" %}
+                View Results
+            </a>
+        </c-slot>
+        <c-slot name="right">
+            {% crispy filter.form %}
+        </c-slot>
     </c-table-heading>
     {% render_table table %}
 {% endblock content %}
