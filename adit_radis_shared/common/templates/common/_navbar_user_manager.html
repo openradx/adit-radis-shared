@@ -1,8 +1,8 @@
 {% load bootstrap_icon from common_extras %}
 {% if user.is_authenticated %}
     <li class="nav-item dropdown">
-        <button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center gap-1"
-                role="button"
+        <button type="button"
+                class="btn btn-link nav-link dropdown-toggle d-flex align-items-center gap-1"
                 data-bs-toggle="dropdown"
                 aria-expanded="false">
             {% bootstrap_icon "person-square" %}

@@ -6,15 +6,15 @@
 {% endblock title %}
 {% block heading %}
     <c-page-heading title="Authentication Tokens">
-    <c-slot name="left">
-    <button type="button"
-            class="btn btn-sm btn-info align-baseline"
-            hx-get="{% url 'token_authentication_help' %}"
-            hx-target="#htmx-dialog">
-        Help
-        {% bootstrap_icon "question-circle" %}
-    </button>
-    </c-slot>
+        <c-slot name="left">
+            <button type="button"
+                    class="btn btn-sm btn-info align-baseline"
+                    hx-get="{% url 'token_authentication_help' %}"
+                    hx-target="#htmx-dialog">
+                Help
+                {% bootstrap_icon "question-circle" %}
+            </button>
+        </c-slot>
     </c-page-heading>
 {% endblock heading %}
 {% block content %}
@@ -23,15 +23,16 @@
         <div class="card mb-3" x-data="newToken()">
             <div class="card-body">
                 <h5>Sucessfully generated a REST authentication token.</h5>
-                This token will only be visible once, so make sure to copy it
-                now and store it in a safe place. As you will not be able to
-                see it again, you will have to generate a new token if you lose
-                it.
-                <br />
-                <br />
+                <p>
+                    This token will only be visible once, so make sure to copy it
+                    now and store it in a safe place. As you will not be able to
+                    see it again, you will have to generate a new token if you lose
+                    it.
+                </p>
                 <h3>
                     <span class="badge text-bg-light" id="unhashed-token-string">{{ new_token }}</span>
-                    <button id="copy-token-button"
+                    <button type="button"
+                            id="copy-token-button"
                             class="btn btn-light btn-sm"
                             @click="copyTokenToClipboard('{{ new_token }}')">{% bootstrap_icon "clipboard" %}</button>
                 </h3>
