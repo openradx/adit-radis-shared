@@ -122,9 +122,16 @@ def run_worker_once() -> None:
     """
     errors: list[BaseException] = []
 
+    # The Django connector cannot run a worker itself and builds one via
+    # get_worker_connector(). Every other connector -- the one that call
+    # returns, or the in-memory connector used in tests -- already can, and
+    # offers no such method, so it is used as is.
+    build_worker_connector = getattr(app.connector, "get_worker_connector", None)
+    connector = build_worker_connector() if build_worker_connector else app.connector
+
     def _run_worker() -> None:
         try:
-            with app.replace_connector(app.connector.get_worker_connector()):  # type: ignore
+            with app.replace_connector(connector):
                 app.run_worker(
                     wait=False,
                     install_signal_handlers=False,
