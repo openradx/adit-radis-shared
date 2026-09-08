@@ -66,8 +66,12 @@ class Invitation(models.Model):
 
     @property
     def status(self) -> str:
+        """The stage of the whole onboarding, including the group assignment
+        that only an admin can do after the sign up."""
         if self.accepted:
-            return "Accepted"
+            if self.user and self.user.groups.exists():
+                return "Active"
+            return "Signed up"
         if self.expires <= timezone.now():
             return "Expired"
         return "Pending"

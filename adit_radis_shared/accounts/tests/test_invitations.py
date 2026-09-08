@@ -134,6 +134,23 @@ def test_accepted_invitation_cannot_be_canceled(client: Client):
     assert Invitation.objects.count() == 1
 
 
+@pytest.mark.django_db
+def test_status_follows_the_whole_onboarding(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    assert invitation.status == "Pending"
+
+    client.get(accept_url(invitation))
+    client.post(reverse("account_signup"), SIGNUP_DATA)
+    invitation.refresh_from_db()
+    # The sign up alone is not the end: an admin still has to assign a group.
+    assert invitation.status == "Signed up"
+
+    user = User.objects.get(username="invited")
+    add_user_to_group(user, GroupFactory.create())
+    invitation.refresh_from_db()
+    assert invitation.status == "Active"
+
+
 # --- Opening the link -------------------------------------------------------
 
 
