@@ -66,15 +66,17 @@ class Invitation(models.Model):
 
     @property
     def status(self) -> str:
-        """The stage of the whole onboarding, including the group assignment
-        that only an admin can do after the sign up."""
         if self.accepted:
-            if self.user and self.user.groups.exists():
-                return "Active"
             return "Signed up"
         if self.expires <= timezone.now():
             return "Expired"
         return "Pending"
+
+    @property
+    def is_finished(self) -> bool:
+        """Whether the admin completed the onboarding by activating the user
+        and putting them into a group."""
+        return bool(self.user and self.user.is_active and self.user.groups.exists())
 
     def accept(self, user: User) -> None:
         self.accepted = timezone.now()

@@ -67,6 +67,9 @@ class InvitationSignupForm(SignupForm):
         user = cast(User, user)
         user.phone_number = self.cleaned_data["phone_number"]
         user.department = self.cleaned_data["department"]
+        # The sign up alone grants nothing: an admin activates the account and
+        # assigns a group, both directly on the user in the Django admin.
+        user.is_active = False
         user.save()
 
     def save(self, request: HttpRequest) -> User:

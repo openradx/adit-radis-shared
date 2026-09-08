@@ -135,20 +135,28 @@ def test_accepted_invitation_cannot_be_canceled(client: Client):
 
 
 @pytest.mark.django_db
-def test_status_follows_the_whole_onboarding(client: Client):
+def test_invitations_page_follows_the_whole_onboarding(client: Client):
+    client.force_login(create_inviter())
     invitation = Invitation.objects.create(email="new.user@example.org")
-    assert invitation.status == "Pending"
+    assert "Pending" in client.get(reverse("invitations")).text
 
-    client.get(accept_url(invitation))
-    client.post(reverse("account_signup"), SIGNUP_DATA)
-    invitation.refresh_from_db()
-    # The sign up alone is not the end: an admin still has to assign a group.
-    assert invitation.status == "Signed up"
-
+    invitee = Client()
+    invitee.get(accept_url(invitation))
+    invitee.post(reverse("account_signup"), SIGNUP_DATA)
     user = User.objects.get(username="invited")
+
+    # The sign up alone is not the end: the row waits for the admin and links
+    # directly to the user in the Django admin.
+    response = client.get(reverse("invitations"))
+    assert "Signed up" in response.text
+    assert reverse("admin:accounts_user_change", args=[user.pk]) in response.text
+
+    user.is_active = True
+    user.save()
     add_user_to_group(user, GroupFactory.create())
-    invitation.refresh_from_db()
-    assert invitation.status == "Active"
+
+    # The onboarding is finished, so the invitation disappears from the list.
+    assert "new.user@example.org" not in client.get(reverse("invitations")).text
 
 
 # --- Opening the link -------------------------------------------------------
@@ -209,7 +217,7 @@ def test_signup_with_invitation_creates_user(client: Client):
     response = client.post(reverse("account_signup"), SIGNUP_DATA)
 
     assert response.status_code == 302
-    assert response.headers["Location"] == reverse("home")
+    assert response.headers["Location"] == reverse("account_inactive")
 
     user = User.objects.get(username="invited")
     assert user.email == "new.user@example.org"
@@ -219,20 +227,20 @@ def test_signup_with_invitation_creates_user(client: Client):
     assert user.department == "Radiology"
     assert user.check_password("a-rather-long-password")
     assert EmailAddress.objects.get(user=user).verified
-    assert client.session["_auth_user_id"] == str(user.pk)
 
     invitation.refresh_from_db()
     assert invitation.accepted is not None
     assert invitation.user == user
 
-    # Only an admin can put the user into a group, so the admin is informed ...
+    # Activating the account and assigning a group is the admin's job, so the
+    # admin is informed and the user has to wait, deactivated and logged out.
+    assert not user.is_active
+    assert "_auth_user_id" not in client.session
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == list(settings.ADMINS)
     assert user.username in mail.outbox[0].body
-    # ... and the user is told to wait for that.
-    assert user.groups.count() == 0
-    response = client.get(reverse("home"))
-    assert "not assigned to any group yet" in response.text
+    response = client.get(reverse("account_inactive"))
+    assert "will activate it" in response.text
 
 
 @pytest.mark.django_db

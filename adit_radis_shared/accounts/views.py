@@ -58,9 +58,11 @@ class InvitationsView(PermissionRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Finished onboardings disappear from the list, so it only shows what
+        # still needs attention.
         context["invitations"] = (
             Invitation.objects.select_related("invited_by", "user")
-            .prefetch_related("user__groups")
+            .exclude(user__is_active=True, user__groups__isnull=False)
             .order_by("-created")
         )
         return context

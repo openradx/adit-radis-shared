@@ -8,8 +8,9 @@
 {% endblock heading %}
 {% block content %}
     <p>
-        Invited users receive an email with a link to the sign-up page. After they signed up
-        an administrator still has to add them to a group.
+        Invited users receive an email with a link to the sign-up page. After they signed
+        up, an administrator still has to activate the account and assign a group — the
+        button on a signed up row leads directly there.
     </p>
     <form method="post" action="{% url 'invitations' %}" class="mb-4">
         {% csrf_token %}
@@ -36,6 +37,12 @@
                     <td>{{ invitation.expires|date:"SHORT_DATETIME_FORMAT" }}</td>
                     <td>{{ invitation.status }}</td>
                     <td>
+                        {% if invitation.status == "Signed up" %}
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="{% url 'admin:accounts_user_change' invitation.user.pk %}">
+                                Activate user
+                            </a>
+                        {% endif %}
                         {% if not invitation.accepted %}
                             <div class="d-flex gap-2">
                                 {% if invitation.status == "Pending" %}
