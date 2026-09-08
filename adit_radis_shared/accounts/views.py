@@ -3,7 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.http import HttpRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import FormView, TemplateView
@@ -62,6 +62,16 @@ class InvitationsView(PermissionRequiredMixin, FormView):
             "-created"
         )
         return context
+
+
+class InvitationCancelView(PermissionRequiredMixin, View):
+    permission_required = "accounts.add_invitation"
+
+    def post(self, request: AuthenticatedHttpRequest, pk: int):
+        invitation = get_object_or_404(Invitation, pk=pk, accepted=None)
+        invitation.delete()
+        messages.success(request, f"Invitation to {invitation.email} canceled.")
+        return redirect("invitations")
 
 
 class InvitationAcceptView(View):

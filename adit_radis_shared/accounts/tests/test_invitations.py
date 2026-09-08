@@ -79,6 +79,61 @@ def test_existing_user_cannot_be_invited(client: Client):
     assert not mail.outbox
 
 
+@pytest.mark.django_db
+def test_invitations_page_shows_link_of_pending_invitations(client: Client):
+    client.force_login(create_inviter())
+    pending = Invitation.objects.create(email="pending@example.org")
+    expired = Invitation.objects.create(
+        email="late@example.org", expires=timezone.now() - timedelta(minutes=1)
+    )
+
+    response = client.get(reverse("invitations"))
+
+    assert accept_url(pending) in response.text
+    assert accept_url(expired) not in response.text
+
+
+@pytest.mark.django_db
+def test_pending_invitation_cannot_be_sent_twice(client: Client):
+    client.force_login(create_inviter())
+    Invitation.objects.create(email="new.user@example.org")
+
+    response = client.post(reverse("invitations"), {"email": "new.user@example.org"})
+
+    assert response.status_code == 200
+    assert "already pending" in response.text
+    assert Invitation.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_invitation_can_be_canceled(client: Client):
+    client.force_login(create_inviter())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+
+    response = client.post(reverse("invitation_cancel", kwargs={"pk": invitation.pk}))
+
+    assert response.status_code == 302
+    assert not Invitation.objects.exists()
+    assert client.get(accept_url(invitation)).status_code == 410
+    # The email address is free for a new invitation again.
+    response = client.post(reverse("invitations"), {"email": "new.user@example.org"})
+    assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_accepted_invitation_cannot_be_canceled(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+    client.post(reverse("account_signup"), SIGNUP_DATA)
+    client.logout()
+    client.force_login(create_inviter())
+
+    response = client.post(reverse("invitation_cancel", kwargs={"pk": invitation.pk}))
+
+    assert response.status_code == 404
+    assert Invitation.objects.count() == 1
+
+
 # --- Opening the link -------------------------------------------------------
 
 

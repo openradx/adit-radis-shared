@@ -12,6 +12,11 @@ urlpatterns = [
     ),
     path("invitations/", views.InvitationsView.as_view(), name="invitations"),
     path(
+        "invitations/<int:pk>/cancel/",
+        views.InvitationCancelView.as_view(),
+        name="invitation_cancel",
+    ),
+    path(
         "invitations/accept/<str:token>/",
         views.InvitationAcceptView.as_view(),
         name="invitation_accept",

@@ -7,6 +7,7 @@ from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import AbstractBaseUser
 from django.http import HttpRequest
+from django.utils import timezone
 
 from .invitations import forget_invitation, get_invitation, send_new_user_mail_to_admins
 from .models import Invitation, User
@@ -21,6 +22,14 @@ class InvitationForm(forms.ModelForm):
         email: str = self.cleaned_data["email"]
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account with this email address already exists.")
+        pending = Invitation.objects.filter(
+            email__iexact=email, accepted=None, expires__gt=timezone.now()
+        )
+        if pending.exists():
+            raise forms.ValidationError(
+                "An invitation for this email address is already pending. "
+                "Cancel it first to send a new one."
+            )
         return email
 
 

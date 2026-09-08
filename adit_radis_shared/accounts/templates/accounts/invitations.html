@@ -24,6 +24,7 @@
                 <th>Sent</th>
                 <th>Expires</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -34,12 +35,42 @@
                     <td>{{ invitation.created|date:"SHORT_DATETIME_FORMAT" }}</td>
                     <td>{{ invitation.expires|date:"SHORT_DATETIME_FORMAT" }}</td>
                     <td>{{ invitation.status }}</td>
+                    <td>
+                        {% if not invitation.accepted %}
+                            <div class="d-flex gap-2">
+                                {% if invitation.status == "Pending" %}
+                                    {# For handing the link over directly when the mail does not arrive. #}
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary copy-invitation-link"
+                                            data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'invitation_accept' invitation.token %}">
+                                        Copy link
+                                    </button>
+                                {% endif %}
+                                <form method="post"
+                                      action="{% url 'invitation_cancel' invitation.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="5">No invitations sent yet.</td>
+                    <td colspan="6">No invitations sent yet.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 {% endblock content %}
+{% block script %}
+    <script>
+        document.querySelectorAll(".copy-invitation-link").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await navigator.clipboard.writeText(button.dataset.link);
+                button.textContent = "Copied";
+                setTimeout(() => (button.textContent = "Copy link"), 1500);
+            });
+        });
+    </script>
+{% endblock script %}
