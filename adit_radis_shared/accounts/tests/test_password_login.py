@@ -31,8 +31,8 @@ def test_login_with_wrong_password(client: Client):
 
 
 @pytest.mark.django_db
-def test_signup_is_closed(client: Client):
+def test_signup_is_closed_without_invitation(client: Client):
     response = client.get(reverse("account_signup"))
 
     assert response.status_code == 200
-    assert "Signing up is not possible" in response.text
+    assert "only possible with an invitation" in response.text

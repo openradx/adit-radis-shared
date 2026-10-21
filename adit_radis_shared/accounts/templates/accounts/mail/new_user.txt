@@ -1,0 +1,5 @@
+{{ user.get_full_name|default:user.username }} ({{ user.username }}, {{ user.email }}) has just created an account on {{ site_name }}.
+
+The account is not activated yet and has no group. Please activate the user and add them to a group:
+
+{{ url }}
