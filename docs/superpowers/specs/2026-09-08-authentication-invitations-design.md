@@ -4,7 +4,7 @@
 **Status:** Draft — distilled from the meeting decisions, pending review
 
 Sources are tagged per requirement: **[M1]** concept meeting (August, Kai/Luca/Ritwik),
-**[M2]** flow design meeting (early September), **[M3]** demo review meeting (2026-09-08).
+**[M2]** flow design meeting (early September), **[M3]** demo review meeting (2026-09-08), **[M4]** screen-share review (2026-10-08).
 Untagged statements are implementation decisions within the agreed frame.
 
 ## Background
@@ -58,6 +58,9 @@ admin's onboarding workflow; a second PR on top adds the OIDC login. [M3]
   invited sign up — exactly once, on the first login. [M2][M3]
 - O4. CI never runs an identity provider: the OIDC tests stub the provider's three HTTP
   endpoints. Keycloak exists only as a dev-compose profile for manual testing. [M1]
+- O5. Right after the first login through the provider the user is redirected to a
+  dedicated page saying that the administrators were informed and that they have to
+  wait for a group; later logins land on the home page as usual. [M4]
 
 ## Invitations
 

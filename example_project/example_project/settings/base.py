@@ -203,6 +203,12 @@ if OIDC_SERVER_URL:
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.SocialAccountAdapter"
 
+# Where a user lands right after the account was created by the first login
+# through the identity provider: a page telling them that the admins were
+# informed and that they have to wait for a group. Invited sign ups never get
+# here, they end on the "account inactive" page.
+ACCOUNT_SIGNUP_REDIRECT_URL = "first_login"
+
 # Settings for the username/password login of django-allauth. Signing up is only
 # possible with an invitation (see accounts.adapters), which already proves that
 # the user owns the email address, so allauth does not verify it again.

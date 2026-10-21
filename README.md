@@ -31,6 +31,9 @@ of the host:
 
 The OIDC login is only offered when `OIDC_SERVER_URL` is set in the `.env` file.
 
+After the first login through the identity provider the user lands on a page saying that the
+admins were informed, and the admins get the same mail as after an invited sign up.
+
 ## Invitations
 
 New users with a username and password can only sign up with an invitation. Users with the

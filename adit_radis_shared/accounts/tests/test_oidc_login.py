@@ -98,8 +98,10 @@ def test_first_oidc_login_creates_user_without_group(client: Client, settings):
 
     response = login_via_oidc(client)
 
+    # The first login lands on a dedicated page, see ACCOUNT_SIGNUP_REDIRECT_URL.
     assert response.status_code == 302
-    assert response.headers["Location"] == reverse("home")
+    assert response.headers["Location"] == reverse("first_login")
+    assert "have been informed" in client.get(reverse("first_login")).text
 
     user = User.objects.get(username="idp-user")
     assert user.email == "idp-user@example.org"
@@ -131,6 +133,7 @@ def test_second_oidc_login_reuses_user(client: Client, settings):
     response = login_via_oidc(client)
 
     assert response.status_code == 302
+    assert response.headers["Location"] == reverse("home")
     user = User.objects.get(username="idp-user")
     assert client.session["_auth_user_id"] == str(user.pk)
     assert User.objects.count() == 1
