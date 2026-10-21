@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "adit_radis_shared.accounts.apps.AccountsConfig",
     "adit_radis_shared.token_authentication.apps.TokenAuthenticationConfig",
     "example_project.example_app.apps.ExampleAppConfig",
@@ -174,6 +176,32 @@ AUTHENTICATION_BACKENDS = [
 
 # Where to redirect to after login
 LOGIN_REDIRECT_URL = "home"
+
+# Settings for the OIDC login provided by django-allauth. The provider is only
+# configured when a server URL is set, so that the app also runs without an
+# identity provider being available.
+OIDC_SERVER_URL = env.str("OIDC_SERVER_URL", default="")
+OIDC_CLIENT_ID = env.str("OIDC_CLIENT_ID", default="")
+OIDC_CLIENT_SECRET = env.str("OIDC_CLIENT_SECRET", default="")
+OIDC_PROVIDER_NAME = env.str("OIDC_PROVIDER_NAME", default="Identity Provider")
+
+SOCIALACCOUNT_PROVIDERS = {}
+if OIDC_SERVER_URL:
+    SOCIALACCOUNT_PROVIDERS["openid_connect"] = {
+        "APPS": [
+            {
+                "provider_id": "oidc",
+                "name": OIDC_PROVIDER_NAME,
+                "client_id": OIDC_CLIENT_ID,
+                "secret": OIDC_CLIENT_SECRET,
+                "settings": {"server_url": OIDC_SERVER_URL},
+            }
+        ]
+    }
+
+# The identity provider is responsible for verifying the email address.
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_ADAPTER = "adit_radis_shared.accounts.adapters.SocialAccountAdapter"
 
 # Settings for the username/password login of django-allauth. Signing up is only
 # possible with an invitation (see accounts.adapters), which already proves that
