@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -8,6 +10,8 @@ from django.urls import reverse
 from adit_radis_shared.common.utils.mail import send_mail_to_admins
 
 from .models import Invitation, User
+
+logger = logging.getLogger(__name__)
 
 SESSION_KEY = "invitation_id"
 
@@ -49,7 +53,11 @@ def send_invitation_mail(request: HttpRequest, invitation: Invitation) -> None:
 
 
 def send_new_user_mail_to_admins(request: HttpRequest, user: User) -> None:
-    """Tell the admins that a user was created, as only they can put them in a group."""
+    """Tell the admins that a user was created, as only they can put them in a group.
+
+    The user is already saved when this runs, so a failing mail server is logged instead
+    of ending the sign up with an error page.
+    """
     text = render_to_string(
         "accounts/mail/new_user.txt",
         {
@@ -60,4 +68,7 @@ def send_new_user_mail_to_admins(request: HttpRequest, user: User) -> None:
             ),
         },
     )
-    send_mail_to_admins("New user registered", text_content=text)
+    try:
+        send_mail_to_admins("New user registered", text_content=text)
+    except OSError:  # smtplib's errors are OSErrors too
+        logger.exception("Could not notify the admins about the new user %s", user.username)

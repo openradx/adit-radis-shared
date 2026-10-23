@@ -1,5 +1,6 @@
 """Integration tests for the invitation flow: invite, open the link, sign up."""
 
+import smtplib
 from datetime import timedelta
 
 import pytest
@@ -9,6 +10,7 @@ from django.core import mail
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
+from pytest_mock import MockerFixture
 
 from adit_radis_shared.accounts.factories import GroupFactory, UserFactory
 from adit_radis_shared.accounts.models import Invitation, User
@@ -276,6 +278,27 @@ def test_admin_mail_is_not_html_escaped(client: Client):
     client.post(reverse("account_signup"), SIGNUP_DATA | {"last_name": "O'Brien"})
 
     assert "In O'Brien (invited, new.user@example.org)" in mail.outbox[0].body
+
+
+@pytest.mark.django_db
+def test_signup_survives_a_failing_mail_server(
+    client: Client, mocker: MockerFixture, caplog: pytest.LogCaptureFixture
+):
+    mocker.patch(
+        "django.core.mail.backends.locmem.EmailBackend.send_messages",
+        side_effect=smtplib.SMTPServerDisconnected("Connection unexpectedly closed"),
+    )
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    response = client.post(reverse("account_signup"), SIGNUP_DATA)
+
+    # The account exists and the invitation is used up, so the sign up has to end as usual.
+    assert response.status_code == 302
+    assert response.headers["Location"] == reverse("account_inactive")
+    invitation.refresh_from_db()
+    assert invitation.user == User.objects.get(username="invited")
+    assert "Could not notify the admins about the new user invited" in caplog.text
 
 
 @pytest.mark.django_db
