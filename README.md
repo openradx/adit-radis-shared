@@ -29,7 +29,9 @@ of the host:
 127.0.0.1 keycloak.local
 ```
 
-The OIDC login is only offered when `OIDC_SERVER_URL` is set in the `.env` file.
+The OIDC login is only offered when `OIDC_SERVER_URL` is set in the `.env` file; it is
+empty in `example.env`, so set it to the realm URL given there when you start the stack
+with the `keycloak` profile.
 
 After the first login through the identity provider the user lands on a page saying that the
 admins were informed, and the admins get the same mail as after an invited sign up.
