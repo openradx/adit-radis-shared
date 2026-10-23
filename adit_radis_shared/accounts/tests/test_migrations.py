@@ -47,6 +47,7 @@ def test_0013_backfill_email_addresses(migrator_ext: Migrator):
     EmailAddress = old_state.apps.get_model("account", "EmailAddress")
     first = User.objects.create(username="first", email="Shared@Example.org")
     second = User.objects.create(username="second", email="shared@example.org")
+    alone = User.objects.create(username="alone", email="Alone@Example.org")
     without = User.objects.create(username="without", email="")
     done = User.objects.create(username="done", email="done@example.org")
     EmailAddress.objects.create(user=done, email="done@example.org", verified=False, primary=True)
@@ -54,12 +55,18 @@ def test_0013_backfill_email_addresses(migrator_ext: Migrator):
     new_state = migrator_ext.apply_tested_migration(("accounts", "0013_backfill_email_addresses"))
 
     EmailAddress = new_state.apps.get_model("account", "EmailAddress")
-    assert EmailAddress.objects.count() == 3
-    address = EmailAddress.objects.get(user_id=first.pk)
-    assert (address.email, address.verified, address.primary) == ("shared@example.org", True, True)
-    # allauth allows a verified address only once, so the second copy stays unverified.
-    address = EmailAddress.objects.get(user_id=second.pk)
-    assert (address.email, address.verified) == ("shared@example.org", False)
+    assert EmailAddress.objects.count() == 4
+    address = EmailAddress.objects.get(user_id=alone.pk)
+    assert (address.email, address.verified, address.primary) == ("alone@example.org", True, True)
+    # A shared address stays unverified for every user, so that allauth's password
+    # reset, which prefers verified rows, still reaches all of them.
+    for user in (first, second):
+        address = EmailAddress.objects.get(user_id=user.pk)
+        assert (address.email, address.verified, address.primary) == (
+            "shared@example.org",
+            False,
+            True,
+        )
     assert not EmailAddress.objects.filter(user_id=without.pk).exists()
     # A row that already exists is left alone, whatever it looks like.
     assert EmailAddress.objects.get(user_id=done.pk).verified is False
