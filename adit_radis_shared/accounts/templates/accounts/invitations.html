@@ -1,0 +1,87 @@
+{% extends "accounts/accounts_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% block title %}
+    Invitations
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Invitations" />
+{% endblock heading %}
+{% block content %}
+    <p>
+        Invited users receive an email with a link to the sign-up page. After they signed
+        up, an administrator still has to activate the account and assign a group — the
+        button on a signed up row leads directly there.
+    </p>
+    <form method="post" action="{% url 'invitations' %}" class="mb-4">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input type="submit" class="btn btn-primary" value="Invite" />
+    </form>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Invited by</th>
+                <th>Sent</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invitation in invitations %}
+                <tr>
+                    <td>{{ invitation.email }}</td>
+                    <td>{{ invitation.invited_by|default:"—" }}</td>
+                    <td>{{ invitation.created|date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td>{{ invitation.expires|date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td>{{ invitation.status }}</td>
+                    <td>
+                        {% if invitation.status == "Signed up" and invitation.user %}
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="{% url 'admin:accounts_user_change' invitation.user.pk %}">
+                                Activate user
+                            </a>
+                        {% endif %}
+                        {% if not invitation.accepted %}
+                            <div class="d-flex gap-2">
+                                {% if invitation.status == "Pending" %}
+                                    {# For handing the link over directly when the mail does not arrive. #}
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary copy-invitation-link"
+                                            data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'invitation_accept' invitation.token %}">
+                                        Copy link
+                                    </button>
+                                {% endif %}
+                                <form method="post"
+                                      action="{% url 'invitation_cancel' invitation.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No active invitations.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
+{% block script %}
+    <script>
+        document.querySelectorAll(".copy-invitation-link").forEach((button) => {
+            button.addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(button.dataset.link);
+                    button.textContent = "Copied";
+                } catch {
+                    button.textContent = "Copy failed";
+                }
+                setTimeout(() => (button.textContent = "Copy link"), 1500);
+            });
+        });
+    </script>
+{% endblock script %}
