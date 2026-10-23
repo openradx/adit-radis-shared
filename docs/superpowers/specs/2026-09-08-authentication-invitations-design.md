@@ -1,10 +1,10 @@
-# Replace django-registration-redux with django-allauth: invitation flow
+# Replace django-registration-redux with django-allauth: invitation flow and OIDC login
 
 **Date:** 2026-09-08
 **Status:** Draft — distilled from the meeting decisions, pending review
 
 Sources are tagged per requirement: **[M1]** concept meeting (August, Kai/Luca/Ritwik),
-**[M2]** flow design meeting (early September), **[M3]** demo review meeting (2026-09-08).
+**[M2]** flow design meeting (early September), **[M3]** demo review meeting (2026-09-08), **[M4]** screen-share review (2026-10-08).
 Untagged statements are implementation decisions within the agreed frame.
 
 ## Background
@@ -12,9 +12,9 @@ Untagged statements are implementation decisions within the agreed frame.
 Registration currently runs on django-registration-redux, which cannot speak OIDC and is
 aging. The department wants an invitation-based sign up for username/password accounts,
 replacing the old self-service registration with admin approval, and later a login through
-an identity provider. This document covers the first pull request: the library switch and
-the invitations. The identity provider login follows in a second, small pull request on top
-(Kai, 2026-10-08). All of this is developed in the example project of adit-radis-shared
+an identity provider. The library switch and the invitations are the first
+pull request; the identity provider login is a second, small pull request on top of it
+(Kai, 2026-10-08), and the OIDC section below belongs to that one. All of this is developed in the example project of adit-radis-shared
 first; ADIT and RADIS adopt it later. [M1]
 
 Authentication changes; authorization does not. Groups inside the app, the active group
@@ -24,11 +24,10 @@ mechanism and all permissions stay exactly as they are. [M1]
 
 One PR against adit-radis-shared that removes redux, lets allauth handle username/password
 login, password change and password reset, and adds the invitation flow including the
-admin's onboarding workflow. [M3]
+admin's onboarding workflow; a second PR on top adds the OIDC login. [M3]
 
 ## Non-goals
 
-- The identity provider (OIDC) login. Second pull request, on top of this one. [M3]
 - LDAP. Waits for the conversation with IT (Wolfgang) or a test LDAP server. [M1][M3]
 - Migration of existing users. Explicitly last; nothing in this PR may assume it. [M2]
 - Adoption in ADIT and RADIS. Separate PRs after this shape is approved. [M1]
@@ -46,6 +45,22 @@ admin's onboarding workflow. [M3]
   and permission behaviour is identical for every kind of user. [M1]
 - L4. Email addresses are unique across accounts. The old registration form enforced
   this at sign up; allauth keeps enforcing it.
+
+## OIDC
+
+- O1. The identity provider is configured only through OIDC_SERVER_URL, OIDC_CLIENT_ID,
+  OIDC_CLIENT_SECRET and OIDC_PROVIDER_NAME; without a server URL the app runs with no
+  OIDC login offered. Nothing in the code is Keycloak-specific. [M1]
+- O2. The app knows nothing about LDAP or how the provider verifies people; whoever the
+  provider authenticates gets an app account. [M2]
+- O3. An OIDC user is created active on the first login (the provider is the
+  activation), starts with no group, and triggers the same admin notification as an
+  invited sign up — exactly once, on the first login. [M2][M3]
+- O4. CI never runs an identity provider: the OIDC tests stub the provider's three HTTP
+  endpoints. Keycloak exists only as a dev-compose profile for manual testing. [M1]
+- O5. Right after the first login through the provider the user is redirected to a
+  dedicated page saying that the administrators were informed and that they have to
+  wait for a group; later logins land on the home page as usual. [M4]
 
 ## Invitations
 
@@ -108,10 +123,11 @@ admin's onboarding workflow. [M3]
 ## Verification
 
 - V1. Every numbered requirement is covered by at least one integration test under
-  adit_radis_shared/accounts/tests/ (test_password_login,
+  adit_radis_shared/accounts/tests/ (test_password_login, test_oidc_login,
   test_invitations). The tests are the executable form of this document.
 - V2. Every test runs within the 60 second per-test timeout and needs no service
-  beyond the database.
+  beyond the database: the OIDC tests stub the provider's endpoints (see O4), no test
+  may depend on the Keycloak container.
 - V3. The Playwright acceptance tests of ADIT and RADIS log in through the shared
   helper — L2 exists so they stay untouched. The invitation flow itself is verified
   at the Django test client level only; see Q4.

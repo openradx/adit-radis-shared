@@ -41,6 +41,10 @@ class ActiveGroupView(LoginRequiredMixin, View):
         )
 
 
+class FirstLoginView(LoginRequiredMixin, TemplateView):
+    template_name = "accounts/first_login.html"
+
+
 class InvitationsView(PermissionRequiredMixin, FormView):
     permission_required = "accounts.add_invitation"
     template_name = "accounts/invitations.html"

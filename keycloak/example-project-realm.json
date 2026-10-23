@@ -1,0 +1,30 @@
+{
+  "realm": "example-project",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "example-project-web",
+      "name": "Example Project",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "example-project-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8000/*"],
+      "webOrigins": ["http://localhost:8000"]
+    }
+  ],
+  "users": [
+    {
+      "username": "kc-user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "kc-user@example-project.example",
+      "firstName": "Keycloak",
+      "lastName": "User",
+      "credentials": [{ "type": "password", "value": "kc-user", "temporary": false }]
+    }
+  ]
+}

@@ -43,7 +43,9 @@
                 {% block heading %}
                 {% endblock heading %}
                 {% include "common/_messages_panel.html" %}
-                {% include "accounts/_no_group_alert.html" %}
+                {% block no_group_alert %}
+                    {% include "accounts/_no_group_alert.html" %}
+                {% endblock no_group_alert %}
                 {% block content %}
                 {% endblock content %}
             </div>

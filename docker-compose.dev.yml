@@ -55,3 +55,24 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - ${POSTGRES_DEV_PORT:-5432}:5432
+
+  # Identity provider for developing and manually testing the OIDC login. Only
+  # started when the "keycloak" profile is enabled, so that it stays out of the
+  # way of the test runs on the CI server.
+  # Reachable under the same URL from the browser and from inside the containers,
+  # so that the issuer in the discovery document matches on both sides. This
+  # requires "127.0.0.1 keycloak.local" in the /etc/hosts file of the host.
+  keycloak:
+    profiles:
+      - keycloak
+    image: quay.io/keycloak/keycloak:26.7.2@sha256:6efbadc00f0ed0237610becf11f4101b9c3ad8edf08a5b70c97aa4154ed436ec
+    hostname: keycloak.local
+    command: start-dev --import-realm --http-port=${KEYCLOAK_DEV_PORT:-8090}
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: http://keycloak.local:${KEYCLOAK_DEV_PORT:-8090}
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - ${KEYCLOAK_DEV_PORT:-8090}:${KEYCLOAK_DEV_PORT:-8090}

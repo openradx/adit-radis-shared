@@ -10,6 +10,7 @@ urlpatterns = [
         views.ActiveGroupView.as_view(),
         name="active_group",
     ),
+    path("first-login/", views.FirstLoginView.as_view(), name="first_login"),
     path("invitations/", views.InvitationsView.as_view(), name="invitations"),
     path(
         "invitations/<int:pk>/cancel/",
