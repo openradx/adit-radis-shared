@@ -67,6 +67,18 @@ def test_invite_sends_mail_with_link(client: Client):
 
 
 @pytest.mark.django_db
+def test_invitation_mail_is_not_html_escaped(client: Client):
+    inviter = create_inviter()
+    inviter.first_name, inviter.last_name = "Mary", "O'Brien"
+    inviter.save()
+    client.force_login(inviter)
+
+    client.post(reverse("invitations"), {"email": "new.user@example.org"})
+
+    assert "Mary O'Brien has invited you" in mail.outbox[0].body
+
+
+@pytest.mark.django_db
 def test_existing_user_cannot_be_invited(client: Client):
     client.force_login(create_inviter())
     existing = UserFactory.create(email="already@example.org")
@@ -254,6 +266,16 @@ def test_signup_with_invitation_creates_user(client: Client):
     assert user.username in mail.outbox[0].body
     response = client.get(reverse("account_inactive"))
     assert "have been informed" in response.text
+
+
+@pytest.mark.django_db
+def test_admin_mail_is_not_html_escaped(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    client.post(reverse("account_signup"), SIGNUP_DATA | {"last_name": "O'Brien"})
+
+    assert "In O'Brien (invited, new.user@example.org)" in mail.outbox[0].body
 
 
 @pytest.mark.django_db
