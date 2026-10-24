@@ -8,6 +8,7 @@ import typer
 from dotenv import set_key
 
 from .helper import CommandHelper
+from .worktree_env import configure as configure_worktree
 
 
 def init_workspace(
@@ -541,3 +542,27 @@ def try_github_actions():
         )
 
     helper.execute_cmd(f"{act_path} -P ubuntu-latest=catthehacker/ubuntu:act-latest")
+
+
+def worktree_guard(ctx: typer.Context):
+    # The CLI's callback, so it runs before every command. A git worktree gets its own
+    # ports and stack name: with the main checkout's .env, compose-up would take over the
+    # main checkout's stack and database. Every checkout records its ports for the other
+    # projects on this machine to avoid. init-workspace writes .env from its options
+    # first, and the next command adopts what it set.
+    if ctx.invoked_subcommand in ("init-workspace", "worktree-env"):
+        return
+    helper = CommandHelper()
+    if (helper.root_path / ".git").exists():
+        configure_worktree(helper.root_path, helper.project_id)
+
+
+def worktree_env(
+    slot: Annotated[
+        int | None, typer.Option(help="Slot to use instead of the next free one")
+    ] = None,
+):
+    """Give this git worktree its own dev ports and stack name in .env"""
+
+    helper = CommandHelper()
+    configure_worktree(helper.root_path, helper.project_id, slot)

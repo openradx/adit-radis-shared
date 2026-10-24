@@ -1,35 +1,30 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.12"
-# ///
-"""Give a git worktree of this repository its own host ports and Compose projects.
+"""Give a git worktree of a project its own host ports and compose stack.
 
 Claude Code copies the main checkout's .env into each worktree it creates
-(.worktreeinclude), so without this a worktree's stacks would publish the same
-host ports as the main checkout's and, where a project name is fixed, take over
-its containers and volumes.
+(.worktreeinclude), so without this the CLI would run a worktree's stack as the
+main checkout's compose project, on its database and host ports.
 
-Each linked worktree gets a slot N >= 1; the main checkout is slot 0. Every port
-in PORTS becomes the main checkout's value + N * PORT_STEP, a URL in .env that
-points at one of those ports moves with it, and the names from names() become
-unique to the worktree. The slot is recorded at the top of the worktree's .env,
-with the worktree's path, so a copy of that .env elsewhere is not taken for the
-slot's owner. Later runs keep what the worktree's .env sets apart from the main
-checkout's values, ports and names alike, and only fill in the rest; a worktree
-set up by hand before keeps its own the same way. --slot rewrites them all. In
-the main checkout the script changes nothing.
+Each linked worktree gets a slot N >= 1; the main checkout is slot 0. Every host
+port docker-compose.dev.yml publishes becomes the main checkout's value
++ N * PORT_STEP, a URL in .env that points at one of those ports moves with it,
+and STACK_NAME becomes <project>_wt<N>_<worktree>. The slot is recorded at the top
+of the worktree's .env, with the worktree's path, so a copy of that .env elsewhere
+is not taken for the slot's owner. Later runs keep what the worktree's .env sets
+apart from the main checkout's values, ports and names alike, and only fill in the
+rest; a worktree set up by hand before keeps its own the same way. --slot rewrites
+them all. In the main checkout nothing in .env changes.
 
 Every checkout, the main one included, also records its ports in a directory
-shared by the projects on this machine that use this script (REGISTRY). A
-worktree takes no slot whose ports another checkout, of this repository or any
-other, has recorded, whether or not that stack is running. A port of this
-checkout that another checkout also records is only warned about, with a free
-one to set in .env instead.
+shared by the projects on this machine that use this module or a copy of it
+(REGISTRY). A worktree takes no slot whose ports another checkout, of this
+repository or any other, has recorded, whether or not that stack is running. A
+port of this checkout that another checkout also records is only warned about,
+with a free one to set in .env instead.
 
-    uv run --script scripts/worktree_env.py [--slot N]
+commands.worktree_guard runs configure() before every CLI command;
+`uv run cli worktree-env --slot N` picks the slot by hand.
 """
 
-import argparse
 import hashlib
 import json
 import os
@@ -46,20 +41,6 @@ from typing import TextIO
 
 ENV_EXAMPLE = "example.env"
 
-# Every host port the development stack publishes, with the default
-# docker-compose.dev.yml applies when .env leaves it unset.
-PORTS = {
-    "WEB_DEV_PORT": 8000,
-    "POSTGRES_DEV_PORT": 5432,
-    "REMOTE_DEBUGGING_PORT": 5678,
-}
-
-
-def names(worktree: str, slot: int) -> dict[str, str]:
-    # The CLI's compose project.
-    return {"STACK_NAME": f"example_project_wt{slot}_{worktree}"}
-
-
 PORT_STEP = 100
 MAX_SLOT = 50
 REGISTRY = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state") / "dev-ports"
@@ -72,6 +53,20 @@ LOCAL_URL_PORT = re.compile(r"(?<![\w.-])((?:[\w-]+\.)*localhost|127\.0\.0\.1):(
 LOCAL_URL_NO_PORT = re.compile(r"\bhttp://(?:(?:[\w-]+\.)*localhost|127\.0\.0\.1)(?![\w.:-])")
 # The password of a URL, hidden in the printed summary.
 URL_PASSWORD = re.compile(r"(://[^:/?#@\s]*:)[^/?#@\s]+@")
+# A host port docker-compose.dev.yml publishes, "- ${VAR:-8000}:8000", with the
+# default that applies when .env leaves VAR unset.
+PUBLISHED_PORT = re.compile(r"^\s*-\s*[\"']?\$\{(\w+):-(\d+)\}:", re.MULTILINE)
+
+
+def dev_ports(root: Path) -> dict[str, int]:
+    """Every host port the development stack publishes, by its variable in .env."""
+    text = (root / "docker-compose.dev.yml").read_text(encoding="utf-8")
+    return {var: int(port) for var, port in PUBLISHED_PORT.findall(text)}
+
+
+def names(project: str, worktree: str, slot: int) -> dict[str, str]:
+    # The compose project the CLI runs (CommandHelper.get_stack_name).
+    return {"STACK_NAME": f"{project}_wt{slot}_{worktree}"}
 
 
 def git(*args: str, cwd: Path) -> str:
@@ -243,7 +238,7 @@ def warn_about_claims(
 def clashes(base: dict[str, int], slot: int, taken: set[int]) -> set[int]:
     """Ports of `slot` that the main checkout or a taken slot also publishes.
 
-    Two ports of PORTS a multiple of PORT_STEP apart meet in some pair of slots,
+    Two dev ports a multiple of PORT_STEP apart meet in some pair of slots,
     e.g. 80 at slot 10 and 1080 at slot 0.
     """
     others = {port for other in {0, *taken} for port in shifted(base, other).values()}
@@ -316,27 +311,27 @@ def render(text: str, slot: int, root: Path, updates: dict[str, str]) -> str:
     if appended:
         if lines and not lines[-1].endswith("\n"):
             lines.append("\n")
-        lines += ["\n# Worktree (scripts/worktree_env.py)\n", *appended]
+        lines += ["\n# Worktree (uv run cli worktree-env)\n", *appended]
     header = (
         f"# worktree slot: {slot} of {root} (ports are the main checkout's"
-        f" + {slot * PORT_STEP}; written by scripts/worktree_env.py)\n"
+        f" + {slot * PORT_STEP}; written by uv run cli worktree-env)\n"
     )
     return header + "".join(lines)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Give this git worktree its own host ports and names in .env."
-    )
-    parser.add_argument("--slot", type=int, help="use this slot instead of the next free one")
-    args = parser.parse_args()
+def configure(root: Path, project: str, requested: int | None = None) -> None:
+    """Give `root` its own ports and names if it is a linked worktree, and record its ports.
+
+    `project` names the stack (<project>_wt<N>_<worktree>); `requested` is a slot
+    to use instead of the next free one.
+    """
     with registry_lock():
-        configure(args.slot)
+        _configure(root, project, requested)
 
 
-def configure(requested: int | None) -> None:
+def _configure(root: Path, project: str, requested: int | None) -> None:
     try:
-        root = Path(git("rev-parse", "--show-toplevel", cwd=Path.cwd())).resolve()
+        root = Path(git("rev-parse", "--show-toplevel", cwd=root)).resolve()
     except (OSError, subprocess.CalledProcessError) as error:
         # A copy without git, or a checkout git refuses to read (another owner, a
         # .git file pointing at another machine's path): the command must still run.
@@ -357,7 +352,7 @@ def configure(requested: int | None) -> None:
     # Without a main .env, a worktree's .env comes from the example.
     base_file = main_env_file if main_env_file.is_file() else root / ENV_EXAMPLE
     main_env = parse_env(base_file.read_text(encoding="utf-8"))
-    base = {var: port_value(main_env, var, default) for var, default in PORTS.items()}
+    base = {var: port_value(main_env, var, default) for var, default in dev_ports(root).items()}
     claimed = claims(root)
     claimed_ports = {port for _, _, port in claimed}
     if is_main:
@@ -399,7 +394,7 @@ def configure(requested: int | None) -> None:
     worktree = re.sub(r"[^a-z0-9_-]+", "-", root.name.lower())[:32].strip("-_")
     updates = {var: str(port) for var, port in ports.items()}
     # The slot keeps the names apart where worktree directory names coincide.
-    named = names(worktree or "worktree", slot)
+    named = names(project, worktree or "worktree", slot)
     updates |= {var: kept.get(var, value) for var, value in named.items()}
     updates |= moved_urls(main_env, base, ports)
     record(root, ports)
@@ -430,7 +425,3 @@ def configure(requested: int | None) -> None:
     print(f"Worktree slot {slot}; .env now sets:")
     for var, value in updates.items():
         print(f"  {var}={URL_PASSWORD.sub(r'\1***@', value)}")
-
-
-if __name__ == "__main__":
-    main()
