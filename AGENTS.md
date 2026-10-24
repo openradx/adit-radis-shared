@@ -121,12 +121,12 @@ Key variables in `.env` (see `example.env`):
 
 ## Git Worktrees
 
-Claude Code creates worktrees under `.claude/worktrees/<name>` (`claude --worktree`, background agents, subagents with `isolation: worktree`) and copies the gitignored files listed in `.worktreeinclude` into them: `.env` and `.claude/settings.local.json`. With that `.env` unchanged, the CLI would run the worktree's stack as the main checkout's compose project `example_project_dev`, recreating its containers from the worktree's code on its database, on the same host ports. So in a worktree, every `uv run cli` command first runs `scripts/worktree_env.py` (a no-op in the main checkout). It gives the worktree a slot N ≥ 1 (the main checkout is slot 0), recorded on the first line of its `.env` so a rerun changes nothing, and writes into `.env`:
+Claude Code creates worktrees under `.claude/worktrees/<name>` (`claude --worktree`, background agents, subagents with `isolation: worktree`) and copies the gitignored files listed in `.worktreeinclude` into them: `.env` and `.claude/settings.local.json`. With that `.env` unchanged, the CLI would run the worktree's stack as the main checkout's compose project `example_project_dev`, recreating its containers from the worktree's code on its database, on the same host ports. So in a worktree, every `uv run cli` command first runs `scripts/worktree_env.py` (a no-op in the main checkout). It gives the worktree a slot N ≥ 1 (the main checkout is slot 0), recorded on the first line of its `.env`, and writes into `.env`:
 
 - every dev host port as the main checkout's value + N × 100 (slot 1: web 8100, Postgres 5532, debugger 5778), and any localhost URL in `.env` that points at one of them;
 - `STACK_NAME` (`example_project_wt_<name>`): a compose project of its own, so its own containers and volumes and a fresh database.
 
-`uv run --script scripts/worktree_env.py --slot N` picks the slot by hand; a slot is skipped while one of its ports is taken. Attach the debugger to the worktree's `REMOTE_DEBUGGING_PORT`, not the 5678 of `.vscode/launch.json`. Before deleting a worktree, free its volumes with `uv run cli compose-down -- -v`.
+Later runs keep the ports already in `.env`, such as one you changed by hand, and only fill in missing ones; `uv run --script scripts/worktree_env.py --slot N` picks the slot by hand and rewrites them all. A slot is skipped while one of its ports is taken. Attach the debugger to the worktree's `REMOTE_DEBUGGING_PORT`, not the 5678 of `.vscode/launch.json`. Before deleting a worktree, free its volumes with `uv run cli compose-down -- -v`.
 
 ## Code Standards
 
