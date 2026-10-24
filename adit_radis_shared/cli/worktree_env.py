@@ -148,20 +148,24 @@ def registry_lock() -> Iterator[None]:
     lock: TextIO | None
     try:
         REGISTRY.mkdir(parents=True, exist_ok=True)
-        lock = (REGISTRY / ".lock").open("w")
+        lock = (REGISTRY / ".lock").open("a")
     except OSError:
         lock = None  # record() reports the unwritable registry
     if lock is None:
         yield
         return
     with lock:
-        if sys.platform != "win32":
-            import fcntl
+        try:
+            if sys.platform == "win32":
+                import msvcrt
 
-            try:
+                msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)  # gives up after 10 s
+            else:
+                import fcntl
+
                 fcntl.flock(lock, fcntl.LOCK_EX)
-            except OSError as error:  # e.g. ENOLCK on a network home
-                print(f"warning: could not lock {REGISTRY}: {error}")
+        except OSError as error:  # e.g. ENOLCK on a network home
+            print(f"warning: could not lock {REGISTRY}: {error}")
         yield
 
 
@@ -208,6 +212,10 @@ def record(root: Path, ports: dict[str, int]) -> None:
         replace_file(target, json.dumps(entry, indent=2))
     except OSError as error:
         print(f"warning: could not record the ports in {REGISTRY}: {error}")
+
+
+def without_local_ports(value: str) -> str:
+    return LOCAL_URL_PORT.sub(r"\1", value)
 
 
 def local_ports(value: str) -> set[int]:
@@ -396,8 +404,11 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
     # The slot keeps the names apart where worktree directory names coincide.
     named = names(project, worktree or "worktree", slot)
     updates |= {var: kept.get(var, value) for var, value in named.items()}
-    updates |= moved_urls(main_env, base, ports)
-    record(root, ports)
+    for var, moved in moved_urls(main_env, base, ports).items():
+        url = kept.get(var, main_env[var])
+        # Changed beyond its local ports, the worktree's URL was set by hand and stays.
+        set_by_hand = without_local_ports(url) != without_local_ports(main_env[var])
+        updates[var] = url if set_by_hand else moved
     # The names in a copy are another worktree's, so nothing of this one's is left.
     if not copied and (
         renamed := [
@@ -418,10 +429,13 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
 
     text = env_file.read_text(encoding="utf-8")
     rendered = render(text, slot, root, updates)
-    if rendered == text:
+    unchanged = rendered == text
+    if not unchanged:
+        replace_file(env_file, rendered)
+    record(root, ports)  # once .env holds them
+    if unchanged:
         print(f"Worktree slot {slot}: .env is up to date.")
         return
-    replace_file(env_file, rendered)
     print(f"Worktree slot {slot}; .env now sets:")
     for var, value in updates.items():
         print(f"  {var}={URL_PASSWORD.sub(r'\1***@', value)}")

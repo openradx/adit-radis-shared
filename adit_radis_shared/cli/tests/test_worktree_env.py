@@ -74,17 +74,32 @@ def test_render_records_the_slot_and_is_stable(tmp_path: Path):
     assert worktree_env.render(once, 1, tmp_path, updates) == once
 
 
-def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(tmp_path: Path, registry: Path):
+MAIN_ENV = "WEB_DEV_PORT=48000\nSITE_URL=http://localhost:48000/\n"
+
+
+def checkouts(tmp_path: Path) -> tuple[Path, Path]:
+    """A main checkout with MAIN_ENV and a linked worktree of it."""
     main = tmp_path / "main"
     main.mkdir()
     (main / "docker-compose.dev.yml").write_text("    ports:\n      - ${WEB_DEV_PORT:-8000}:8000\n")
     git("init", "-q", cwd=main)
     git("add", "docker-compose.dev.yml", cwd=main)
     git("commit", "-q", "-m", "init", cwd=main)
-    main_env = "WEB_DEV_PORT=48000\nSITE_URL=http://localhost:48000/\n"
-    (main / ".env").write_text(main_env)
+    (main / ".env").write_text(MAIN_ENV)
     worktree = tmp_path / "feature"
     git("worktree", "add", "-q", str(worktree), cwd=main)
+    return main, worktree
+
+
+def set_in_env(path: Path, var: str, value: str) -> None:
+    lines = path.read_text().splitlines()
+    path.write_text(
+        "".join(f"{var}={value}\n" if line.startswith(f"{var}=") else f"{line}\n" for line in lines)
+    )
+
+
+def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(tmp_path: Path, registry: Path):
+    main, worktree = checkouts(tmp_path)
 
     worktree_env.configure(main, "project")
     worktree_env.configure(worktree, "project")
@@ -96,5 +111,44 @@ def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(tmp_path: Pat
         "SITE_URL": "http://localhost:48100/",
         "STACK_NAME": "project_wt1_feature",
     }
-    assert (main / ".env").read_text() == main_env
+    assert (main / ".env").read_text() == MAIN_ENV
     assert len(list(registry.glob("*.json"))) == 2
+
+
+def test_configure_moves_its_own_urls_and_keeps_those_set_by_hand(tmp_path: Path, registry: Path):
+    _, worktree = checkouts(tmp_path)
+    env_file = worktree / ".env"
+    worktree_env.configure(worktree, "project")
+
+    for port in ("48150", "48160"):
+        set_in_env(env_file, "WEB_DEV_PORT", port)
+        worktree_env.configure(worktree, "project")
+        assert (
+            worktree_env.parse_env(env_file.read_text())["SITE_URL"] == f"http://localhost:{port}/"
+        )
+
+    set_in_env(env_file, "SITE_URL", "https://tunnel.example/")
+    set_in_env(env_file, "WEB_DEV_PORT", "48170")
+    worktree_env.configure(worktree, "project")
+    assert worktree_env.parse_env(env_file.read_text())["SITE_URL"] == "https://tunnel.example/"
+
+
+def test_configure_records_no_ports_when_env_cannot_be_written(
+    tmp_path: Path, registry: Path, monkeypatch: pytest.MonkeyPatch
+):
+    main, worktree = checkouts(tmp_path)
+    replace_file = worktree_env.replace_file
+
+    def failing_for_env(path: Path, text: str) -> None:
+        if path.name == ".env":
+            raise OSError("read-only")
+        replace_file(path, text)
+
+    monkeypatch.setattr(worktree_env, "replace_file", failing_for_env)
+    worktree_env.configure(main, "project")
+    with pytest.raises(OSError):
+        worktree_env.configure(worktree, "project")
+
+    assert [json.loads(file.read_text())["checkout"] for file in registry.glob("*.json")] == [
+        str(main.resolve())
+    ]
