@@ -148,3 +148,6 @@ pyvenv.cfg
 
 # Project specific
 .docker-data/
+
+# Claude Code worktrees
+.claude/worktrees/

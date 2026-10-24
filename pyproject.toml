@@ -138,6 +138,8 @@ known-first-party = ["adit_radis_shared", "example_project"]
 
 [tool.djlint]
 profile = "django"
+# Git worktrees live under .claude/worktrees/.
+extend_exclude = ".claude"
 max_line_length = 120
 ignore = "H021,H030,H031,T002"
 
