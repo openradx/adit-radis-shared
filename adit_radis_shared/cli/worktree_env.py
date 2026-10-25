@@ -57,6 +57,12 @@ def names(project: str, worktree: str, slot: int) -> dict[str, str]:
     return {"STACK_NAME": f"{project}_wt{slot}_{worktree}"}
 
 
+def say(*parts: object) -> None:
+    # Messages go to stderr, so the output of the command this runs before
+    # stays pipeable.
+    print(*parts, file=sys.stderr)
+
+
 def git(*args: str, cwd: Path) -> str:
     return subprocess.run(
         ["git", *args], cwd=cwd, check=True, capture_output=True, text=True
@@ -137,7 +143,7 @@ def repo_lock(common_dir: Path) -> Iterator[None]:
     try:
         lock = path.open("a")
     except OSError as error:  # e.g. a read-only git directory
-        print(f"warning: could not lock {path}: {error}")
+        say(f"warning: could not lock {path}: {error}")
         yield
         return
     with lock:
@@ -151,7 +157,7 @@ def repo_lock(common_dir: Path) -> Iterator[None]:
 
                 fcntl.flock(lock, fcntl.LOCK_EX)
         except OSError as error:  # e.g. ENOLCK on a network filesystem
-            print(f"warning: could not lock {path}: {error}")
+            say(f"warning: could not lock {path}: {error}")
         yield
 
 
@@ -190,7 +196,7 @@ def choose_slot(base: dict[str, int], taken: set[int]) -> int:
         busy = [port for port in shifted(base, slot).values() if in_use(port)]
         if not busy:
             return slot
-        print(f"slot {slot}: ports {busy} are in use, trying the next one")
+        say(f"slot {slot}: ports {busy} are in use, trying the next one")
     sys.exit(f"error: no free slot below {MAX_SLOT + 1}")
 
 
@@ -238,8 +244,8 @@ def configure(root: Path, project: str, requested: int | None = None) -> None:
         # A copy without git, or a checkout git refuses to read (another owner, a
         # .git file pointing at another machine's path): the command must still run.
         detail = getattr(error, "stderr", None) or error
-        print(f"Not a git checkout git can read ({str(detail).strip()}).")
-        print("Worktree ports are not managed here.")
+        say(f"Not a git checkout git can read ({str(detail).strip()}).")
+        say("Worktree ports are not managed here.")
         return
     git_dir = Path(git("rev-parse", "--absolute-git-dir", cwd=root)).resolve()
     common_dir = (root / git("rev-parse", "--git-common-dir", cwd=root)).resolve()
@@ -254,12 +260,12 @@ def configure(root: Path, project: str, requested: int | None = None) -> None:
 def _configure(root: Path, project: str, requested: int | None) -> None:
     roots = worktree_roots(root)
     if not roots:
-        print("Bare repository: worktree ports are not managed.")
+        say("Bare repository: worktree ports are not managed.")
         return
     main_root, *linked = roots
     if not (main_root / ".git").exists():
         # With a separate git dir or in a submodule, git lists the git dir instead.
-        print(f"No main checkout at {main_root}: worktree ports are not managed.")
+        say(f"No main checkout at {main_root}: worktree ports are not managed.")
         return
     env_file = root / ".env"
     main_env_file = main_root / ".env"
@@ -270,7 +276,7 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
 
     if not env_file.is_file():
         shutil.copy2(base_file, env_file)
-        print(f"Created .env from {base_file}")
+        say(f"Created .env from {base_file}")
 
     current = parse_env(env_file.read_text(encoding="utf-8"))
     copied = marker(env_file) is not None and own_slot(root) is None
@@ -310,7 +316,7 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
             if current.get(var) not in (None, updates[var], main_env.get(var))
         ]
     ):
-        print(
+        say(
             f"note: {', '.join(renamed)} change; what still runs under the old names"
             " keeps its containers, ports and volumes until you stop it"
         )
@@ -318,9 +324,9 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
     text = env_file.read_text(encoding="utf-8")
     rendered = render(text, slot, root, updates)
     if rendered == text:
-        print(f"Worktree slot {slot}: .env is up to date.")
+        say(f"Worktree slot {slot}: .env is up to date.")
         return
     replace_file(env_file, rendered)
-    print(f"Worktree slot {slot}; .env now sets:")
+    say(f"Worktree slot {slot}; .env now sets:")
     for var, value in updates.items():
-        print(f"  {var}={value}")
+        say(f"  {var}={value}")

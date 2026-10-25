@@ -77,9 +77,13 @@ def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(
     main, worktree = checkouts(tmp_path)
 
     worktree_env.configure(main, "project")
-    assert capsys.readouterr().out == ""
+    assert capsys.readouterr() == ("", "")
     worktree_env.configure(worktree, "project")
 
+    # Only stderr, so the output of the CLI command it runs before stays pipeable.
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "Worktree slot 1" in output.err
     env = (worktree / ".env").read_text()
     assert env.startswith(f"# worktree slot: 1 of {worktree.resolve()} (ports ")
     assert worktree_env.parse_env(env) == {
@@ -154,5 +158,5 @@ def test_configure_runs_unlocked_when_the_lock_cannot_be_opened(
 
     worktree_env.configure(worktree, "project")
 
-    assert "warning: could not lock" in capsys.readouterr().out
+    assert "warning: could not lock" in capsys.readouterr().err
     assert worktree_env.parse_env((worktree / ".env").read_text())["WEB_DEV_PORT"] == "48100"
