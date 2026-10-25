@@ -547,8 +547,7 @@ def try_github_actions():
 def worktree_guard(ctx: typer.Context):
     # The CLI's callback, so it runs before every command. A git worktree gets its own
     # ports and stack name: with the main checkout's .env, compose-up would take over the
-    # main checkout's stack and database. Every checkout records its ports for the other
-    # projects on this machine to avoid. init-workspace writes .env from its options
+    # main checkout's stack and database. init-workspace writes .env from its options
     # first, and the next command adopts what it set.
     if ctx.invoked_subcommand in ("init-workspace", "worktree-env"):
         return

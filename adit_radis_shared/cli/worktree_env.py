@@ -6,25 +6,22 @@ main checkout's compose project, on its database and host ports.
 
 Each linked worktree gets a slot N >= 1; the main checkout is slot 0. Every host
 port docker-compose.dev.yml publishes becomes the main checkout's value
-+ N * PORT_STEP, a URL in .env that points at one of those ports moves with it,
-and STACK_NAME becomes <project>_wt<N>_<worktree>. The slot is recorded at the top
++ N * PORT_STEP, and STACK_NAME becomes <project>_wt<N>_<worktree>. The slot is recorded at the top
 of the worktree's .env, with the worktree's path, so a copy of that .env elsewhere
 is not taken for the slot's owner. Later runs keep what the worktree's .env sets
 apart from the main checkout's values, ports and names alike, and only fill in the
 rest; a worktree set up by hand before keeps its own the same way. --slot rewrites
-them all. In the main checkout nothing in .env changes.
+them all. In the main checkout nothing changes.
 
-Every checkout, the main one included, also records its ports in a directory
-shared by the projects on this machine that use this module or a copy of it
-(REGISTRY). A worktree takes no slot whose ports another checkout, of this
-repository or any other, has recorded, whether or not that stack is running.
+A new worktree takes the first slot that no other worktree of the repository holds
+and none of whose ports is in use at that moment; it keeps that slot afterwards.
+Runs take turns on a lock in the repository's git common directory, so worktrees
+set up at once get different slots.
 
 commands.worktree_guard runs configure() before every CLI command;
 `uv run cli worktree-env --slot N` picks the slot by hand.
 """
 
-import hashlib
-import json
 import os
 import re
 import shutil
@@ -35,22 +32,15 @@ import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TextIO
 
 ENV_EXAMPLE = "example.env"
 
 PORT_STEP = 100
 MAX_SLOT = 50
-REGISTRY = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state") / "dev-ports"
 
 MARKER = re.compile(r"^# worktree slot: (\d+) of (.+) \(ports ")
 MARKER_LINE = re.compile(r"^# worktree slot: ")
 ASSIGNMENT = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*?)\r?$")
-# A local host with its port, and an http:// URL to one that leaves port 80 implicit.
-LOCAL_URL_PORT = re.compile(r"(?<![\w.-])((?:[\w-]+\.)*localhost|127\.0\.0\.1):(\d+)\b")
-LOCAL_URL_NO_PORT = re.compile(r"\bhttp://(?:(?:[\w-]+\.)*localhost|127\.0\.0\.1)(?![\w.:-])")
-# The password of a URL, hidden in the printed summary.
-URL_PASSWORD = re.compile(r"(://[^:/?#@\s]*:)[^/?#@\s]+@")
 # A host port docker-compose.dev.yml publishes, "- ${VAR:-8000}:8000", with the
 # default that applies when .env leaves VAR unset.
 PUBLISHED_PORT = re.compile(r"^\s*-\s*[\"']?\$\{(\w+):-(\d+)\}:", re.MULTILINE)
@@ -137,19 +127,17 @@ def shifted(base: dict[str, int], slot: int) -> dict[str, int]:
 
 
 @contextmanager
-def registry_lock() -> Iterator[None]:
-    """Hold the registry while this run reads the records and writes its own.
+def repo_lock(common_dir: Path) -> Iterator[None]:
+    """Hold the repository's lock while this run picks a slot and writes .env.
 
-    Two checkouts set up at once, as parallel agents do, would otherwise both
+    Two worktrees set up at once, as parallel agents do, would otherwise both
     see the same slot as free.
     """
-    lock: TextIO | None
+    path = common_dir / "worktree-env.lock"
     try:
-        REGISTRY.mkdir(parents=True, exist_ok=True)
-        lock = (REGISTRY / ".lock").open("a")
-    except OSError:
-        lock = None  # record() reports the unwritable registry
-    if lock is None:
+        lock = path.open("a")
+    except OSError as error:  # e.g. a read-only git directory
+        print(f"warning: could not lock {path}: {error}")
         yield
         return
     with lock:
@@ -162,8 +150,8 @@ def registry_lock() -> Iterator[None]:
                 import fcntl
 
                 fcntl.flock(lock, fcntl.LOCK_EX)
-        except OSError as error:  # e.g. ENOLCK on a network home
-            print(f"warning: could not lock {REGISTRY}: {error}")
+        except OSError as error:  # e.g. ENOLCK on a network filesystem
+            print(f"warning: could not lock {path}: {error}")
         yield
 
 
@@ -182,40 +170,6 @@ def replace_file(path: Path, text: str) -> None:
         tmp_path.unlink(missing_ok=True)  # a no-op once the replace has moved it
 
 
-def claims(root: Path) -> list[tuple[str, str, int]]:
-    """(checkout, variable, port) for the ports every other checkout records."""
-    found = []
-    for file in sorted(REGISTRY.glob("*.json")):
-        try:
-            entry = json.loads(file.read_text(encoding="utf-8"))
-            checkout = Path(entry["checkout"])
-            ports = {str(var): int(port) for var, port in entry["ports"].items()}
-        except (OSError, ValueError, KeyError, TypeError, AttributeError):
-            continue  # pruned by a concurrent run, or not a record of this script
-        if not checkout.is_dir():
-            try:
-                file.unlink(missing_ok=True)  # the checkout was deleted
-            except OSError:
-                pass  # a read-only registry keeps the record; it is ignored above
-        elif checkout != root:
-            found += [(str(checkout), var, port) for var, port in ports.items()]
-    return found
-
-
-def record(root: Path, ports: dict[str, int]) -> None:
-    entry = {"checkout": str(root), "ports": ports}
-    target = REGISTRY / f"{hashlib.sha256(str(root).encode()).hexdigest()[:16]}.json"
-    try:
-        REGISTRY.mkdir(parents=True, exist_ok=True)
-        replace_file(target, json.dumps(entry, indent=2))
-    except OSError as error:
-        print(f"warning: could not record the ports in {REGISTRY}: {error}")
-
-
-def without_local_ports(value: str) -> str:
-    return LOCAL_URL_PORT.sub(r"\1", value)
-
-
 def clashes(base: dict[str, int], slot: int, taken: set[int]) -> set[int]:
     """Ports of `slot` that the main checkout or a taken slot also publishes.
 
@@ -226,46 +180,18 @@ def clashes(base: dict[str, int], slot: int, taken: set[int]) -> set[int]:
     return set(shifted(base, slot).values()) & others
 
 
-def open_slots(base: dict[str, int], taken: set[int], claimed: set[int]) -> list[int]:
-    """Slots none of whose ports another checkout, of any repository, uses."""
-    return [
+def choose_slot(base: dict[str, int], taken: set[int]) -> int:
+    open_slots = [
         slot
         for slot in range(1, MAX_SLOT + 1)
-        if slot not in taken
-        and not clashes(base, slot, taken)
-        and not set(shifted(base, slot).values()) & claimed
+        if slot not in taken and not clashes(base, slot, taken)
     ]
-
-
-def choose_slot(base: dict[str, int], taken: set[int], claimed: set[int]) -> int:
-    for slot in open_slots(base, taken, claimed):
+    for slot in open_slots:
         busy = [port for port in shifted(base, slot).values() if in_use(port)]
         if not busy:
             return slot
         print(f"slot {slot}: ports {busy} are in use, trying the next one")
     sys.exit(f"error: no free slot below {MAX_SLOT + 1}")
-
-
-def moved_urls(
-    main_env: dict[str, str], base: dict[str, int], ports: dict[str, int]
-) -> dict[str, str]:
-    """Main-checkout values that point at a local port which moves, rewritten."""
-    moves = {str(base[var]): str(ports[var]) for var in base}
-
-    def move(match: re.Match[str]) -> str:
-        return f"{match[1]}:{moves.get(match[2], match[2])}"
-
-    def add_port(match: re.Match[str]) -> str:
-        return f"{match[0]}:{moves['80']}" if "80" in moves else match[0]
-
-    updates = {}
-    for var, value in main_env.items():
-        if var in base:
-            continue
-        moved = LOCAL_URL_NO_PORT.sub(add_port, LOCAL_URL_PORT.sub(move, value))
-        if moved != value:
-            updates[var] = moved
-    return updates
 
 
 def render(text: str, slot: int, root: Path, updates: dict[str, str]) -> str:
@@ -301,16 +227,11 @@ def render(text: str, slot: int, root: Path, updates: dict[str, str]) -> str:
 
 
 def configure(root: Path, project: str, requested: int | None = None) -> None:
-    """Give `root` its own ports and names if it is a linked worktree, and record its ports.
+    """Give `root` its own ports and names if it is a linked worktree.
 
     `project` names the stack (<project>_wt<N>_<worktree>); `requested` is a slot
     to use instead of the next free one.
     """
-    with registry_lock():
-        _configure(root, project, requested)
-
-
-def _configure(root: Path, project: str, requested: int | None) -> None:
     try:
         root = Path(git("rev-parse", "--show-toplevel", cwd=root)).resolve()
     except (OSError, subprocess.CalledProcessError) as error:
@@ -322,22 +243,30 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
         return
     git_dir = Path(git("rev-parse", "--absolute-git-dir", cwd=root)).resolve()
     common_dir = (root / git("rev-parse", "--git-common-dir", cwd=root)).resolve()
-    is_main = git_dir == common_dir  # also with a separate git dir or a submodule
+    if git_dir == common_dir:  # the main checkout, also with a separate git dir or a submodule
+        if requested is not None:
+            sys.exit("error: --slot applies to linked worktrees; the main checkout keeps its ports")
+        return
+    with repo_lock(common_dir):
+        _configure(root, project, requested)
+
+
+def _configure(root: Path, project: str, requested: int | None) -> None:
     roots = worktree_roots(root)
     if not roots:
         print("Bare repository: worktree ports are not managed.")
         return
-    main_root, *linked = [root, *roots[1:]] if is_main else roots
+    main_root, *linked = roots
+    if not (main_root / ".git").exists():
+        # With a separate git dir or in a submodule, git lists the git dir instead.
+        print(f"No main checkout at {main_root}: worktree ports are not managed.")
+        return
     env_file = root / ".env"
     main_env_file = main_root / ".env"
     # Without a main .env, a worktree's .env comes from the example.
     base_file = main_env_file if main_env_file.is_file() else root / ENV_EXAMPLE
     main_env = parse_env(base_file.read_text(encoding="utf-8"))
     base = {var: port_value(main_env, var, default) for var, default in dev_ports(root).items()}
-    if is_main:
-        record(root, base)
-        return
-    claimed_ports = {port for _, _, port in claims(root)}
 
     if not env_file.is_file():
         shutil.copy2(base_file, env_file)
@@ -357,8 +286,6 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
             sys.exit(f"error: slot {requested} is taken by {taken[requested]}")
         if clash := clashes(base, requested, set(taken)):
             sys.exit(f"error: slot {requested} would reuse ports {sorted(clash)}")
-        if recorded := sorted(set(shifted(base, requested).values()) & claimed_ports):
-            sys.exit(f"error: slot {requested} would reuse ports {recorded} of another checkout")
         slot = requested
         kept = {}
     elif (own := own_slot(root)) is not None and own not in taken:
@@ -366,7 +293,7 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
     else:
         if marker(env_file):
             kept = {}  # a copy of another worktree's .env, or a slot held twice
-        slot = choose_slot(base, set(taken), claimed_ports)
+        slot = choose_slot(base, set(taken))
 
     ports = {var: port_value(kept, var, port) for var, port in shifted(base, slot).items()}
     # Short enough for a DNS label (<service>.<project>.internal) with any suffix.
@@ -375,11 +302,6 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
     # The slot keeps the names apart where worktree directory names coincide.
     named = names(project, worktree or "worktree", slot)
     updates |= {var: kept.get(var, value) for var, value in named.items()}
-    for var, moved in moved_urls(main_env, base, ports).items():
-        url = kept.get(var, main_env[var])
-        # Changed beyond its local ports, the worktree's URL was set by hand and stays.
-        set_by_hand = without_local_ports(url) != without_local_ports(main_env[var])
-        updates[var] = url if set_by_hand else moved
     # The names in a copy are another worktree's, so nothing of this one's is left.
     if not copied and (
         renamed := [
@@ -395,13 +317,10 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
 
     text = env_file.read_text(encoding="utf-8")
     rendered = render(text, slot, root, updates)
-    unchanged = rendered == text
-    if not unchanged:
-        replace_file(env_file, rendered)
-    record(root, ports)  # once .env holds them
-    if unchanged:
+    if rendered == text:
         print(f"Worktree slot {slot}: .env is up to date.")
         return
+    replace_file(env_file, rendered)
     print(f"Worktree slot {slot}; .env now sets:")
     for var, value in updates.items():
-        print(f"  {var}={URL_PASSWORD.sub(r'\1***@', value)}")
+        print(f"  {var}={value}")

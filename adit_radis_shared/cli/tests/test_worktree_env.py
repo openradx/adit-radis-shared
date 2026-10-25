@@ -1,17 +1,9 @@
-import json
 import subprocess
 from pathlib import Path
 
 import pytest
 
 from adit_radis_shared.cli import worktree_env
-
-
-@pytest.fixture
-def registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    registry = tmp_path / "dev-ports"
-    monkeypatch.setattr(worktree_env, "REGISTRY", registry)
-    return registry
 
 
 def git(*args: str, cwd: Path) -> None:
@@ -44,26 +36,6 @@ def test_dev_ports_reads_the_published_host_ports(tmp_path: Path):
     }
 
 
-def test_claims_skips_records_of_another_shape(tmp_path: Path, registry: Path):
-    other = tmp_path / "other"
-    other.mkdir()
-    records = {
-        "valid.json": {"checkout": str(other), "ports": {"WEB_DEV_PORT": 8100}},
-        "deleted.json": {"checkout": str(tmp_path / "deleted"), "ports": {"WEB_DEV_PORT": 8200}},
-        "list.json": [],
-        "no-ports.json": {"checkout": str(other)},
-        "bad-port.json": {"checkout": str(other), "ports": {"WEB_DEV_PORT": "x"}},
-    }
-    registry.mkdir()
-    for name, record in records.items():
-        (registry / name).write_text(json.dumps(record))
-    (registry / "truncated.json").write_text("{")
-
-    assert worktree_env.claims(tmp_path / "self") == [(str(other), "WEB_DEV_PORT", 8100)]
-    assert not (registry / "deleted.json").exists()
-    assert (registry / "list.json").exists()
-
-
 def test_render_records_the_slot_and_is_stable(tmp_path: Path):
     updates = {"WEB_DEV_PORT": "8100", "STACK_NAME": "project_wt1_wt", "NEW_PORT": "9100"}
 
@@ -74,11 +46,11 @@ def test_render_records_the_slot_and_is_stable(tmp_path: Path):
     assert worktree_env.render(once, 1, tmp_path, updates) == once
 
 
-MAIN_ENV = "WEB_DEV_PORT=48000\nSITE_URL=http://localhost:48000/\n"
+MAIN_ENV = "WEB_DEV_PORT=48000\n"
 
 
-def checkouts(tmp_path: Path) -> tuple[Path, Path]:
-    """A main checkout with MAIN_ENV and a linked worktree of it."""
+def checkouts(tmp_path: Path, *names: str) -> tuple[Path, ...]:
+    """A main checkout with MAIN_ENV and linked worktrees of it (default: one, "feature")."""
     main = tmp_path / "main"
     main.mkdir()
     (main / "docker-compose.dev.yml").write_text("    ports:\n      - ${WEB_DEV_PORT:-8000}:8000\n")
@@ -86,9 +58,10 @@ def checkouts(tmp_path: Path) -> tuple[Path, Path]:
     git("add", "docker-compose.dev.yml", cwd=main)
     git("commit", "-q", "-m", "init", cwd=main)
     (main / ".env").write_text(MAIN_ENV)
-    worktree = tmp_path / "feature"
-    git("worktree", "add", "-q", str(worktree), cwd=main)
-    return main, worktree
+    worktrees = [tmp_path / name for name in names or ("feature",)]
+    for worktree in worktrees:
+        git("worktree", "add", "-q", str(worktree), cwd=main)
+    return main, *worktrees
 
 
 def set_in_env(path: Path, var: str, value: str) -> None:
@@ -98,89 +71,88 @@ def set_in_env(path: Path, var: str, value: str) -> None:
     )
 
 
-def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(tmp_path: Path, registry: Path):
+def test_configure_gives_a_linked_worktree_its_own_ports_and_stack(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
     main, worktree = checkouts(tmp_path)
 
     worktree_env.configure(main, "project")
+    assert capsys.readouterr().out == ""
     worktree_env.configure(worktree, "project")
 
     env = (worktree / ".env").read_text()
     assert env.startswith(f"# worktree slot: 1 of {worktree.resolve()} (ports ")
     assert worktree_env.parse_env(env) == {
         "WEB_DEV_PORT": "48100",
-        "SITE_URL": "http://localhost:48100/",
         "STACK_NAME": "project_wt1_feature",
     }
     assert (main / ".env").read_text() == MAIN_ENV
-    assert len(list(registry.glob("*.json"))) == 2
 
 
-def test_configure_moves_its_own_urls_and_keeps_those_set_by_hand(tmp_path: Path, registry: Path):
+def test_configure_keeps_a_port_changed_by_hand(tmp_path: Path):
     _, worktree = checkouts(tmp_path)
     env_file = worktree / ".env"
     worktree_env.configure(worktree, "project")
 
-    for port in ("48150", "48160"):
-        set_in_env(env_file, "WEB_DEV_PORT", port)
-        worktree_env.configure(worktree, "project")
-        assert (
-            worktree_env.parse_env(env_file.read_text())["SITE_URL"] == f"http://localhost:{port}/"
-        )
-
-    set_in_env(env_file, "SITE_URL", "https://tunnel.example/")
-    set_in_env(env_file, "WEB_DEV_PORT", "48170")
+    set_in_env(env_file, "WEB_DEV_PORT", "48150")
     worktree_env.configure(worktree, "project")
-    assert worktree_env.parse_env(env_file.read_text())["SITE_URL"] == "https://tunnel.example/"
+
+    assert worktree_env.parse_env(env_file.read_text())["WEB_DEV_PORT"] == "48150"
 
 
-def test_configure_records_no_ports_when_env_cannot_be_written(
-    tmp_path: Path, registry: Path, monkeypatch: pytest.MonkeyPatch
-):
-    main, worktree = checkouts(tmp_path)
-    replace_file = worktree_env.replace_file
+def test_configure_gives_each_worktree_its_own_slot_and_keeps_it(tmp_path: Path):
+    _, first, second = checkouts(tmp_path, "first", "second")
 
-    def failing_for_env(path: Path, text: str) -> None:
-        if path.name == ".env":
-            raise OSError("read-only")
-        replace_file(path, text)
+    worktree_env.configure(first, "project")
+    worktree_env.configure(second, "project")
+    worktree_env.configure(first, "project")
 
-    monkeypatch.setattr(worktree_env, "replace_file", failing_for_env)
-    worktree_env.configure(main, "project")
-    with pytest.raises(OSError):
-        worktree_env.configure(worktree, "project")
-
-    assert [json.loads(file.read_text())["checkout"] for file in registry.glob("*.json")] == [
-        str(main.resolve())
-    ]
+    assert worktree_env.parse_env((first / ".env").read_text())["WEB_DEV_PORT"] == "48100"
+    assert worktree_env.parse_env((second / ".env").read_text())["WEB_DEV_PORT"] == "48200"
 
 
-def test_configure_records_the_main_checkout_without_warning(
-    tmp_path: Path, registry: Path, capsys: pytest.CaptureFixture[str]
-):
-    main, _ = checkouts(tmp_path)
-    registry.mkdir()
-    (registry / "other.json").write_text(
-        json.dumps({"checkout": str(tmp_path), "ports": {"WEB_DEV_PORT": 48000}})
-    )
-
-    worktree_env.configure(main, "project")
-
-    assert capsys.readouterr().out == ""
-    assert (main / ".env").read_text() == MAIN_ENV
-    assert len(list(registry.glob("*.json"))) == 2
-
-
-def test_configure_skips_a_slot_whose_ports_another_checkout_records(
-    tmp_path: Path, registry: Path
+def test_configure_skips_a_slot_whose_ports_are_in_use(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     _, worktree = checkouts(tmp_path)
-    registry.mkdir()
-    (registry / "other.json").write_text(
-        json.dumps({"checkout": str(tmp_path), "ports": {"WEB_DEV_PORT": 48100}})
-    )
+    monkeypatch.setattr(worktree_env, "in_use", lambda port: port == 48100)
 
     worktree_env.configure(worktree, "project")
 
     env = worktree_env.parse_env((worktree / ".env").read_text())
     assert env["WEB_DEV_PORT"] == "48200"
     assert env["STACK_NAME"] == "project_wt2_feature"
+
+
+def test_configure_refuses_a_slot_for_the_main_checkout(tmp_path: Path):
+    main, _ = checkouts(tmp_path)
+
+    with pytest.raises(SystemExit, match="main checkout"):
+        worktree_env.configure(main, "project", 3)
+    assert (main / ".env").read_text() == MAIN_ENV
+
+
+def test_configure_leaves_a_worktree_alone_when_git_lists_no_main_checkout(tmp_path: Path):
+    main = tmp_path / "main"
+    main.mkdir()
+    git("init", "-q", f"--separate-git-dir={tmp_path / 'main.git'}", cwd=main)
+    git("commit", "-q", "--allow-empty", "-m", "init", cwd=main)
+    (main / ".env").write_text(MAIN_ENV)
+    worktree = tmp_path / "feature"
+    git("worktree", "add", "-q", str(worktree), cwd=main)
+
+    worktree_env.configure(worktree, "project")
+
+    assert not (worktree / ".env").exists()
+
+
+def test_configure_runs_unlocked_when_the_lock_cannot_be_opened(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    main, worktree = checkouts(tmp_path)
+    (main / ".git" / "worktree-env.lock").mkdir()
+
+    worktree_env.configure(worktree, "project")
+
+    assert "warning: could not lock" in capsys.readouterr().out
+    assert worktree_env.parse_env((worktree / ".env").read_text())["WEB_DEV_PORT"] == "48100"
