@@ -152,3 +152,35 @@ def test_configure_records_no_ports_when_env_cannot_be_written(
     assert [json.loads(file.read_text())["checkout"] for file in registry.glob("*.json")] == [
         str(main.resolve())
     ]
+
+
+def test_configure_records_the_main_checkout_without_warning(
+    tmp_path: Path, registry: Path, capsys: pytest.CaptureFixture[str]
+):
+    main, _ = checkouts(tmp_path)
+    registry.mkdir()
+    (registry / "other.json").write_text(
+        json.dumps({"checkout": str(tmp_path), "ports": {"WEB_DEV_PORT": 48000}})
+    )
+
+    worktree_env.configure(main, "project")
+
+    assert capsys.readouterr().out == ""
+    assert (main / ".env").read_text() == MAIN_ENV
+    assert len(list(registry.glob("*.json"))) == 2
+
+
+def test_configure_skips_a_slot_whose_ports_another_checkout_records(
+    tmp_path: Path, registry: Path
+):
+    _, worktree = checkouts(tmp_path)
+    registry.mkdir()
+    (registry / "other.json").write_text(
+        json.dumps({"checkout": str(tmp_path), "ports": {"WEB_DEV_PORT": 48100}})
+    )
+
+    worktree_env.configure(worktree, "project")
+
+    env = worktree_env.parse_env((worktree / ".env").read_text())
+    assert env["WEB_DEV_PORT"] == "48200"
+    assert env["STACK_NAME"] == "project_wt2_feature"

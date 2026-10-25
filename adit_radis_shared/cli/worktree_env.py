@@ -17,9 +17,7 @@ them all. In the main checkout nothing in .env changes.
 Every checkout, the main one included, also records its ports in a directory
 shared by the projects on this machine that use this module or a copy of it
 (REGISTRY). A worktree takes no slot whose ports another checkout, of this
-repository or any other, has recorded, whether or not that stack is running. A
-port of this checkout that another checkout also records is only warned about,
-with a free one to set in .env instead.
+repository or any other, has recorded, whether or not that stack is running.
 
 commands.worktree_guard runs configure() before every CLI command;
 `uv run cli worktree-env --slot N` picks the slot by hand.
@@ -218,31 +216,6 @@ def without_local_ports(value: str) -> str:
     return LOCAL_URL_PORT.sub(r"\1", value)
 
 
-def local_ports(value: str) -> set[int]:
-    found = {int(match[2]) for match in LOCAL_URL_PORT.finditer(value)}
-    return found | ({80} if LOCAL_URL_NO_PORT.search(value) else set())
-
-
-def warn_about_claims(
-    ports: dict[str, int], claimed: list[tuple[str, str, int]], env: dict[str, str]
-) -> bool:
-    """Warn about each port another checkout records; `env` is what .env sets."""
-    used = set(ports.values()) | {port for _, _, port in claimed}
-    warned = False
-    for var, port in ports.items():
-        if owners := [f"{checkout} ({other})" for checkout, other, p in claimed if p == port]:
-            free = next(p for p in range(port + 1, 65536) if p not in used and not in_use(p))
-            used.add(free)
-            warned = True
-            urls = [name for name, value in env.items() if port in local_ports(value)]
-            print(
-                f"warning: {var}={port} is also used by {', '.join(owners)};"
-                f" set another port in .env, e.g. {var}={free}"
-                + (f", and move {', '.join(urls)} to it" if urls else "")
-            )
-    return warned
-
-
 def clashes(base: dict[str, int], slot: int, taken: set[int]) -> set[int]:
     """Ports of `slot` that the main checkout or a taken slot also publishes.
 
@@ -361,12 +334,10 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
     base_file = main_env_file if main_env_file.is_file() else root / ENV_EXAMPLE
     main_env = parse_env(base_file.read_text(encoding="utf-8"))
     base = {var: port_value(main_env, var, default) for var, default in dev_ports(root).items()}
-    claimed = claims(root)
-    claimed_ports = {port for _, _, port in claimed}
     if is_main:
         record(root, base)
-        warn_about_claims(base, claimed, main_env)
         return
+    claimed_ports = {port for _, _, port in claims(root)}
 
     if not env_file.is_file():
         shutil.copy2(base_file, env_file)
@@ -421,11 +392,6 @@ def _configure(root: Path, project: str, requested: int | None) -> None:
             f"note: {', '.join(renamed)} change; what still runs under the old names"
             " keeps its containers, ports and volumes until you stop it"
         )
-    if warn_about_claims(ports, claimed, current | updates) and (
-        free := open_slots(base, set(taken), claimed_ports)
-    ):
-        action = "reset" if free[0] == slot else "move"
-        print(f"  or {action} this worktree's ports to free ones: --slot {free[0]}")
 
     text = env_file.read_text(encoding="utf-8")
     rendered = render(text, slot, root, updates)
