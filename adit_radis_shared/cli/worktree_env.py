@@ -11,7 +11,8 @@ of the worktree's .env, with the worktree's path, so a copy of that .env elsewhe
 is not taken for the slot's owner. Later runs keep what the worktree's .env sets
 apart from the main checkout's values, ports and names alike, and only fill in the
 rest; a worktree set up by hand before keeps its own the same way. --slot rewrites
-them all. In the main checkout nothing changes.
+them all. In the main checkout nothing changes. A linked worktree git can't read
+stops the command instead, since its .env is still the main checkout's.
 
 A new worktree takes the first slot that no other worktree of the repository holds
 and none of whose ports is in use at that moment; it keeps that slot afterwards.
@@ -241,10 +242,21 @@ def configure(root: Path, project: str, requested: int | None = None) -> None:
     try:
         root = Path(git("rev-parse", "--show-toplevel", cwd=root)).resolve()
     except (OSError, subprocess.CalledProcessError) as error:
-        # A copy without git, or a checkout git refuses to read (another owner, a
-        # .git file pointing at another machine's path): the command must still run.
-        detail = getattr(error, "stderr", None) or error
-        say(f"Not a git checkout git can read ({str(detail).strip()}).")
+        detail = str(getattr(error, "stderr", None) or error).strip()
+        if (root / ".git").is_file():
+            # A linked worktree (its .git file points at a path missing here, or git
+            # refuses its owner) still has the main checkout's .env, so its commands
+            # would reach the main checkout's stack and database.
+            sys.exit(
+                f"error: git can't read this worktree ({detail}), so its ports and stack"
+                " name can't be set up, and its commands would reach the main checkout's"
+                " stack. Make git read it first: `git worktree repair <path>` from the main"
+                " checkout after a move, `git config --global --add safe.directory <path>`"
+                " for a folder git refuses as another user's."
+            )
+        # A copy without git, or a main checkout git refuses to read: the command must
+        # still run.
+        say(f"Not a git checkout git can read ({detail}).")
         say("Worktree ports are not managed here.")
         return
     git_dir = Path(git("rev-parse", "--absolute-git-dir", cwd=root)).resolve()

@@ -150,6 +150,27 @@ def test_configure_leaves_a_worktree_alone_when_git_lists_no_main_checkout(tmp_p
     assert not (worktree / ".env").exists()
 
 
+def test_configure_stops_in_a_worktree_git_cannot_read(tmp_path: Path):
+    _, worktree = checkouts(tmp_path)
+    (worktree / ".git").write_text(f"gitdir: {tmp_path / 'gone' / '.git' / 'worktrees' / 'x'}\n")
+
+    with pytest.raises(SystemExit, match="git can't read this worktree"):
+        worktree_env.configure(worktree, "project")
+    assert not (worktree / ".env").exists()
+
+
+def test_configure_runs_on_in_a_checkout_git_cannot_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path))
+    copy = tmp_path / "copy"
+    (copy / ".git").mkdir(parents=True)
+
+    worktree_env.configure(copy, "project")
+
+    assert "Worktree ports are not managed here." in capsys.readouterr().err
+
+
 def test_configure_runs_unlocked_when_the_lock_cannot_be_opened(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ):
