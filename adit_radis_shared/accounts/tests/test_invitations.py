@@ -1,0 +1,322 @@
+"""Integration tests for the invitation flow: invite, open the link, sign up."""
+
+import smtplib
+from datetime import timedelta
+
+import pytest
+from allauth.account.models import EmailAddress
+from django.conf import settings
+from django.core import mail
+from django.test import Client
+from django.urls import reverse
+from django.utils import timezone
+from pytest_mock import MockerFixture
+
+from adit_radis_shared.accounts.factories import GroupFactory, UserFactory
+from adit_radis_shared.accounts.models import Invitation, User
+from adit_radis_shared.common.utils.testing_helpers import add_permission, add_user_to_group
+
+SIGNUP_DATA = {
+    "username": "invited",
+    "first_name": "In",
+    "last_name": "Vited",
+    "phone_number": "12345",
+    "department": "Radiology",
+    "password1": "a-rather-long-password",
+    "password2": "a-rather-long-password",
+}
+
+
+def create_inviter() -> User:
+    user = UserFactory.create()
+    group = GroupFactory.create(name="Admins")
+    add_permission(group, "accounts", "add_invitation")
+    add_user_to_group(user, group)
+    return user
+
+
+def accept_url(invitation: Invitation) -> str:
+    return reverse("invitation_accept", kwargs={"token": invitation.token})
+
+
+# --- Inviting ---------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_invitations_page_requires_permission(client: Client):
+    client.force_login(UserFactory.create())
+    assert client.get(reverse("invitations")).status_code == 403
+
+    client.force_login(create_inviter())
+    assert client.get(reverse("invitations")).status_code == 200
+
+
+@pytest.mark.django_db
+def test_invite_sends_mail_with_link(client: Client):
+    inviter = create_inviter()
+    client.force_login(inviter)
+
+    response = client.post(reverse("invitations"), {"email": "new.user@example.org"})
+
+    assert response.status_code == 302
+    invitation = Invitation.objects.get(email="new.user@example.org")
+    assert invitation.invited_by == inviter
+    assert invitation.is_valid
+    assert invitation.expires - timezone.now() > timedelta(days=settings.INVITATION_VALID_DAYS - 1)
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == ["new.user@example.org"]
+    assert accept_url(invitation) in mail.outbox[0].body
+
+
+@pytest.mark.django_db
+def test_invitation_mail_is_not_html_escaped(client: Client):
+    inviter = create_inviter()
+    inviter.first_name, inviter.last_name = "Mary", "O'Brien"
+    inviter.save()
+    client.force_login(inviter)
+
+    client.post(reverse("invitations"), {"email": "new.user@example.org"})
+
+    assert "Mary O'Brien has invited you" in mail.outbox[0].body
+
+
+@pytest.mark.django_db
+def test_existing_user_cannot_be_invited(client: Client):
+    client.force_login(create_inviter())
+    existing = UserFactory.create(email="already@example.org")
+
+    response = client.post(reverse("invitations"), {"email": existing.email})
+
+    assert response.status_code == 200
+    assert "already exists" in response.text
+    assert not Invitation.objects.exists()
+    assert not mail.outbox
+
+
+@pytest.mark.django_db
+def test_invitations_page_shows_link_of_pending_invitations(client: Client):
+    client.force_login(create_inviter())
+    pending = Invitation.objects.create(email="pending@example.org")
+    expired = Invitation.objects.create(
+        email="late@example.org", expires=timezone.now() - timedelta(minutes=1)
+    )
+
+    response = client.get(reverse("invitations"))
+
+    assert accept_url(pending) in response.text
+    assert accept_url(expired) not in response.text
+
+
+@pytest.mark.django_db
+def test_pending_invitation_cannot_be_sent_twice(client: Client):
+    client.force_login(create_inviter())
+    Invitation.objects.create(email="new.user@example.org")
+
+    response = client.post(reverse("invitations"), {"email": "new.user@example.org"})
+
+    assert response.status_code == 200
+    assert "already pending" in response.text
+    assert Invitation.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_invitation_can_be_canceled(client: Client):
+    client.force_login(create_inviter())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+
+    response = client.post(reverse("invitation_cancel", kwargs={"pk": invitation.pk}))
+
+    assert response.status_code == 302
+    assert not Invitation.objects.exists()
+    assert client.get(accept_url(invitation)).status_code == 410
+    # The email address is free for a new invitation again.
+    response = client.post(reverse("invitations"), {"email": "new.user@example.org"})
+    assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_accepted_invitation_cannot_be_canceled(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+    client.post(reverse("account_signup"), SIGNUP_DATA)
+    client.logout()
+    client.force_login(create_inviter())
+
+    response = client.post(reverse("invitation_cancel", kwargs={"pk": invitation.pk}))
+
+    assert response.status_code == 404
+    assert Invitation.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_invitations_page_follows_the_whole_onboarding(client: Client):
+    client.force_login(create_inviter())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    assert "Pending" in client.get(reverse("invitations")).text
+
+    invitee = Client()
+    invitee.get(accept_url(invitation))
+    invitee.post(reverse("account_signup"), SIGNUP_DATA)
+    user = User.objects.get(username="invited")
+
+    # The sign up alone is not the end: the row waits for the admin and links
+    # directly to the user in the Django admin.
+    response = client.get(reverse("invitations"))
+    assert "Signed up" in response.text
+    assert reverse("admin:accounts_user_change", args=[user.pk]) in response.text
+
+    user.is_active = True
+    user.save()
+    add_user_to_group(user, GroupFactory.create())
+
+    # The onboarding is finished, so the invitation disappears from the list.
+    assert "new.user@example.org" not in client.get(reverse("invitations")).text
+
+
+@pytest.mark.django_db
+def test_invitations_page_survives_a_deleted_user(client: Client):
+    client.force_login(create_inviter())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    invitee = Client()
+    invitee.get(accept_url(invitation))
+    invitee.post(reverse("account_signup"), SIGNUP_DATA)
+
+    User.objects.get(username="invited").delete()
+
+    assert client.get(reverse("invitations")).status_code == 200
+
+
+# --- Opening the link -------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_invitation_link_opens_signup_with_locked_email(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+
+    response = client.get(accept_url(invitation))
+    assert response.status_code == 302
+    assert response.headers["Location"] == reverse("account_signup")
+
+    response = client.get(reverse("account_signup"))
+    assert response.status_code == 200
+    assert 'value="new.user@example.org"' in response.text
+    assert "disabled" in response.text
+
+
+@pytest.mark.django_db
+def test_invitation_link_logs_out_a_logged_in_user(client: Client):
+    client.force_login(UserFactory.create())
+    invitation = Invitation.objects.create(email="new.user@example.org")
+
+    client.get(accept_url(invitation))
+
+    assert "_auth_user_id" not in client.session
+    assert client.get(reverse("account_signup")).status_code == 200
+
+
+@pytest.mark.django_db
+def test_expired_invitation_is_rejected(client: Client):
+    invitation = Invitation.objects.create(
+        email="late@example.org", expires=timezone.now() - timedelta(minutes=1)
+    )
+
+    response = client.get(accept_url(invitation))
+    assert response.status_code == 410
+
+    response = client.get(reverse("account_signup"))
+    assert "only possible with an invitation" in response.text
+
+
+@pytest.mark.django_db
+def test_unknown_token_is_rejected(client: Client):
+    response = client.get(reverse("invitation_accept", kwargs={"token": "no-such-token"}))
+    assert response.status_code == 410
+
+
+# --- Signing up -------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_signup_with_invitation_creates_user(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    response = client.post(reverse("account_signup"), SIGNUP_DATA)
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == reverse("account_inactive")
+
+    user = User.objects.get(username="invited")
+    assert user.email == "new.user@example.org"
+    assert user.first_name == "In"
+    assert user.last_name == "Vited"
+    assert user.phone_number == "12345"
+    assert user.department == "Radiology"
+    assert user.check_password("a-rather-long-password")
+    assert EmailAddress.objects.get(user=user).verified
+
+    invitation.refresh_from_db()
+    assert invitation.accepted is not None
+    assert invitation.user == user
+
+    # Activating the account and assigning a group is the admin's job, so the
+    # admin is informed and the user has to wait, deactivated and logged out.
+    assert not user.is_active
+    assert "_auth_user_id" not in client.session
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == list(settings.ADMINS)
+    assert user.username in mail.outbox[0].body
+    response = client.get(reverse("account_inactive"))
+    assert "have been informed" in response.text
+
+
+@pytest.mark.django_db
+def test_admin_mail_is_not_html_escaped(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    client.post(reverse("account_signup"), SIGNUP_DATA | {"last_name": "O'Brien"})
+
+    assert "In O'Brien (invited, new.user@example.org)" in mail.outbox[0].body
+
+
+@pytest.mark.django_db
+def test_signup_survives_a_failing_mail_server(
+    client: Client, mocker: MockerFixture, caplog: pytest.LogCaptureFixture
+):
+    mocker.patch(
+        "django.core.mail.backends.locmem.EmailBackend.send_messages",
+        side_effect=smtplib.SMTPServerDisconnected("Connection unexpectedly closed"),
+    )
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    response = client.post(reverse("account_signup"), SIGNUP_DATA)
+
+    # The account exists and the invitation is used up, so the sign up has to end as usual.
+    assert response.status_code == 302
+    assert response.headers["Location"] == reverse("account_inactive")
+    invitation.refresh_from_db()
+    assert invitation.user == User.objects.get(username="invited")
+    assert "Could not notify the admins about the new user invited" in caplog.text
+
+
+@pytest.mark.django_db
+def test_signup_ignores_a_submitted_email(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+
+    client.post(reverse("account_signup"), SIGNUP_DATA | {"email": "someone.else@example.org"})
+
+    assert User.objects.get(username="invited").email == "new.user@example.org"
+
+
+@pytest.mark.django_db
+def test_invitation_cannot_be_used_twice(client: Client):
+    invitation = Invitation.objects.create(email="new.user@example.org")
+    client.get(accept_url(invitation))
+    client.post(reverse("account_signup"), SIGNUP_DATA)
+    client.logout()
+
+    assert client.get(accept_url(invitation)).status_code == 410
+    assert "only possible with an invitation" in client.get(reverse("account_signup")).text
