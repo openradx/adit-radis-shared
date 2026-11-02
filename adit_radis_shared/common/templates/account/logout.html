@@ -1,0 +1,15 @@
+{% extends "accounts/accounts_layout.html" %}
+{% block title %}
+    Logout
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Logout" />
+{% endblock heading %}
+{% block content %}
+    <p>Are you sure you want to log out?</p>
+    <form method="post" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        {{ redirect_field }}
+        <button type="submit" class="btn btn-primary">Log Out</button>
+    </form>
+{% endblock content %}
