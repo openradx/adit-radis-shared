@@ -1,0 +1,21 @@
+{% extends "accounts/accounts_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% block title %}
+    Login
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Login" />
+{% endblock heading %}
+{% block content %}
+    <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ redirect_field }}
+        <input type="submit" class="btn btn-primary" value="Log In" />
+    </form>
+    <hr />
+    <p>
+        Forgot your password?
+        <a href="{% url 'account_reset_password' %}">Reset</a>
+    </p>
+{% endblock content %}
