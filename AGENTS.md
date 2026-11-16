@@ -86,7 +86,7 @@ uv run cli generate-auth-token       # Generate API authentication token
 
 ### Key Patterns
 
-- **INSTALLED_APPS order**: `daphne` first, then `adit_radis_shared.common` before `registration`
+- **INSTALLED_APPS order**: `daphne` first, then `adit_radis_shared.common` before `allauth`
 - **URL routing**: Include app URLs under `accounts/`, `token-authentication/`, `api/token-authentication/`
 - **Frontend stack**: Bootstrap 5 + HTMX + Alpine.js (minimal JavaScript, no heavy frameworks)
 - **Async support**: Django Channels with Daphne for WebSocket/async views

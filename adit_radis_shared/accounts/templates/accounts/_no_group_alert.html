@@ -1,0 +1,6 @@
+{% if user.is_authenticated and not user.active_group and not user.is_superuser %}
+    <div class="alert alert-info" role="alert">
+        Your account is not assigned to any group yet. An administrator has been informed
+        and will add you to one. Until then most of the site is not available to you.
+    </div>
+{% endif %}

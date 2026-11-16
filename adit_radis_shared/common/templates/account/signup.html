@@ -1,0 +1,17 @@
+{% extends "accounts/accounts_layout.html" %}
+{% load crispy from crispy_forms_tags %}
+{% block title %}
+    Sign Up
+{% endblock title %}
+{% block heading %}
+    <c-page-heading title="Sign Up" />
+{% endblock heading %}
+{% block content %}
+    <p>You have been invited to {{ request.site.name }}. Please fill out the form to create your account.</p>
+    <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ redirect_field }}
+        <input type="submit" class="btn btn-primary" value="Sign Up" />
+    </form>
+{% endblock content %}

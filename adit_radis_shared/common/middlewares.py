@@ -22,8 +22,8 @@ class MaintenanceMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HtmxHttpRequest):
-        login_request = request.path == reverse("auth_login")
-        logout_request = request.path == reverse("auth_logout")
+        login_request = request.path == reverse("account_login")
+        logout_request = request.path == reverse("account_logout")
         try:
             health_request = request.path == reverse("health")
         except NoReverseMatch:
