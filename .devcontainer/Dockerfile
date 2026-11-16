@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm@sha256:68aef3859e340a2b0cc63260978c5d40e82f48e30fb00503c59cea9104ff8a6b
+FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm@sha256:2126b4442a339013517c71ea39fbb5ce7cf058440fac2bebf5db216eacbd55ad
 
 USER root
 
