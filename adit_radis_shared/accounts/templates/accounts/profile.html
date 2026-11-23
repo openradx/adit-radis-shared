@@ -40,9 +40,9 @@
     <div class="mt-4">
         <h5>Actions</h5>
         <div class="d-flex gap-2">
-            <a class="btn btn-secondary" href="{% url 'auth_password_change' %}">Change Password</a>
+            <a class="btn btn-secondary" href="{% url 'account_change_password' %}">Change Password</a>
             <a class="btn btn-secondary" href="{% url 'token_dashboard' %}">Manage API Tokens</a>
-            <form action="{% url 'auth_logout' %}" method="post">
+            <form action="{% url 'account_logout' %}" method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-secondary">Logout</button>
             </form>
